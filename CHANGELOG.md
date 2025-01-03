@@ -18,6 +18,7 @@ Full Changelog: [v0.0.1-alpha.0...v0.0.1-alpha.1](https://github.com/vlm-run/vlm
 * **internal:** codegen related update ([bad9391](https://github.com/vlm-run/vlmrun-node-sdk/commit/bad93911df586d77a07c39975ea4cc8c234e5888))
 * **internal:** fix some typos ([c85fff3](https://github.com/vlm-run/vlmrun-node-sdk/commit/c85fff3f218e51eeaf3b9b619806a11372f1495b))
 * **internal:** fix some typos ([0645bb3](https://github.com/vlm-run/vlmrun-node-sdk/commit/0645bb3aa580503a158af8efd99f8113ab15b242))
+* update SDK settings ([#3](https://github.com/vlm-run/vlmrun-node-sdk/issues/3)) ([c372d79](https://github.com/vlm-run/vlmrun-node-sdk/commit/c372d79e19803ef3f414aaf384251e23fda841f9))
 
 
 ### Documentation

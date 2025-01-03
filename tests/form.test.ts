@@ -1,6 +1,6 @@
-import { multipartFormRequestOptions, createForm } from 'vlm/core';
-import { Blob } from 'vlm/_shims/index';
-import { toFile } from 'vlm';
+import { multipartFormRequestOptions, createForm } from 'vlmrun/core';
+import { Blob } from 'vlmrun/_shims/index';
+import { toFile } from 'vlmrun';
 
 describe('form data validation', () => {
   test('valid values do not error', async () => {

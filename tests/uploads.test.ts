@@ -1,6 +1,6 @@
 import fs from 'fs';
-import { toFile, type ResponseLike } from 'vlm/uploads';
-import { File } from 'vlm/_shims/index';
+import { toFile, type ResponseLike } from 'vlmrun/uploads';
+import { File } from 'vlmrun/_shims/index';
 
 class MyClass {
   name: string = 'foo';

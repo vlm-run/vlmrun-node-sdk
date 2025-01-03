@@ -5,8 +5,8 @@
   "compilerOptions": {
     "rootDir": "./dist/src",
     "paths": {
-      "vlm/*": ["dist/src/*"],
-      "vlm": ["dist/src/index.ts"],
+      "vlmrun/*": ["dist/src/*"],
+      "vlmrun": ["dist/src/index.ts"],
     },
     "noEmit": false,
     "declaration": true,
