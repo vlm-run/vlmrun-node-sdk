@@ -1,5 +1,5 @@
 {
-  "name": "vlm",
+  "name": "vlmrun",
   "version": "0.0.1-alpha.0",
   "description": "The official TypeScript library for the Vlm API",
   "author": "Vlm <support@vlm.run>",
@@ -59,8 +59,8 @@
     "./shims/web.mjs"
   ],
   "imports": {
-    "vlm": ".",
-    "vlm/*": "./src/*"
+    "vlmrun": ".",
+    "vlmrun/*": "./src/*"
   },
   "exports": {
     "./_shims/auto/*": {
