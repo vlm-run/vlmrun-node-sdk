@@ -1,5 +1,5 @@
-import { createResponseHeaders } from 'vlm/core';
-import { Headers } from 'vlm/_shims/index';
+import { createResponseHeaders } from 'vlmrun/core';
+import { Headers } from 'vlmrun/_shims/index';
 
 describe('response parsing', () => {
   // TODO: test unicode characters

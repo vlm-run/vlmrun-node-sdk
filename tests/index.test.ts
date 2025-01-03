@@ -1,8 +1,8 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-import Vlm from 'vlm';
-import { APIUserAbortError } from 'vlm';
-import { Headers } from 'vlm/core';
+import Vlm from 'vlmrun';
+import { APIUserAbortError } from 'vlmrun';
+import { Headers } from 'vlmrun/core';
 import defaultFetch, { Response, type RequestInit, type RequestInfo } from 'node-fetch';
 
 describe('instantiate client', () => {
