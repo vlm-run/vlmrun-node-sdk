@@ -4,8 +4,8 @@
 /**
  * Types will get added to this namespace when you import one of the following:
  *
- *   import 'vlm/shims/node'
- *   import 'vlm/shims/web'
+ *   import 'vlmrun/shims/node'
+ *   import 'vlmrun/shims/web'
  *
  * Importing more than one will cause type and runtime errors.
  */

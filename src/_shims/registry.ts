@@ -41,10 +41,12 @@ export let isFsReadStream: Shims['isFsReadStream'] | undefined = undefined;
 
 export function setShims(shims: Shims, options: { auto: boolean } = { auto: false }) {
   if (auto) {
-    throw new Error(`you must \`import 'vlm/shims/${shims.kind}'\` before importing anything else from vlm`);
+    throw new Error(
+      `you must \`import 'vlmrun/shims/${shims.kind}'\` before importing anything else from vlmrun`,
+    );
   }
   if (kind) {
-    throw new Error(`can't \`import 'vlm/shims/${shims.kind}'\` after \`import 'vlm/shims/${kind}'\``);
+    throw new Error(`can't \`import 'vlmrun/shims/${shims.kind}'\` after \`import 'vlmrun/shims/${kind}'\``);
   }
   auto = options.auto;
   kind = shims.kind;
