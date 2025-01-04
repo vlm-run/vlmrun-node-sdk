@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-import Vlm from 'vlmrun';
+import Vlm from 'vlmrun-node';
 import { Response } from 'node-fetch';
 
 const client = new Vlm({
