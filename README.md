@@ -1,6 +1,6 @@
 # Vlm Node API Library
 
-[![NPM version](https://img.shields.io/npm/v/vlmrun-node.svg)](https://npmjs.org/package/vlmrun-node) ![npm bundle size](https://img.shields.io/bundlephobia/minzip/vlmrun-node)
+[![NPM version](https://img.shields.io/npm/v/vlmrun.svg)](https://npmjs.org/package/vlmrun) ![npm bundle size](https://img.shields.io/bundlephobia/minzip/vlmrun)
 
 This library provides convenient access to the Vlm REST API from server-side TypeScript or JavaScript.
 
@@ -11,7 +11,7 @@ It is generated with [Stainless](https://www.stainlessapi.com/).
 ## Installation
 
 ```sh
-npm install vlmrun-node
+npm install vlmrun
 ```
 
 ## Usage
@@ -20,7 +20,7 @@ The full API of this library can be found in [api.md](api.md).
 
 <!-- prettier-ignore -->
 ```js
-import Vlm from 'vlmrun-node';
+import Vlm from 'vlmrun';
 
 const client = new Vlm();
 
@@ -39,7 +39,7 @@ This library includes TypeScript definitions for all request params and response
 
 <!-- prettier-ignore -->
 ```ts
-import Vlm from 'vlmrun-node';
+import Vlm from 'vlmrun';
 
 const client = new Vlm();
 
@@ -209,11 +209,11 @@ add the following import before your first import `from "Vlm"`:
 ```ts
 // Tell TypeScript and the package to use the global web fetch instead of node-fetch.
 // Note, despite the name, this does not add any polyfills, but expects them to be provided if needed.
-import 'vlmrun-node/shims/web';
-import Vlm from 'vlmrun-node';
+import 'vlmrun/shims/web';
+import Vlm from 'vlmrun';
 ```
 
-To do the inverse, add `import "vlmrun-node/shims/node"` (which does import polyfills).
+To do the inverse, add `import "vlmrun/shims/node"` (which does import polyfills).
 This can also be useful if you are getting the wrong TypeScript types for `Response` ([more details](https://github.com/vlm-run/vlmrun-node-sdk/tree/main/src/_shims#readme)).
 
 ### Logging and middleware
@@ -223,7 +223,7 @@ which can be used to inspect or alter the `Request` or `Response` before/after e
 
 ```ts
 import { fetch } from 'undici'; // as one example
-import Vlm from 'vlmrun-node';
+import Vlm from 'vlmrun';
 
 const client = new Vlm({
   fetch: async (url: RequestInfo, init?: RequestInit): Promise<Response> => {
