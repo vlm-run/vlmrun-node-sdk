@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.1-alpha.2 (2025-01-04)
+
+Full Changelog: [v0.0.1-alpha.1...v0.0.1-alpha.2](https://github.com/vlm-run/vlmrun-node-sdk/compare/v0.0.1-alpha.1...v0.0.1-alpha.2)
+
+### Chores
+
+* update SDK settings ([#7](https://github.com/vlm-run/vlmrun-node-sdk/issues/7)) ([b1e100a](https://github.com/vlm-run/vlmrun-node-sdk/commit/b1e100a83ed4a281b9c3dcd30d0786eea10f88c4))
+
 ## 0.0.1-alpha.1 (2025-01-03)
 
 Full Changelog: [v0.0.1-alpha.0...v0.0.1-alpha.1](https://github.com/vlm-run/vlmrun-node-sdk/compare/v0.0.1-alpha.0...v0.0.1-alpha.1)
