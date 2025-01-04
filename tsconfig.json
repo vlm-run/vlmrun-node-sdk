@@ -9,9 +9,9 @@
     "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
-      "vlmrun/_shims/auto/*": ["src/_shims/auto/*-node"],
-      "vlmrun/*": ["src/*"],
-      "vlmrun": ["src/index.ts"]
+      "vlmrun-node/_shims/auto/*": ["src/_shims/auto/*-node"],
+      "vlmrun-node/*": ["src/*"],
+      "vlmrun-node": ["src/index.ts"]
     },
     "noEmit": true,
 
