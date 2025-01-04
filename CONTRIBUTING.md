@@ -55,12 +55,12 @@ $ cd vlmrun-node-sdk
 # With yarn
 $ yarn link
 $ cd ../my-package
-$ yarn link vlmrun
+$ yarn link vlmrun-node
 
 # With pnpm
 $ pnpm link --global
 $ cd ../my-package
-$ pnpm link -—global vlmrun
+$ pnpm link -—global vlmrun-node
 ```
 
 ## Running tests
