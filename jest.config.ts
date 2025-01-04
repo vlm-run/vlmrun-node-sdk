@@ -7,9 +7,9 @@ const config: JestConfigWithTsJest = {
     '^.+\\.(t|j)sx?$': ['@swc/jest', { sourceMaps: 'inline' }],
   },
   moduleNameMapper: {
-    '^vlmrun-node$': '<rootDir>/src/index.ts',
-    '^vlmrun-node/_shims/auto/(.*)$': '<rootDir>/src/_shims/auto/$1-node',
-    '^vlmrun-node/(.*)$': '<rootDir>/src/$1',
+    '^vlmrun$': '<rootDir>/src/index.ts',
+    '^vlmrun/_shims/auto/(.*)$': '<rootDir>/src/_shims/auto/$1-node',
+    '^vlmrun/(.*)$': '<rootDir>/src/$1',
   },
   modulePathIgnorePatterns: [
     '<rootDir>/ecosystem-tests/',
