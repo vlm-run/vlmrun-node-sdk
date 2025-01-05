@@ -1,8 +1,8 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-import { Vlm } from 'vlmrun';
+import { VlmRun } from 'vlmrun';
 
-const { stringifyQuery } = Vlm.prototype as any;
+const { stringifyQuery } = VlmRun.prototype as any;
 
 describe(stringifyQuery, () => {
   for (const [input, expected] of [

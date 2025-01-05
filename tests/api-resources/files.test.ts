@@ -1,9 +1,9 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-import Vlm, { toFile } from 'vlmrun';
+import VlmRun, { toFile } from 'vlmrun';
 import { Response } from 'node-fetch';
 
-const client = new Vlm({
+const client = new VlmRun({
   bearerToken: 'My Bearer Token',
   baseURL: process.env['TEST_API_BASE_URL'] ?? 'http://127.0.0.1:4010',
 });
@@ -43,7 +43,7 @@ describe('resource files', () => {
   test('retrieve: request options instead of params are passed correctly', async () => {
     // ensure the request options are being passed correctly by passing an invalid HTTP method in order to cause an error
     await expect(client.files.retrieve('file_id', { path: '/_stainless_unknown_path' })).rejects.toThrow(
-      Vlm.NotFoundError,
+      VlmRun.NotFoundError,
     );
   });
 
@@ -60,13 +60,15 @@ describe('resource files', () => {
 
   test('list: request options instead of params are passed correctly', async () => {
     // ensure the request options are being passed correctly by passing an invalid HTTP method in order to cause an error
-    await expect(client.files.list({ path: '/_stainless_unknown_path' })).rejects.toThrow(Vlm.NotFoundError);
+    await expect(client.files.list({ path: '/_stainless_unknown_path' })).rejects.toThrow(
+      VlmRun.NotFoundError,
+    );
   });
 
   test('list: request options and params are passed correctly', async () => {
     // ensure the request options are being passed correctly by passing an invalid HTTP method in order to cause an error
     await expect(
       client.files.list({ limit: 1, skip: 0 }, { path: '/_stainless_unknown_path' }),
-    ).rejects.toThrow(Vlm.NotFoundError);
+    ).rejects.toThrow(VlmRun.NotFoundError);
   });
 });
