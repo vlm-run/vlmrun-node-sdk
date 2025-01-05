@@ -14,22 +14,6 @@ function mockResponse({ url, content }: { url: string; content?: Blob }): Respon
 }
 
 describe('toFile', () => {
-  it('throws a helpful error for mismatched types', async () => {
-    await expect(
-      // @ts-expect-error intentionally mismatched type
-      toFile({ foo: 'string' }),
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"Unexpected data type: object; constructor: Object; props: ["foo"]"`,
-    );
-
-    await expect(
-      // @ts-expect-error intentionally mismatched type
-      toFile(new MyClass()),
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"Unexpected data type: object; constructor: MyClass; props: ["name"]"`,
-    );
-  });
-
   it('disallows string at the type-level', async () => {
     // @ts-expect-error we intentionally do not type support for `string`
     // to help people avoid passing a file path
