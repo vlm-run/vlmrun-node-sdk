@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-alpha.2 (2025-01-07)
+
+Full Changelog: [v0.1.0-alpha.1...v0.1.0-alpha.2](https://github.com/vlm-run/vlmrun-node-sdk/compare/v0.1.0-alpha.1...v0.1.0-alpha.2)
+
+### Chores
+
+* **client:** simplify `unknown | null` to just `unknown` ([#16](https://github.com/vlm-run/vlmrun-node-sdk/issues/16)) ([52aa167](https://github.com/vlm-run/vlmrun-node-sdk/commit/52aa16767d5e3343cf3e34994dc95fc2fe580c76))
+
 ## 0.1.0-alpha.1 (2025-01-05)
 
 Full Changelog: [v0.0.1-alpha.2...v0.1.0-alpha.1](https://github.com/vlm-run/vlmrun-node-sdk/compare/v0.0.1-alpha.2...v0.1.0-alpha.1)
