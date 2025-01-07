@@ -22,7 +22,7 @@ export interface PredictionResponse {
   /**
    * The response from the model.
    */
-  response?: unknown | null;
+  response?: unknown;
 
   /**
    * The status of the job.
