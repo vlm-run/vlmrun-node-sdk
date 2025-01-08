@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-alpha.3 (2025-01-08)
+
+Full Changelog: [v0.1.0-alpha.2...v0.1.0-alpha.3](https://github.com/vlm-run/vlmrun-node-sdk/compare/v0.1.0-alpha.2...v0.1.0-alpha.3)
+
+### Features
+
+* Update release-doctor.yml ([555c817](https://github.com/vlm-run/vlmrun-node-sdk/commit/555c8172e6e3a8e8edf1e6bf4a1add40fc666bb4))
+
 ## 0.1.0-alpha.2 (2025-01-07)
 
 Full Changelog: [v0.1.0-alpha.1...v0.1.0-alpha.2](https://github.com/vlm-run/vlmrun-node-sdk/compare/v0.1.0-alpha.1...v0.1.0-alpha.2)
