@@ -20,6 +20,7 @@ export class Files extends APIResource {
    * Get a file by ID.
    */
   retrieve(fileId: string, options?: Core.RequestOptions): Core.APIPromise<StoreFileResponse> {
+    console.log(fileId);
     return this._client.get(`/v1/files/${fileId}`, options);
   }
 

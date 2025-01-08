@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 (2025-01-08)
+
+Full Changelog: [v0.1.0...v0.1.1](https://github.com/vlm-run/vlmrun-node-sdk/compare/v0.1.0...v0.1.1)
+
+### Chores
+
 ## 0.1.0-alpha.2 (2025-01-07)
 
 Full Changelog: [v0.1.0-alpha.1...v0.1.0-alpha.2](https://github.com/vlm-run/vlmrun-node-sdk/compare/v0.1.0-alpha.1...v0.1.0-alpha.2)
