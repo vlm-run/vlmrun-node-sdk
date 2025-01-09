@@ -52,8 +52,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish to NPM (Optional)
+      - name: Publish to NPM
         if: env.VERSION_CHANGED == 'true'
-        run: npm publish
+        run: |
+          bash ./bin/publish-npm
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.VLM_NPM_TOKEN || secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.VLM_NPM_TOKEN || secrets.NPM_TOKEN }}
