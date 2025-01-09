@@ -1,10 +1,20 @@
 # Changelog
 
+## 0.1.3 (2025-01-10)
+
+Full Changelog: [v0.1.1...v0.1.3](https://github.com/vlm-run/vlmrun-node-sdk/compare/v0.1.1...v0.1.3)
+
+### Features
+
+* update package version to 0.1.3 ([#20](https://github.com/vlm-run/vlmrun-node-sdk/issues/20))
+
 ## 0.1.1 (2025-01-08)
 
 Full Changelog: [v0.1.0...v0.1.1](https://github.com/vlm-run/vlmrun-node-sdk/compare/v0.1.0...v0.1.1)
 
-### Chores
+### Features
+
+* update package version to 0.1.1 ([#18](https://github.com/vlm-run/vlmrun-node-sdk/issues/18))
 
 ## 0.1.0-alpha.2 (2025-01-07)
 
