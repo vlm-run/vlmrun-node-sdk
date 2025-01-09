@@ -1,3 +1,6 @@
+# This file has been deprecated as its functionality is now handled by release-on-merge.yml
+# The NPM token validation is performed during the npm publish step in release-on-merge.yml
+# This file will be removed in a future update.
 name: Release Doctor
 on:
   pull_request:
@@ -12,18 +15,7 @@ jobs:
   release_doctor:
     name: release doctor
     runs-on: ubuntu-latest
-    if: github.repository == 'vlm-run/vlmrun-node-sdk' && 
-        (github.event_name == 'push' || 
-         github.event_name == 'workflow_dispatch' || 
-         startsWith(github.head_ref, 'release-please') || 
-         github.head_ref == 'next' || 
-         github.ref_type == 'tag')
+    if: false  # Disabled as functionality is now in release-on-merge.yml
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Check release environment
-        run: |
-          bash ./bin/check-release-environment
-        env:
-          NPM_TOKEN: ${{ secrets.VLM_NPM_TOKEN || secrets.NPM_TOKEN }}
+      - run: echo "This workflow is deprecated and will be removed. NPM token validation is now handled by release-on-merge.yml"
