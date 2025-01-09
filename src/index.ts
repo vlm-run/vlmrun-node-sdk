@@ -89,7 +89,7 @@ export interface ClientOptions {
 /**
  * API Client for interfacing with the Vlm API.
  */
-export class Vlm extends Core.APIClient {
+export class VlmRun extends Core.APIClient {
   bearerToken: string;
 
   private _options: ClientOptions;
@@ -190,17 +190,17 @@ export class Vlm extends Core.APIClient {
   static fileFromPath = Uploads.fileFromPath;
 }
 
-Vlm.OpenAI = OpenAI;
-Vlm.Experimental = Experimental;
-Vlm.Models = Models;
-Vlm.Files = Files;
-Vlm.Response = Response;
-Vlm.Document = Document;
-Vlm.Audio = Audio;
-Vlm.Image = Image;
-Vlm.Web = Web;
-Vlm.Schema = Schema;
-export declare namespace Vlm {
+VlmRun.OpenAI = OpenAI;
+VlmRun.Experimental = Experimental;
+VlmRun.Models = Models;
+VlmRun.Files = Files;
+VlmRun.Response = Response;
+VlmRun.Document = Document;
+VlmRun.Audio = Audio;
+VlmRun.Image = Image;
+VlmRun.Web = Web;
+VlmRun.Schema = Schema;
+export declare namespace VlmRun {
   export type RequestOptions = Core.RequestOptions;
 
   export { type HealthResponse as HealthResponse };
@@ -255,4 +255,4 @@ export {
   UnprocessableEntityError,
 } from './error';
 
-export default Vlm;
+export default VlmRun;

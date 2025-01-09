@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-import Vlm from 'vlmrun';
+import VlmRun from 'vlmrun';
 import { APIUserAbortError } from 'vlmrun';
 import { Headers } from 'vlmrun/core';
 import defaultFetch, { Response, type RequestInit, type RequestInfo } from 'node-fetch';
@@ -20,7 +20,7 @@ describe('instantiate client', () => {
   });
 
   describe('defaultHeaders', () => {
-    const client = new Vlm({
+    const client = new VlmRun({
       baseURL: 'http://localhost:5000/',
       defaultHeaders: { 'X-My-Default-Header': '2' },
       bearerToken: 'My Bearer Token',
@@ -52,7 +52,7 @@ describe('instantiate client', () => {
 
   describe('defaultQuery', () => {
     test('with null query params given', () => {
-      const client = new Vlm({
+      const client = new VlmRun({
         baseURL: 'http://localhost:5000/',
         defaultQuery: { apiVersion: 'foo' },
         bearerToken: 'My Bearer Token',
@@ -61,7 +61,7 @@ describe('instantiate client', () => {
     });
 
     test('multiple default query params', () => {
-      const client = new Vlm({
+      const client = new VlmRun({
         baseURL: 'http://localhost:5000/',
         defaultQuery: { apiVersion: 'foo', hello: 'world' },
         bearerToken: 'My Bearer Token',
@@ -70,7 +70,7 @@ describe('instantiate client', () => {
     });
 
     test('overriding with `undefined`', () => {
-      const client = new Vlm({
+      const client = new VlmRun({
         baseURL: 'http://localhost:5000/',
         defaultQuery: { hello: 'world' },
         bearerToken: 'My Bearer Token',
@@ -80,7 +80,7 @@ describe('instantiate client', () => {
   });
 
   test('custom fetch', async () => {
-    const client = new Vlm({
+    const client = new VlmRun({
       baseURL: 'http://localhost:5000/',
       bearerToken: 'My Bearer Token',
       fetch: (url) => {
@@ -97,7 +97,7 @@ describe('instantiate client', () => {
   });
 
   test('custom signal', async () => {
-    const client = new Vlm({
+    const client = new VlmRun({
       baseURL: process.env['TEST_API_BASE_URL'] ?? 'http://127.0.0.1:4010',
       bearerToken: 'My Bearer Token',
       fetch: (...args) => {
@@ -129,7 +129,7 @@ describe('instantiate client', () => {
       return new Response(JSON.stringify({}), { headers: { 'Content-Type': 'application/json' } });
     };
 
-    const client = new Vlm({
+    const client = new VlmRun({
       baseURL: 'http://localhost:5000/',
       bearerToken: 'My Bearer Token',
       fetch: testFetch,
@@ -141,7 +141,7 @@ describe('instantiate client', () => {
 
   describe('baseUrl', () => {
     test('trailing slash', () => {
-      const client = new Vlm({
+      const client = new VlmRun({
         baseURL: 'http://localhost:5000/custom/path/',
         bearerToken: 'My Bearer Token',
       });
@@ -149,7 +149,7 @@ describe('instantiate client', () => {
     });
 
     test('no trailing slash', () => {
-      const client = new Vlm({
+      const client = new VlmRun({
         baseURL: 'http://localhost:5000/custom/path',
         bearerToken: 'My Bearer Token',
       });
@@ -161,55 +161,55 @@ describe('instantiate client', () => {
     });
 
     test('explicit option', () => {
-      const client = new Vlm({ baseURL: 'https://example.com', bearerToken: 'My Bearer Token' });
+      const client = new VlmRun({ baseURL: 'https://example.com', bearerToken: 'My Bearer Token' });
       expect(client.baseURL).toEqual('https://example.com');
     });
 
     test('env variable', () => {
       process.env['VLM_BASE_URL'] = 'https://example.com/from_env';
-      const client = new Vlm({ bearerToken: 'My Bearer Token' });
+      const client = new VlmRun({ bearerToken: 'My Bearer Token' });
       expect(client.baseURL).toEqual('https://example.com/from_env');
     });
 
     test('empty env variable', () => {
       process.env['VLM_BASE_URL'] = ''; // empty
-      const client = new Vlm({ bearerToken: 'My Bearer Token' });
+      const client = new VlmRun({ bearerToken: 'My Bearer Token' });
       expect(client.baseURL).toEqual('https://api.vlm.run');
     });
 
     test('blank env variable', () => {
       process.env['VLM_BASE_URL'] = '  '; // blank
-      const client = new Vlm({ bearerToken: 'My Bearer Token' });
+      const client = new VlmRun({ bearerToken: 'My Bearer Token' });
       expect(client.baseURL).toEqual('https://api.vlm.run');
     });
   });
 
   test('maxRetries option is correctly set', () => {
-    const client = new Vlm({ maxRetries: 4, bearerToken: 'My Bearer Token' });
+    const client = new VlmRun({ maxRetries: 4, bearerToken: 'My Bearer Token' });
     expect(client.maxRetries).toEqual(4);
 
     // default
-    const client2 = new Vlm({ bearerToken: 'My Bearer Token' });
+    const client2 = new VlmRun({ bearerToken: 'My Bearer Token' });
     expect(client2.maxRetries).toEqual(2);
   });
 
   test('with environment variable arguments', () => {
     // set options via env var
     process.env['BEARER_TOKEN'] = 'My Bearer Token';
-    const client = new Vlm();
+    const client = new VlmRun();
     expect(client.bearerToken).toBe('My Bearer Token');
   });
 
   test('with overridden environment variable arguments', () => {
     // set options via env var
     process.env['BEARER_TOKEN'] = 'another My Bearer Token';
-    const client = new Vlm({ bearerToken: 'My Bearer Token' });
+    const client = new VlmRun({ bearerToken: 'My Bearer Token' });
     expect(client.bearerToken).toBe('My Bearer Token');
   });
 });
 
 describe('request building', () => {
-  const client = new Vlm({ bearerToken: 'My Bearer Token' });
+  const client = new VlmRun({ bearerToken: 'My Bearer Token' });
 
   describe('Content-Length', () => {
     test('handles multi-byte characters', () => {
@@ -244,14 +244,14 @@ describe('retries', () => {
     let count = 0;
     const testFetch = async (url: RequestInfo, { signal }: RequestInit = {}): Promise<Response> => {
       if (count++ === 0) {
-        return new Promise(
-          (resolve, reject) => signal?.addEventListener('abort', () => reject(new Error('timed out'))),
+        return new Promise((resolve, reject) =>
+          signal?.addEventListener('abort', () => reject(new Error('timed out'))),
         );
       }
       return new Response(JSON.stringify({ a: 1 }), { headers: { 'Content-Type': 'application/json' } });
     };
 
-    const client = new Vlm({ bearerToken: 'My Bearer Token', timeout: 10, fetch: testFetch });
+    const client = new VlmRun({ bearerToken: 'My Bearer Token', timeout: 10, fetch: testFetch });
 
     expect(await client.request({ path: '/foo', method: 'get' })).toEqual({ a: 1 });
     expect(count).toEqual(2);
@@ -281,7 +281,7 @@ describe('retries', () => {
       return new Response(JSON.stringify({ a: 1 }), { headers: { 'Content-Type': 'application/json' } });
     };
 
-    const client = new Vlm({ bearerToken: 'My Bearer Token', fetch: testFetch, maxRetries: 4 });
+    const client = new VlmRun({ bearerToken: 'My Bearer Token', fetch: testFetch, maxRetries: 4 });
 
     expect(await client.request({ path: '/foo', method: 'get' })).toEqual({ a: 1 });
 
@@ -305,7 +305,7 @@ describe('retries', () => {
       capturedRequest = init;
       return new Response(JSON.stringify({ a: 1 }), { headers: { 'Content-Type': 'application/json' } });
     };
-    const client = new Vlm({ bearerToken: 'My Bearer Token', fetch: testFetch, maxRetries: 4 });
+    const client = new VlmRun({ bearerToken: 'My Bearer Token', fetch: testFetch, maxRetries: 4 });
 
     expect(
       await client.request({
@@ -334,7 +334,7 @@ describe('retries', () => {
       capturedRequest = init;
       return new Response(JSON.stringify({ a: 1 }), { headers: { 'Content-Type': 'application/json' } });
     };
-    const client = new Vlm({
+    const client = new VlmRun({
       bearerToken: 'My Bearer Token',
       fetch: testFetch,
       maxRetries: 4,
@@ -367,7 +367,7 @@ describe('retries', () => {
       capturedRequest = init;
       return new Response(JSON.stringify({ a: 1 }), { headers: { 'Content-Type': 'application/json' } });
     };
-    const client = new Vlm({ bearerToken: 'My Bearer Token', fetch: testFetch, maxRetries: 4 });
+    const client = new VlmRun({ bearerToken: 'My Bearer Token', fetch: testFetch, maxRetries: 4 });
 
     expect(
       await client.request({
@@ -394,7 +394,7 @@ describe('retries', () => {
       return new Response(JSON.stringify({ a: 1 }), { headers: { 'Content-Type': 'application/json' } });
     };
 
-    const client = new Vlm({ bearerToken: 'My Bearer Token', fetch: testFetch });
+    const client = new VlmRun({ bearerToken: 'My Bearer Token', fetch: testFetch });
 
     expect(await client.request({ path: '/foo', method: 'get' })).toEqual({ a: 1 });
     expect(count).toEqual(2);
@@ -421,7 +421,7 @@ describe('retries', () => {
       return new Response(JSON.stringify({ a: 1 }), { headers: { 'Content-Type': 'application/json' } });
     };
 
-    const client = new Vlm({ bearerToken: 'My Bearer Token', fetch: testFetch });
+    const client = new VlmRun({ bearerToken: 'My Bearer Token', fetch: testFetch });
 
     expect(await client.request({ path: '/foo', method: 'get' })).toEqual({ a: 1 });
     expect(count).toEqual(2);

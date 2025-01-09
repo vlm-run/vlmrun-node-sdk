@@ -1,0 +1,63 @@
+name: Release on Merge
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Ensures full history for comparison
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile  # Ensures a clean install
+
+      - name: Check for version change
+        id: check_version
+        run: |
+          PREV_VERSION=$(git show HEAD^:package.json | jq -r .version)
+          NEW_VERSION=$(jq -r .version package.json)
+          echo "Previous version: $PREV_VERSION"
+          echo "New version: $NEW_VERSION"
+          if [ "$PREV_VERSION" != "$NEW_VERSION" ]; then
+            echo "Version has changed to $NEW_VERSION"
+            echo "VERSION_CHANGED=true" >> $GITHUB_ENV
+            echo "RELEASE_TAG=v$NEW_VERSION" >> $GITHUB_ENV
+          else
+            echo "No version change detected."
+            echo "VERSION_CHANGED=false" >> $GITHUB_ENV
+          fi
+
+      - name: Create GitHub Release
+        if: env.VERSION_CHANGED == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: Release ${{ env.RELEASE_TAG }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to NPM
+        if: env.VERSION_CHANGED == 'true'
+        run: |
+          bash ./bin/publish-npm
+        env:
+          NPM_TOKEN: ${{ secrets.VLM_NPM_TOKEN || secrets.NPM_TOKEN }}
