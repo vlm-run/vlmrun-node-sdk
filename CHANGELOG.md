@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.2.0 (2025-01-09)
+
+Full Changelog: [v0.1.1...v0.2.0](https://github.com/vlm-run/vlmrun-node-sdk/compare/v0.1.1...v0.2.0)
+
+### Features
+
+* added github workflow to create auto release ([9c30e83](https://github.com/vlm-run/vlmrun-node-sdk/commit/9c30e837cab593ea459d328d98a6109b7162c124))
+* chore: add contents write permission to release workflow ([494280d](https://github.com/vlm-run/vlmrun-node-sdk/commit/494280df1f0d84549599a4c348af2c17c4b66a44))
+* chore: remove publish-npm.yml and standardize Node version and Yarn usage ([b486bd5](https://github.com/vlm-run/vlmrun-node-sdk/commit/b486bd573fde0807137e109a9a56ebf8ca3f6348))
+* chore: update version to 0.1.3 and update changelog ([773ac43](https://github.com/vlm-run/vlmrun-node-sdk/commit/773ac433130c85f8bd3aabe41766227010ae01c5))
+* feat: unify release-on-merge with publish-npm style ([77fa90d](https://github.com/vlm-run/vlmrun-node-sdk/commit/77fa90dcb191663be5c90ae9861ae6419d76037f))
+* refactor: deprecate release-doctor workflow ([9915c6f](https://github.com/vlm-run/vlmrun-node-sdk/commit/9915c6fbf2e40a4eb01027ef579292b654107ce1))
+* refactor: remove deprecated release-doctor workflow ([619a1d7](https://github.com/vlm-run/vlmrun-node-sdk/commit/619a1d7286de20641848fa82e143da4ddcd5493b))
+* Update package.json to use version 0.1.4 ([01200f9](https://github.com/vlm-run/vlmrun-node-sdk/commit/01200f9e66b50af85a59f7fecd38b4506630b0e1))
+
+
+### Bug Fixes
+
+* check auto release ([e0c6a55](https://github.com/vlm-run/vlmrun-node-sdk/commit/e0c6a5538c7283df679f7362a450b3e8785d79b2))
+
 ## 0.1.3 (2025-01-10)
 
 Full Changelog: [v0.1.1...v0.1.3](https://github.com/vlm-run/vlmrun-node-sdk/compare/v0.1.1...v0.1.3)
