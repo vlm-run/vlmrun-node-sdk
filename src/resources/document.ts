@@ -75,7 +75,7 @@ export interface DocumentGenerateParams {
   /**
    * The model to use for generating the response.
    */
-  model?: 'vlm-1';
+  model?: 'vlm-1' | 'vlm-1-embeddings';
 
   /**
    * The URL of the file (provide either `file_id` or `url`).
