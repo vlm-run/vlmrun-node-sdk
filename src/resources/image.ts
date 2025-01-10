@@ -68,7 +68,7 @@ export interface ImageGenerateParams {
   /**
    * The model to use for generating the response.
    */
-  model?: 'vlm-1';
+  model?: 'vlm-1' | 'vlm-1-embeddings';
 }
 
 export namespace ImageGenerateParams {
