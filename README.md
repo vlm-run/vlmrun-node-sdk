@@ -1,8 +1,31 @@
-# VlmRun Node API Library
+<div align="center">
+<p align="center" style="width: 100%;">
+    <img src="https://raw.githubusercontent.com/vlm-run/.github/refs/heads/main/profile/assets/vlm-black.svg" alt="VLM Run Logo" width="80" style="margin-bottom: -5px; color: #2e3138; vertical-align: middle; padding-right: 5px;"><br>
+</p>
+<h2>VLM Run Node.js SDK</h2>
+<p align="center">
+<a href="https://vlm.run"><b>Website</b></a> | <a href="https://docs.vlm.run/"><b>Docs</b></a> | <a href="https://docs.vlm.run/blog"><b>Blog</b></a> | <a href="https://discord.gg/CCY8cYNC"><b>Discord</b></a>
+</p>
+<p align="center">
+<a href="https://npmjs.org/package/vlmrun"><img alt="NPM version" src="https://img.shields.io/npm/v/vlmrun.svg"></a>
+<a href="https://bundlephobia.com/package/vlmrun"><img alt="Bundle size" src="https://img.shields.io/bundlephobia/minzip/vlmrun"></a><br>
+<a href="https://github.com/vlm-run/vlmrun-node-sdk/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/vlm-run/vlmrun-node-sdk.svg"></a>
+<a href="https://discord.gg/4jgyECY4rq"><img alt="Discord" src="https://img.shields.io/badge/discord-chat-purple?color=%235865F2&label=discord&logo=discord"></a>
+<a href="https://twitter.com/vlmrun"><img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/vlmrun.svg?style=social&logo=twitter"></a>
+</p>
+<br>
+</div>
 
-[![NPM version](https://img.shields.io/npm/v/vlmrun.svg)](https://npmjs.org/package/vlmrun) ![npm bundle size](https://img.shields.io/bundlephobia/minzip/vlmrun)
+This library provides convenient access to the VLM Run REST API from server-side TypeScript or JavaScript.
 
-This library provides convenient access to the VlmRun REST API from server-side TypeScript or JavaScript.
+### 💡 Why use this SDK?
+
+- 📚 **Type-Safe**: Built with TypeScript for excellent IDE support and compile-time type checking
+- 🔋 **Batteries Included**: Comprehensive error handling, retries, and timeout management out of the box
+- 🚀 **Modern Runtimes**: Support for Node.js, Deno, Bun, and various edge environments
+- 🔌 **Flexible**: Customizable fetch client and middleware support for your specific needs
+- ⚡ **Performance**: Optimized TCP connection reuse and automatic retries for reliable operations
+- 🛠️ **Developer Experience**: Detailed documentation and IntelliSense support in modern editors
 
 The REST API documentation can be found on [vlm.run](https://vlm.run/). The full API of this library can be found in [api.md](api.md).
 
@@ -292,3 +315,10 @@ If you are interested in other runtime environments, please open or upvote an is
 ## Contributing
 
 See [the contributing documentation](./CONTRIBUTING.md).
+
+## 🔗 Quick Links
+
+* 💬 Need help? Send us an email at [support@vlm.run](mailto:support@vlm.run) or join our [Discord](https://discord.gg/CCY8cYNC)
+* 📣 Stay updated by following us on [Twitter](https://twitter.com/vlmrun) and [LinkedIn](https://www.linkedin.com/company/vlm-run)
+* 📚 Check out our [Documentation](https://docs.vlm.run/) for detailed guides and API references
+* 🐛 Found a bug? Open an [issue](https://github.com/vlm-run/vlmrun-node-sdk/issues) on GitHub
