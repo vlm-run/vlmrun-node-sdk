@@ -9,8 +9,8 @@
 <p align="center">
 <a href="https://npmjs.org/package/vlmrun"><img alt="NPM version" src="https://img.shields.io/npm/v/vlmrun.svg"></a>
 <a href="https://bundlephobia.com/package/vlmrun"><img alt="Bundle size" src="https://img.shields.io/bundlephobia/minzip/vlmrun"></a><br>
-<a href="https://github.com/vlm-run/vlmrun-node-sdk/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/vlm-run/vlmrun-node-sdk.svg"></a>
-<a href="https://discord.gg/4jgyECY4rq"><img alt="Discord" src="https://img.shields.io/badge/discord-chat-purple?color=%235865F2&label=discord&logo=discord"></a>
+<a href="https://github.com/vlm-run/vlmrun-node-sdk/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-blue"></a>
+<a href="https://discord.gg/CCY8cYNC"><img alt="Discord" src="https://img.shields.io/badge/discord-chat-purple?color=%235865F2&label=discord&logo=discord"></a>
 <a href="https://twitter.com/vlmrun"><img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/vlmrun.svg?style=social&logo=twitter"></a>
 </p>
 <br>
@@ -24,12 +24,9 @@ This library provides convenient access to the VLM Run REST API from server-side
 - 🔋 **Batteries Included**: Comprehensive error handling, retries, and timeout management out of the box
 - 🚀 **Modern Runtimes**: Support for Node.js, Deno, Bun, and various edge environments
 - 🔌 **Flexible**: Customizable fetch client and middleware support for your specific needs
-- ⚡ **Performance**: Optimized TCP connection reuse and automatic retries for reliable operations
 - 🛠️ **Developer Experience**: Detailed documentation and IntelliSense support in modern editors
 
-The REST API documentation can be found on [vlm.run](https://vlm.run/). The full API of this library can be found in [api.md](api.md).
-
-It is generated with [Stainless](https://www.stainlessapi.com/).
+The REST API documentation can be found on [vlm.run](https://vlm.run/).
 
 ## Installation
 
@@ -312,9 +309,6 @@ Note that React Native is not supported at this time.
 
 If you are interested in other runtime environments, please open or upvote an issue on GitHub.
 
-## Contributing
-
-See [the contributing documentation](./CONTRIBUTING.md).
 
 ## 🔗 Quick Links
 
