@@ -96,11 +96,11 @@ Methods:
 - <code title="get /v1/files/{file_id}">client.files.<a href="./src/resources/files.ts">retrieve</a>(fileId) -> StoreFileResponse</code>
 - <code title="get /v1/files">client.files.<a href="./src/resources/files.ts">list</a>({ ...params }) -> FileListResponse</code>
 
-# Response
+# Predictions
 
 Methods:
 
-- <code title="get /v1/response/{id}">client.response.<a href="./src/resources/response.ts">retrieve</a>(id) -> PredictionResponse</code>
+- <code title="get /v1/predictions/{id}">client.response.<a href="./src/resources/response.ts">retrieve</a>(id) -> PredictionResponse</code>
 
 # Document
 
