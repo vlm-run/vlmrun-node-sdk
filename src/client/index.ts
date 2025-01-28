@@ -3,3 +3,8 @@ export * from './models';
 export * from './image';
 export * from './document';
 export * from './audio';
+export * from './feedback';
+export * from './fine_tuning';
+export * from './datasets';
+export * from './hub';
+export * from './predictions';

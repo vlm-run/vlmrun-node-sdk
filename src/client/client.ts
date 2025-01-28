@@ -4,6 +4,11 @@ import { Models } from './models';
 import { Image } from './image';
 import { Document } from './document';
 import { Audio } from './audio';
+import { Feedback } from './feedback';
+import { Finetuning } from './fine_tuning';
+import { Datasets } from './datasets';
+import { Hub } from './hub';
+import { DocumentPredictions, AudioPredictions, VideoPredictions, ImagePredictions } from './predictions';
 
 export class Client extends APIClient {
   files: Files;
@@ -11,6 +16,14 @@ export class Client extends APIClient {
   image: Image;
   document: Document;
   audio: Audio;
+  feedback: Feedback;
+  fineTuning: Finetuning;
+  datasets: Datasets;
+  hub: Hub;
+  documentPredictions: DocumentPredictions;
+  audioPredictions: AudioPredictions;
+  videoPredictions: VideoPredictions;
+  imagePredictions: ImagePredictions;
 
   constructor(options: ClientOptions = {}) {
     const {
@@ -32,6 +45,14 @@ export class Client extends APIClient {
     this.image = new Image(this);
     this.document = new Document(this);
     this.audio = new Audio(this);
+    this.feedback = new Feedback(this);
+    this.fineTuning = new Finetuning(this);
+    this.datasets = new Datasets(this);
+    this.hub = new Hub(this);
+    this.documentPredictions = new DocumentPredictions(this);
+    this.audioPredictions = new AudioPredictions(this);
+    this.videoPredictions = new VideoPredictions(this);
+    this.imagePredictions = new ImagePredictions(this);
   }
 
   protected authHeaders() {
