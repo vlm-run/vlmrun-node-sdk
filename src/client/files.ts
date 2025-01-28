@@ -1,122 +1,106 @@
 import { APIResource } from '../resource';
-import { isRequestOptions } from '../core';
 import * as Core from '../core';
+
+export interface FileResponse {
+  id: string;
+  filename: string;
+  purpose: string;
+  bytes: number;
+  created_at: string;
+  status: string;
+  metadata?: Record<string, unknown>;
+}
+
+export type FilePurpose =
+  | 'fine-tune'
+  | 'assistants'
+  | 'assistants_output'
+  | 'batch'
+  | 'batch_output'
+  | 'vision';
 
 export class Files extends APIResource {
   /**
    * Upload a file.
+   * 
+   * @param file Path to file to upload
+   * @param purpose Purpose of file (default: assistants)
+   * @returns Uploaded file object
    */
-  create(params: FileCreateParams, options?: Core.RequestOptions): Core.APIPromise<StoreFileResponse> {
-    const { purpose, ...body } = params;
-    return this._client.post(
-      '/v1/files',
-      Core.multipartFormRequestOptions({ query: { purpose }, body, ...options }),
-    );
-  }
-
-  /**
-   * Get a file by ID.
-   */
-  retrieve(fileId: string, options?: Core.RequestOptions): Core.APIPromise<StoreFileResponse> {
-    return this._client.get(`/v1/files/${fileId}`, options);
-  }
-
-  /**
-   * Get all files uploaded by the user with pagination.
-   */
-  list(query?: FileListParams, options?: Core.RequestOptions): Core.APIPromise<FileListResponse>;
-  list(options?: Core.RequestOptions): Core.APIPromise<FileListResponse>;
-  list(
-    query: FileListParams | Core.RequestOptions = {},
+  async upload(
+    file: Core.Uploadable,
+    purpose: FilePurpose = 'assistants',
     options?: Core.RequestOptions,
-  ): Core.APIPromise<FileListResponse> {
-    if (isRequestOptions(query)) {
-      return this.list({}, query);
+  ): Promise<FileResponse> {
+    const response: unknown = await this._client.post(
+      'files',
+      Core.multipartFormRequestOptions({ query: { purpose }, body: { file }, ...options }),
+    );
+
+    if (!response || typeof response !== 'object') {
+      throw new TypeError('Expected dict response');
     }
-    return this._client.get('/v1/files', { query, ...options });
+    return response as FileResponse;
   }
-}
-
-/**
- * Response to the file upload API.
- */
-export interface StoreFileResponse {
-  /**
-   * Size of the file in bytes
-   */
-  bytes: number;
 
   /**
-   * Name of the file
+   * Get file metadata.
+   * 
+   * @param fileId ID of file to retrieve
+   * @returns File metadata
    */
-  filename: string;
+  async get(fileId: string, options?: Core.RequestOptions): Promise<FileResponse> {
+    const response: unknown = await this._client.get(`files/${fileId}`, options);
+
+    if (!response || typeof response !== 'object') {
+      throw new TypeError('Expected dict response');
+    }
+    return response as FileResponse;
+  }
 
   /**
-   * Purpose of the file
+   * List all files.
+   * 
+   * @param skip Number of items to skip
+   * @param limit Maximum number of items to return
+   * @returns List of file objects
    */
-  purpose:
-    | 'assistants'
-    | 'assistants_output'
-    | 'batch'
-    | 'batch_output'
-    | 'fine-tune'
-    | 'fine-tune-results'
-    | 'vision';
+  async list(skip: number = 0, limit: number = 10, options?: Core.RequestOptions): Promise<FileResponse[]> {
+    const response: unknown = await this._client.get('files', { query: { skip, limit }, ...options });
+
+    if (!Array.isArray(response)) {
+      throw new TypeError('Expected list response');
+    }
+    return response.map(file => {
+      if (!file || typeof file !== 'object') {
+        throw new TypeError('Expected file to be an object');
+      }
+      return file as FileResponse;
+    });
+  }
 
   /**
-   * Unique identifier of the file
+   * Get file content.
+   * 
+   * @param fileId ID of file to retrieve content for
+   * @returns File content as bytes
    */
-  id?: string;
+  getContent(fileId: string): Promise<Uint8Array> {
+    throw new Error('Not implemented');
+  }
 
   /**
-   * Date and time when the file was created (in UTC timezone)
+   * Delete a file.
+   * 
+   * @param fileId ID of file to delete
+   * @returns Deletion confirmation
    */
-  created_at?: string;
+  async delete(fileId: string, options?: Core.RequestOptions): Promise<FileResponse> {
+    const response: unknown = await this._client.delete(`files/${fileId}`, options);
 
-  /**
-   * Type of the file
-   */
-  object?: 'file';
-}
-
-export type FileListResponse = Array<StoreFileResponse>;
-
-export interface FileCreateParams {
-  /**
-   * Body param:
-   */
-  file: Core.Uploadable;
-
-  /**
-   * Query param:
-   */
-  purpose?:
-    | 'assistants'
-    | 'assistants_output'
-    | 'batch'
-    | 'batch_output'
-    | 'fine-tune'
-    | 'fine-tune-results'
-    | 'vision';
-}
-
-export interface FileListParams {
-  /**
-   * Maximum number of items to return
-   */
-  limit?: number | null;
-
-  /**
-   * Number of items to skip
-   */
-  skip?: number;
-}
-
-export declare namespace Files {
-  export {
-    type StoreFileResponse as StoreFileResponse,
-    type FileListResponse as FileListResponse,
-    type FileCreateParams as FileCreateParams,
-    type FileListParams as FileListParams,
-  };
+    if (!response || typeof response !== 'object') {
+      throw new TypeError('Expected dict response');
+    }
+    return response as FileResponse;
+  }
 }

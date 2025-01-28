@@ -6,11 +6,54 @@ export class Document extends APIResource {
   /**
    * Generate structured prediction for the given document.
    */
-  generate(
-    body: DocumentGenerateParams,
+  async generate(
+    fileOrUrl: string | Buffer | { path: string },
+    domain: string,
+    model: string = 'vlm-1',
+    jsonSchema?: Record<string, unknown> | null,
+    detail: 'auto' | 'hi' | 'lo' = 'auto',
+    batch: boolean = false,
+    metadata: Record<string, unknown> = {},
+    callbackUrl: string | null = null,
     options?: Core.RequestOptions,
-  ): Core.APIPromise<Shared.PredictionResponse> {
-    return this._client.post('/v1/document/generate', { body, ...options });
+  ): Promise<Shared.PredictionResponse> {
+    let key: 'url' | 'file_id';
+    let value: string;
+
+    if (Buffer.isBuffer(fileOrUrl)) {
+      const response = await this._client.files.upload(fileOrUrl, 'assistants');
+      value = response.id;
+      key = 'file_id';
+    } else if (typeof fileOrUrl === 'object' && 'path' in fileOrUrl) {
+      const response = await this._client.files.upload(fileOrUrl.path, 'assistants');
+      value = response.id;
+      key = 'file_id';
+    } else if (typeof fileOrUrl === 'string') {
+      const isUrl = fileOrUrl.startsWith('http://') || fileOrUrl.startsWith('https://');
+      key = isUrl ? 'url' : 'file_id';
+      value = fileOrUrl;
+    } else {
+      throw new Error('File or URL must be a Buffer, path object, or string');
+    }
+
+    const response: unknown = await this._client.post('document/generate', {
+      body: {
+        [key]: value,
+        domain,
+        model,
+        json_schema: jsonSchema,
+        detail,
+        batch,
+        metadata,
+        callback_url: callbackUrl,
+      },
+      ...options,
+    });
+
+    if (!response || typeof response !== 'object') {
+      throw new TypeError('Expected dict response');
+    }
+    return response as Shared.PredictionResponse;
   }
 }
 

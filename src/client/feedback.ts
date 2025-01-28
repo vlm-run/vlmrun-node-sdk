@@ -18,15 +18,18 @@ export class Feedback extends APIResource {
     });
   }
 
-
-  submit(
+  async submit(
     id: string,
     label?: Record<string, unknown> | null,
     notes?: string | null,
     flag?: boolean | null,
     options?: Core.RequestOptions,
-  ): Core.APIPromise<FeedbackSubmitResponse> {
-    return this._client.post('/feedback/submit', {
+  ): Promise<FeedbackSubmitResponse> {
+    if (label !== null && label !== undefined && typeof label !== 'object') {
+      throw new Error('label must be a valid object or null');
+    }
+
+    const response: unknown = await this._client.post('feedback/submit', {
       body: {
         request_id: id,
         response: label,
@@ -35,9 +38,19 @@ export class Feedback extends APIResource {
       },
       ...options,
     });
+
+    if (!response || typeof response !== 'object') {
+      throw new TypeError('Expected dict response');
+    }
+    return response as FeedbackSubmitResponse;
   }
 
-  get(id: string, options?: Core.RequestOptions): Core.APIPromise<FeedbackSubmitResponse> {
-    return this._client.get(`/feedback/${id}`, options);
+  async get(id: string, options?: Core.RequestOptions): Promise<FeedbackSubmitResponse> {
+    const response: unknown = await this._client.get(`feedback/${id}`, options);
+
+    if (!response || typeof response !== 'object') {
+      throw new TypeError('Expected dict response');
+    }
+    return response as FeedbackSubmitResponse;
   }
 }

@@ -6,11 +6,49 @@ export class Image extends APIResource {
   /**
    * Generate structured prediction for the given image.
    */
-  generate(
-    body: ImageGenerateParams,
+  async generate(
+    image: string | Buffer | { width: number; height: number; data: Buffer },
+    domain: string,
+    model: string = 'vlm-1',
+    jsonSchema?: Record<string, unknown> | null,
+    detail: 'auto' | 'hi' | 'lo' = 'auto',
+    batch: boolean = false,
+    metadata: Record<string, unknown> = {},
+    callbackUrl: string | null = null,
     options?: Core.RequestOptions,
-  ): Core.APIPromise<Shared.PredictionResponse> {
-    return this._client.post('/v1/image/generate', { body, ...options });
+  ): Promise<Shared.PredictionResponse> {
+    let imageData: string;
+    if (Buffer.isBuffer(image)) {
+      imageData = image.toString('base64');
+    } else if (typeof image === 'object' && 'data' in image) {
+      imageData = image.data.toString('base64');
+    } else if (typeof image === 'string') {
+      if (!image.startsWith('data:image/')) {
+        throw new Error('Image string must be a base64-encoded data URL');
+      }
+      imageData = image;
+    } else {
+      throw new Error('Image must be a Buffer, base64 string, or image data object');
+    }
+
+    const response: unknown = await this._client.post('image/generate', {
+      body: {
+        image: imageData,
+        domain,
+        model,
+        json_schema: jsonSchema,
+        detail,
+        batch,
+        metadata,
+        callback_url: callbackUrl,
+      },
+      ...options,
+    });
+
+    if (!response || typeof response !== 'object') {
+      throw new TypeError('Expected dict response');
+    }
+    return response as Shared.PredictionResponse;
   }
 }
 
