@@ -13,13 +13,13 @@ export interface HubSchemaQueryResponse {
 
 export class Hub extends APIResource {
   info(options?: Core.RequestOptions): Core.APIPromise<HubInfoResponse> {
-    return this._client.get('/hub/info', options).catch((error) => {
+    return this._client.get('/hub/info', options).catch((error: unknown) => {
       throw new Error(`Failed to check hub health: ${error.message}`);
     });
   }
 
   listDomains(options?: Core.RequestOptions): Core.APIPromise<string[]> {
-    return this._client.get('/hub/domains', options).catch((error) => {
+    return this._client.get('/hub/domains', options).catch((error: unknown) => {
       throw new Error(`Failed to list domains: ${error.message}`);
     });
   }
@@ -28,7 +28,7 @@ export class Hub extends APIResource {
     return this._client.post('/hub/schema', {
       body: { domain },
       ...options,
-    }).catch((error) => {
+    }).catch((error: unknown) => {
       throw new Error(`Failed to get schema for domain ${domain}: ${error.message}`);
     });
   }

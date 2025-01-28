@@ -23,8 +23,10 @@ export interface ClientOptions {
 
 export class Client extends APIClient {
   protected apiKey: string;
-  protected defaultQuery: Record<string, unknown> = {};
-  protected baseURL: string;
+  protected override defaultQuery(): Record<string, unknown> | undefined {
+    return {};
+  }
+  protected override baseURL!: string;
 
   // Core resources
   readonly files: Files;
@@ -46,10 +48,11 @@ export class Client extends APIClient {
   constructor(options: ClientOptions = {}) {
     const {
       apiKey = process.env['VLMRUN_API_KEY'],
-      baseURL = process.env['VLMRUN_BASE_URL'],
+      baseURL = process.env['VLMRUN_BASE_URL'] || 'https://api.vlm.run/v1',
       timeout = 120000,
       ...rest
     } = options;
+    super({ baseURL, timeout, httpAgent: rest.httpAgent, fetch: rest.fetch });
 
     if (!apiKey) {
       throw new Error(
@@ -61,9 +64,9 @@ export class Client extends APIClient {
       baseURL: baseURL || 'https://api.vlm.run/v1',
       timeout,
       ...rest,
-      defaultHeaders: {
+      headers: {
         'User-Agent': `vlmrun-node/${require('../../package.json').version}`,
-        ...rest.defaultHeaders,
+        ...(rest.headers || {}),
       },
     });
     this.apiKey = apiKey;
@@ -80,8 +83,12 @@ export class Client extends APIClient {
     this.video = new VideoPredictions(this);
 
     // Initialize experimental resources
-    const experimentalClient = Object.assign(Object.create(Object.getPrototypeOf(this)), this, {
-      baseURL: `${this.baseURL}/experimental`,
+    this.baseURL = baseURL;
+    const experimentalClient = new Client({
+      apiKey,
+      baseURL: `${baseURL}/experimental`,
+      timeout,
+      ...rest,
     });
     this.datasets = new Datasets(experimentalClient);
     this.hub = new Hub(experimentalClient);
@@ -89,8 +96,11 @@ export class Client extends APIClient {
     this.feedback = new Feedback(experimentalClient);
 
     // Configure longer timeouts for media processing
-    const longTimeoutClient = Object.assign(Object.create(Object.getPrototypeOf(this)), this, {
+    const longTimeoutClient = new Client({
+      apiKey,
+      baseURL,
       timeout: 300000, // 5 minutes
+      ...rest,
     });
     this.document = new DocumentPredictions(longTimeoutClient);
     this.audio = new AudioPredictions(longTimeoutClient);
@@ -103,7 +113,7 @@ export class Client extends APIClient {
 
   async healthcheck(): Promise<boolean> {
     try {
-      const response = await this.get('health', { raw_response: true });
+      const response = await this.get<unknown, { status: number }>('health');
       return response.status === 200;
     } catch (error) {
       return false;
