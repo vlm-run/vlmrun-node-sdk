@@ -1,8 +1,7 @@
 import VlmRun from 'vlmrun';
-import { Response } from 'node-fetch';
 
 const client = new VlmRun({
-  apiKey: 'My API Key',
+  apiKey: process.env['TEST_API_KEY'] || 'test-api-key',
   baseURL: process.env['TEST_API_BASE_URL'] ?? 'http://127.0.0.1:4010',
 });
 
