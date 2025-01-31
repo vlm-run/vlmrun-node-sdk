@@ -44,7 +44,7 @@ The full API of this library can be found in [api.md](api.md).
 import VlmRun from 'vlmrun';
 
 const client = new VlmRun({
-  bearerToken: process.env.BEARER_TOKEN || '',
+  apiKey: process.env.VLMRUN_API_KEY || '',
   baseUrl: 'https://dev.vlm.run',
 });
 
@@ -309,10 +309,9 @@ Note that React Native is not supported at this time.
 
 If you are interested in other runtime environments, please open or upvote an issue on GitHub.
 
-
 ## 🔗 Quick Links
 
-* 💬 Need help? Send us an email at [support@vlm.run](mailto:support@vlm.run) or join our [Discord](https://discord.gg/CCY8cYNC)
-* 📣 Stay updated by following us on [Twitter](https://twitter.com/vlmrun) and [LinkedIn](https://www.linkedin.com/company/vlm-run)
-* 📚 Check out our [Documentation](https://docs.vlm.run/) for detailed guides and API references
-* 🐛 Found a bug? Open an [issue](https://github.com/vlm-run/vlmrun-node-sdk/issues) on GitHub
+- 💬 Need help? Send us an email at [support@vlm.run](mailto:support@vlm.run) or join our [Discord](https://discord.gg/CCY8cYNC)
+- 📣 Stay updated by following us on [Twitter](https://twitter.com/vlmrun) and [LinkedIn](https://www.linkedin.com/company/vlm-run)
+- 📚 Check out our [Documentation](https://docs.vlm.run/) for detailed guides and API references
+- 🐛 Found a bug? Open an [issue](https://github.com/vlm-run/vlmrun-node-sdk/issues) on GitHub

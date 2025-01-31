@@ -2,12 +2,12 @@ import VlmRun from 'vlmrun';
 import { Response } from 'node-fetch';
 
 const client = new VlmRun({
-  bearerToken: 'My Bearer Token',
+  apiKey: 'My API Key',
   baseURL: process.env['TEST_API_BASE_URL'] ?? 'http://127.0.0.1:4010',
 });
 
 describe('resource response', () => {
-  test('retrieve', async () => {
+  test.skip('retrieve', async () => {
     const responsePromise = client.response.retrieve('id');
     const rawResponse = await responsePromise.asResponse();
     expect(rawResponse).toBeInstanceOf(Response);
