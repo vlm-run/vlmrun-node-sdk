@@ -1,7 +1,6 @@
 /**
  * Disclaimer: modules in _shims aren't intended to be imported by SDK users.
  */
-import * as nf from 'node-fetch';
 import * as fd from 'formdata-node';
 import { type File, type FilePropertyBag } from 'formdata-node';
 import KeepAliveAgent from 'agentkeepalive';
@@ -14,6 +13,7 @@ import { type RequestOptions } from '../core';
 import { MultipartBody } from './MultipartBody';
 import { type Shims } from './registry';
 import { ReadableStream } from 'node:stream/web';
+import type { Request, Response, Headers } from 'node-fetch';
 
 type FileFromPathOptions = Omit<FilePropertyBag, 'lastModified'>;
 
@@ -57,18 +57,21 @@ async function getMultipartRequestOptions<T = Record<string, unknown>>(
   return { ...opts, body: body as any, headers };
 }
 
-export function getRuntime(): Shims {
+export async function getRuntime(): Promise<Shims> {
   // Polyfill global object if needed.
   if (typeof AbortController === 'undefined') {
     // @ts-expect-error (the types are subtly different, but compatible in practice)
     globalThis.AbortController = AbortControllerPolyfill;
   }
+
+  const { default: fetch, Request, Response, Headers } = await import('node-fetch');
+
   return {
     kind: 'node',
-    fetch: nf.default,
-    Request: nf.Request,
-    Response: nf.Response,
-    Headers: nf.Headers,
+    fetch,
+    Request,
+    Response,
+    Headers,
     FormData: fd.FormData,
     Blob: fd.Blob,
     File: fd.File,

@@ -2,7 +2,10 @@
 import * as types from '../_shims/node-types';
 import { setShims } from '../_shims/registry';
 import { getRuntime } from '../_shims/node-runtime';
-setShims(getRuntime());
+
+(async () => {
+  setShims(await getRuntime());
+})().catch(console.error);
 
 declare module '../_shims/manual-types' {
   export namespace manual {
