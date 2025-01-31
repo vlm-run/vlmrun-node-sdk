@@ -23,14 +23,14 @@ import { OpenAI, OpenAIHealthResponse } from './resources/openai/openai';
 
 export interface ClientOptions {
   /**
-   * The Bearer Token used for authenticating API requests
+   * The API Key used for authenticating API requests
    */
-  bearerToken?: string | undefined;
+  apiKey?: string | undefined;
 
   /**
    * Override the default base URL for the API, e.g., "https://api.example.com/v2/"
    *
-   * Defaults to process.env['VLM_BASE_URL'].
+   * Defaults to process.env['VLMRUN_BASE_URL'].
    */
   baseURL?: string | null | undefined;
 
@@ -88,15 +88,15 @@ export interface ClientOptions {
  * API Client for interfacing with the Vlm API.
  */
 export class VlmRun extends Core.APIClient {
-  bearerToken: string;
+  apiKey: string;
 
   private _options: ClientOptions;
 
   /**
    * API Client for interfacing with the Vlm API.
    *
-   * @param {string | undefined} [opts.bearerToken=process.env['BEARER_TOKEN'] ?? undefined]
-   * @param {string} [opts.baseURL=process.env['VLM_BASE_URL'] ?? https://api.vlm.run] - Override the default base URL for the API.
+   * @param {string | undefined} [opts.apiKey=process.env['VLMRUN_API_KEY'] ?? undefined]
+   * @param {string} [opts.baseURL=process.env['VLMRUN_BASE_URL'] ?? https://api.vlm.run] - Override the default base URL for the API.
    * @param {number} [opts.timeout=1 minute] - The maximum amount of time (in milliseconds) the client will wait for a response before timing out.
    * @param {number} [opts.httpAgent] - An HTTP agent used to manage HTTP(s) connections.
    * @param {Core.Fetch} [opts.fetch] - Specify a custom `fetch` function implementation.
@@ -105,18 +105,18 @@ export class VlmRun extends Core.APIClient {
    * @param {Core.DefaultQuery} opts.defaultQuery - Default query parameters to include with every request to the API.
    */
   constructor({
-    baseURL = Core.readEnv('VLM_BASE_URL'),
-    bearerToken = Core.readEnv('BEARER_TOKEN'),
+    baseURL = Core.readEnv('VLMRUN_BASE_URL'),
+    apiKey = Core.readEnv('VLMRUN_API_KEY'),
     ...opts
   }: ClientOptions = {}) {
-    if (bearerToken === undefined) {
+    if (apiKey === undefined) {
       throw new Errors.VlmError(
-        "The BEARER_TOKEN environment variable is missing or empty; either provide it, or instantiate the Vlm client with an bearerToken option, like new Vlm({ bearerToken: 'My Bearer Token' }).",
+        "The VLMRUN_API_KEY environment variable is missing or empty; either provide it, or instantiate the Vlm client with an apiKey option, like new Vlm({ apiKey: 'My API Key' }).",
       );
     }
 
     const options: ClientOptions = {
-      bearerToken,
+      apiKey,
       ...opts,
       baseURL: baseURL || `https://api.vlm.run`,
     };
@@ -131,7 +131,7 @@ export class VlmRun extends Core.APIClient {
 
     this._options = options;
 
-    this.bearerToken = bearerToken;
+    this.apiKey = apiKey;
   }
 
   openai: API.OpenAI = new API.OpenAI(this);
@@ -164,7 +164,7 @@ export class VlmRun extends Core.APIClient {
   }
 
   protected override authHeaders(opts: Core.FinalRequestOptions): Core.Headers {
-    return { Authorization: `Bearer ${this.bearerToken}` };
+    return { Authorization: `Bearer ${this.apiKey}` };
   }
 
   static Vlm = this;

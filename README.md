@@ -44,7 +44,7 @@ The full API of this library can be found in [api.md](api.md).
 import VlmRun from 'vlmrun';
 
 const client = new VlmRun({
-  bearerToken: process.env.BEARER_TOKEN || '',
+  apiKey: process.env.VLMRUN_API_KEY || '',
   baseUrl: 'https://dev.vlm.run',
 });
 
