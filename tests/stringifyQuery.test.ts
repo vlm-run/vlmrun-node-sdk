@@ -1,5 +1,3 @@
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
-
 import { VlmRun } from 'vlmrun';
 
 const { stringifyQuery } = VlmRun.prototype as any;

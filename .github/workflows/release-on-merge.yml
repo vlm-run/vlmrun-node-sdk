@@ -17,7 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Ensures full history for comparison
+          fetch-depth: 0 # Ensures full history for comparison
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -25,7 +25,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile  # Ensures a clean install
+        run: yarn install --frozen-lockfile # Ensures a clean install
 
       - name: Check for version change
         id: check_version

@@ -6,7 +6,7 @@
     "rootDir": "./dist/src",
     "paths": {
       "vlmrun/*": ["dist/src/*"],
-      "vlmrun": ["dist/src/index.ts"],
+      "vlmrun": ["dist/src/index.ts"]
     },
     "noEmit": false,
     "declaration": true,
