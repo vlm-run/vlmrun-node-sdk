@@ -6,9 +6,7 @@ module.exports = {
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': ['@swc/jest'],
   },
-  transformIgnorePatterns: [
-    'node_modules/(?!(node-fetch|data-uri-to-buffer|fetch-blob|formdata-polyfill)/)',
-  ],
+  transformIgnorePatterns: ['node_modules/(?!(node-fetch|data-uri-to-buffer|fetch-blob|formdata-polyfill)/)'],
   extensionsToTreatAsEsm: ['.ts', '.tsx', '.mts'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   moduleNameMapper: {
