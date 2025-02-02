@@ -1,39 +1,19 @@
 {
-  "include": ["src", "tests", "examples"],
-  "exclude": ["src/_shims/**/*-deno.ts"],
-  "compilerOptions": {
-    "target": "es2020",
-    "lib": ["es2020"],
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "baseUrl": "./",
-    "paths": {
-      "vlmrun/_shims/auto/*": ["src/_shims/auto/*-node"],
-      "vlmrun/*": ["src/*"],
-      "vlmrun": ["src/index.ts"]
+    "compilerOptions": {
+      "target": "ES2019",
+      "strict": true,
+      "declaration": true,
+      "declarationDir": "dist/types",
+      "sourceMap": true,
+      "esModuleInterop": true,
+      "moduleResolution": "node",
+      "outDir": "./dist",
+      "rootDir": "./src",
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "resolveJsonModule": true,
+      "lib": ["ES2019", "DOM"]
     },
-    "noEmit": true,
-
-    "resolveJsonModule": true,
-
-    "forceConsistentCasingInFileNames": true,
-
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitThis": true,
-    "noImplicitReturns": true,
-    "alwaysStrict": true,
-    "exactOptionalPropertyTypes": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "isolatedModules": false,
-
-    "skipLibCheck": true
-  }
+    "include": ["src/**/*"]
 }
+  
