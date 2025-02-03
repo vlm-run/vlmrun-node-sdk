@@ -9,6 +9,24 @@ on:
       - next
 
 jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Bootstrap
+        run: ./scripts/bootstrap
+
+      - name: Check types
+        run: ./scripts/lint
+
   build:
     name: build
     runs-on: ubuntu-latest
@@ -19,14 +37,13 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Bootstrap
+        run: ./scripts/bootstrap
 
-      - name: Build
-        run: npm run build
-
+      - name: Check build
+        run: ./scripts/build
   test:
     name: test
     runs-on: ubuntu-latest
@@ -37,10 +54,10 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Bootstrap
+        run: ./scripts/bootstrap
 
       - name: Run tests
-        run: npm run test
+        run: ./scripts/test
