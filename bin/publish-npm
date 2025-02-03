@@ -11,7 +11,7 @@ yarn build
 cd dist
 
 # Get the version from package.json
-VERSION="$(node -p "require('./package.json').version")"
+VERSION="$(node -p "require('../package.json').version")"
 
 # Extract the pre-release tag if it exists
 if [[ "$VERSION" =~ -([a-zA-Z]+) ]]; then
