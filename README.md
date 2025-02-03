@@ -44,7 +44,7 @@ const client = new VlmRun({
 
 // Process an image
 async function processImage() {
-  const response = await client.imagePredictions.generate(
+  const response = await client.image.generate(
     ["path/to/invoice.jpg"],
     "vlm-1",
     "document.invoice",
