@@ -1,5 +1,5 @@
-import { ModelInfoResponse } from "../../src/client/types";
-import { VlmRun } from "../../src/index";
+import { ModelInfoResponse } from "../../../src/client/types";
+import { VlmRun } from "../../../src/index";
 
 describe("Models", () => {
   let client: VlmRun;

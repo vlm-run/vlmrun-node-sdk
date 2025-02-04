@@ -6,4 +6,5 @@ Brewfile.lock.json
 dist
 /*.tgz
 .idea/
-
+.env
+.env.test

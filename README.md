@@ -34,6 +34,8 @@ pnpm add vlmrun
 
 ### Basic Usage
 
+### Image Predictions
+
 ```typescript
 import { VlmRun } from "vlmrun";
 
@@ -42,23 +44,64 @@ const client = new VlmRun({
   apiKey: "your-api-key",
 });
 
-// Process an image
-async function processImage() {
-  const response = await client.image.generate({
-    images: ["path/to/invoice.jpg"],
-    model: "vlm-1",
-    domain: "document.invoice",
-    jsonSchema: {
-      type: "object",
-      properties: {
-        invoice_number: { type: "string" },
-        total_amount: { type: "number" },
-        date: { type: "string" },
-      },
+// Process an image (using image url)
+imageUrl =
+  "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/invoice_1.jpg";
+const response = await client.image.generate({
+  images: [imageUrl],
+  model: "vlm-1",
+  domain: "document.invoice",
+  jsonSchema: {
+    type: "object",
+    properties: {
+      invoice_number: { type: "string" },
+      total_amount: { type: "number" },
     },
-  });
-  console.log(response);
-}
+  },
+});
+console.log(response);
+
+// Process an image (using local file path)
+const response = await client.image.generate({
+  images: ["tests/integration/assets/invoice.jpg"],
+  model: "vlm-1",
+  domain: "document.invoice",
+});
+console.log(response);
+```
+
+### Document Predictions (using file id)
+
+```typescript
+import { VlmRun } from "vlmrun";
+
+// Initialize the client
+const client = new VlmRun({
+  apiKey: "your-api-key",
+});
+
+// Upload a document
+const file = await client.files.upload({
+  filePath: "path/to/invoice.pdf",
+});
+
+// Process a document (using file id)
+const response = await client.document.generate({
+  fileId: file.id,
+  model: "vlm-1",
+  domain: "document.invoice",
+});
+console.log(response);
+
+// Process a document (using url)
+documentUrl =
+  "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/google_invoice.pdf";
+const response = await client.document.generate({
+  url: documentUrl,
+  model: "vlm-1",
+  domain: "document.invoice",
+});
+console.log(response);
 ```
 
 ### Image Utilities
@@ -121,8 +164,8 @@ For detailed documentation and API reference, visit our [documentation site](htt
 
 ## 🤝 Contributing
 
-We welcome contributions! Please check out our [contributing guidelines](CONTRIBUTING.md) for details.
+We welcome contributions! Please check out our [contributing guidelines](docs/CONTRIBUTING.md) for details.
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache-2.0 License - see the [LICENSE](LICENSE) file for details.

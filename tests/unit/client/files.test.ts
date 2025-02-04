@@ -1,10 +1,10 @@
-import { Client } from '../../src/client/base_requestor';
-import { Files } from '../../src/client/files';
-import { FileResponse, FilePurpose } from '../../src/client/types';
+import { Client } from '../../../src/client/base_requestor';
+import { Files } from '../../../src/client/files';
+import { FileResponse, FilePurpose } from '../../../src/client/types';
 import { readFile } from 'fs/promises';
 import { createHash } from 'crypto';
 
-jest.mock('../../src/client/base_requestor');
+jest.mock('../../../src/client/base_requestor');
 jest.mock('fs/promises');
 jest.mock('crypto');
 

@@ -1,10 +1,9 @@
-import { Client } from '../../src/client/base_requestor';
-import { ImagePredictions, DocumentPredictions, AudioPredictions, VideoPredictions } from '../../src/client/predictions';
-import { DetailLevel } from '../../src/client/types';
-import * as imageUtils from '../../src/utils/image';
+import { Client } from '../../../src/client/base_requestor';
+import { ImagePredictions, DocumentPredictions, AudioPredictions, VideoPredictions } from '../../../src/client/predictions';
+import * as imageUtils from '../../../src/utils/image';
 
-jest.mock('../../src/client/base_requestor');
-jest.mock('../../src/utils/image');
+jest.mock('../../../src/client/base_requestor');
+jest.mock('../../../src/utils/image');
 
 describe('Predictions', () => {
   let client: jest.Mocked<Client>;
@@ -101,7 +100,7 @@ describe('Predictions', () => {
         jest.spyOn(documentPredictions['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await documentPredictions.generate({
-          fileIds: ['doc1.pdf'],
+          fileId: 'doc1.pdf',
           model: 'model1',
           domain: 'domain1'
         });
@@ -139,7 +138,7 @@ describe('Predictions', () => {
         jest.spyOn(audioPredictions['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await audioPredictions.generate({
-          fileIds: ['audio1.mp3'],
+          fileId: 'audio1.mp3',
           model: 'model1',
           domain: 'domain1'
         });
@@ -177,7 +176,7 @@ describe('Predictions', () => {
         jest.spyOn(videoPredictions['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await videoPredictions.generate({
-          fileIds: ['video1.mp4'],
+          fileId: 'video1.mp4',
           model: 'model1',
           domain: 'domain1'
         });
