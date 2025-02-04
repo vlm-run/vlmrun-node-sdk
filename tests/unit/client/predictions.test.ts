@@ -1,10 +1,9 @@
-import { Client } from '../../src/client/base_requestor';
-import { ImagePredictions, DocumentPredictions, AudioPredictions, VideoPredictions } from '../../src/client/predictions';
-import { DetailLevel } from '../../src/client/types';
-import * as imageUtils from '../../src/utils/image';
+import { Client } from '../../../src/client/base_requestor';
+import { ImagePredictions, DocumentPredictions, AudioPredictions, VideoPredictions } from '../../../src/client/predictions';
+import * as imageUtils from '../../../src/utils/image';
 
-jest.mock('../../src/client/base_requestor');
-jest.mock('../../src/utils/image');
+jest.mock('../../../src/client/base_requestor');
+jest.mock('../../../src/utils/image');
 
 describe('Predictions', () => {
   let client: jest.Mocked<Client>;
