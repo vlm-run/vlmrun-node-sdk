@@ -40,8 +40,16 @@ npm install
 
 3. Run tests:
 
+Add .env.test file with the following variables:
+
+```bash
+TEST_API_KEY=<your-api-key>
+TEST_BASE_URL=https://dev.vlm.run/v1
+```
+
 ```bash
 npm test
+npm run test:integration
 ```
 
 ## Code Style
