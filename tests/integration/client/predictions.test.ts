@@ -45,10 +45,10 @@ describe('Integration: Predictions', () => {
     });
   });
 
-  describe.skip('DocumentPredictions', () => {
+  describe('DocumentPredictions', () => {
     const testFilePath = 'tests/integration/assets/google_invoice.pdf';
 
-    it('should generate document predictions', async () => {
+    it('should generate document predictions (using file id)', async () => {
       const uploadedDocument = await client.files.upload({
         filePath: testFilePath,
         purpose: 'vision',
@@ -56,7 +56,18 @@ describe('Integration: Predictions', () => {
       });
 
       const result = await client.document.generate({
-        fileIds: [uploadedDocument.id],
+        fileId: uploadedDocument.id,
+        model: 'vlm-1',
+        domain: 'document.invoice',
+      });
+
+      expect(result).toHaveProperty('id');
+      expect(result).toHaveProperty('status');
+    });
+
+    it('should generate document predictions (using url)', async () => {
+      const result = await client.document.generate({
+        url: 'https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/google_invoice.pdf',
         model: 'vlm-1',
         domain: 'document.invoice',
       });

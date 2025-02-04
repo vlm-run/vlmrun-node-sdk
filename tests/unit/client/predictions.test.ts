@@ -100,7 +100,7 @@ describe('Predictions', () => {
         jest.spyOn(documentPredictions['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await documentPredictions.generate({
-          fileIds: ['doc1.pdf'],
+          fileId: 'doc1.pdf',
           model: 'model1',
           domain: 'domain1'
         });
@@ -138,7 +138,7 @@ describe('Predictions', () => {
         jest.spyOn(audioPredictions['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await audioPredictions.generate({
-          fileIds: ['audio1.mp3'],
+          fileId: 'audio1.mp3',
           model: 'model1',
           domain: 'domain1'
         });
@@ -176,7 +176,7 @@ describe('Predictions', () => {
         jest.spyOn(videoPredictions['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await videoPredictions.generate({
-          fileIds: ['video1.mp4'],
+          fileId: 'video1.mp4',
           model: 'model1',
           domain: 'domain1'
         });

@@ -47,7 +47,8 @@ export interface ListParams {
 }
 
 export interface FileUploadParams {
-  filePath: string;
+  filePath?: string;
+  file?: File;
   purpose: string;
   checkDuplicate?: boolean;
 }
@@ -74,7 +75,8 @@ export interface ImagePredictionParams extends PredictionGenerateParams {
 }
 
 export interface FilePredictionParams extends PredictionGenerateParams {
-  fileIds: string[];
+  fileId?: string;
+  url?: string;
 }
 
 export class APIError extends Error {

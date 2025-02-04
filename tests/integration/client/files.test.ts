@@ -3,8 +3,6 @@ config({ path: '.env.test' });
 
 import { VlmRun } from '../../../src/index';
 import { FileResponse, FilePurpose } from '../../../src/client/types';
-import { readFile } from 'fs/promises';
-import { createHash } from 'crypto';
 
 jest.setTimeout(30000);
 

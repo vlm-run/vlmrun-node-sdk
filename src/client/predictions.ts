@@ -79,7 +79,8 @@ export class FilePredictions extends Predictions {
 
   async generate(params: FilePredictionParams): Promise<PredictionResponse> {
     const {
-      fileIds,
+      fileId,
+      url,
       model,
       domain,
       jsonSchema,
@@ -94,7 +95,7 @@ export class FilePredictions extends Predictions {
       `/${this.route}/generate`,
       undefined,
       {
-        file_id: fileIds[0],
+        ...(fileId ? { file_id: fileId } : { url }),
         model,
         domain,
         json_schema: jsonSchema,

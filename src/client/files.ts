@@ -2,6 +2,8 @@ import { createHash } from 'crypto';
 import { readFile } from 'fs/promises';
 import { Client, APIRequestor } from './base_requestor';
 import { FileResponse, ListParams, FileUploadParams } from './types';
+import path from 'path';
+import { readFileFromPathAsFile } from '../utils/file';
 
 export class Files {
   private client: Client;
@@ -41,24 +43,31 @@ export class Files {
   }
 
   async upload(params: FileUploadParams): Promise<FileResponse> {
-    if (params.checkDuplicate !== false) {
-      const existingFile = await this.checkFileExists(params.filePath);
-      if (existingFile) {
-        return existingFile;
-      }
-    }
+    let fileToUpload: File;
 
-    const fileBuffer = await readFile(params.filePath);
-    const formData = new FormData();
-    formData.append('file', new Blob([fileBuffer]));
-    formData.append('purpose', params.purpose);
+    if (params.file) {
+      fileToUpload = params.file;
+
+    } else if (params.filePath) {
+      if (params.checkDuplicate !== false) {
+        const existingFile = await this.checkFileExists(params.filePath);
+        
+        if (existingFile) {
+          return existingFile;
+        }
+      }
+
+      fileToUpload = await readFileFromPathAsFile(params.filePath);
+    } else {
+      throw new Error('Either file or filePath must be provided.');
+    }
 
     const [response] = await this.requestor.request<FileResponse>(
       'POST',
       'files',
+      { purpose: params.purpose },
       undefined,
-      undefined,
-      { file: new Blob([fileBuffer]), purpose: params.purpose }
+      { file: fileToUpload }
     );
     return response;
   }
