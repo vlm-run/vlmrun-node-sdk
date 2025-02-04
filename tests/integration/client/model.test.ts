@@ -2,6 +2,8 @@ import { ModelInfoResponse } from "../../../src/client/types";
 import { VlmRun } from "../../../src/index";
 import { config } from 'dotenv';
 
+jest.setTimeout(30000);
+
 describe("Integration: Models", () => {
   let client: VlmRun;
 
