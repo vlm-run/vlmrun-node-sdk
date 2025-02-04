@@ -10,12 +10,12 @@ export interface FileResponse {
   bytes: number;
   purpose: FilePurpose;
   created_at: string;
-  object: 'file';
+  object: "file";
 }
 
 export interface CreditUsage {
   elements_processed?: number;
-  element_type?: 'image' | 'page' | 'video' | 'audio';
+  element_type?: "image" | "page" | "video" | "audio";
   credits_used?: number;
 }
 
@@ -49,7 +49,7 @@ export interface ListParams {
 export interface FileUploadParams {
   filePath?: string;
   file?: File;
-  purpose: string;
+  purpose?: string;
   checkDuplicate?: boolean;
 }
 
@@ -86,6 +86,6 @@ export class APIError extends Error {
     public headers?: Record<string, string>
   ) {
     super(message);
-    this.name = 'APIError';
+    this.name = "APIError";
   }
 }
