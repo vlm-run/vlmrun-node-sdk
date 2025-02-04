@@ -45,7 +45,7 @@ const client = new VlmRun({
 });
 
 // Process an image (using image url)
-imageUrl =
+const imageUrl =
   "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/invoice_1.jpg";
 const response = await client.image.generate({
   images: [imageUrl],
@@ -94,7 +94,7 @@ const response = await client.document.generate({
 console.log(response);
 
 // Process a document (using url)
-documentUrl =
+const documentUrl =
   "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/google_invoice.pdf";
 const response = await client.document.generate({
   url: documentUrl,
