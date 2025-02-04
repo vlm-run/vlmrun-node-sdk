@@ -70,7 +70,7 @@ const response = await client.image.generate({
 console.log(response);
 ```
 
-### Document Predictions (using file id)
+### Document Predictions
 
 ```typescript
 import { VlmRun } from "vlmrun";
@@ -146,9 +146,8 @@ Check out the [examples](./examples) directory for more detailed usage examples:
 
 To use the VLM Run API, you'll need an API key. You can obtain one by:
 
-1. Creating an account at [VLM Run](https://vlm.run)
-2. Navigating to your dashboard
-3. Creating a new API key
+1. Create an account at [VLM Run](https://app.vlm.run)
+2. Navigate to dashboard Settings -> API Keys
 
 Then use it to initialize the client:
 
