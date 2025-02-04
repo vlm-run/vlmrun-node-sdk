@@ -44,11 +44,11 @@ const client = new VlmRun({
 
 // Process an image
 async function processImage() {
-  const response = await client.image.generate(
-    ["path/to/invoice.jpg"],
-    "vlm-1",
-    "document.invoice",
+  const response = await client.imagePredictions.generate(
     {
+      images: ["path/to/invoice.jpg"],
+      model: "vlm-1",
+      domain: "document.invoice",
       jsonSchema: {
         type: "object",
         properties: {
@@ -66,7 +66,7 @@ async function processImage() {
 ### Image Utilities
 
 ```typescript
-import { encodeImage, isImage } from "vlmrun/utils/image";
+import { encodeImage, isImage } from "vlmrun";
 
 // Convert image to base64
 const base64Image = encodeImage("path/to/image.jpg");
@@ -87,8 +87,9 @@ src/
 │   ├── feedback.ts      # Feedback operations
 │   └── types.ts         # Type definitions
 ├── utils/               # Utility functions
-│   └── image.ts         # Image processing utilities
-└── index.ts            # Main entry point
+│   ├── image.ts         # Image processing utilities
+│   └── index.ts         # Utility functions
+└── index.ts             # Main entry point
 ```
 
 ## 🛠️ Examples
