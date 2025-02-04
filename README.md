@@ -44,21 +44,19 @@ const client = new VlmRun({
 
 // Process an image
 async function processImage() {
-  const response = await client.imagePredictions.generate(
-    {
-      images: ["path/to/invoice.jpg"],
-      model: "vlm-1",
-      domain: "document.invoice",
-      jsonSchema: {
-        type: "object",
-        properties: {
-          invoice_number: { type: "string" },
-          total_amount: { type: "number" },
-          date: { type: "string" },
-        },
+  const response = await client.image.generate({
+    images: ["path/to/invoice.jpg"],
+    model: "vlm-1",
+    domain: "document.invoice",
+    jsonSchema: {
+      type: "object",
+      properties: {
+        invoice_number: { type: "string" },
+        total_amount: { type: "number" },
+        date: { type: "string" },
       },
-    }
-  );
+    },
+  });
   console.log(response);
 }
 ```
