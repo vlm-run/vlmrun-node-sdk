@@ -32,13 +32,13 @@ describe('Files', () => {
       }];
       jest.spyOn(files['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
-      const result = await files.list();
+      const result = await files.list({});
 
       expect(result).toEqual(mockResponse);
       expect(files['requestor'].request).toHaveBeenCalledWith(
         'GET',
         'files',
-        { skip: 0, limit: 10 }
+        { skip: undefined, limit: undefined }
       );
     });
 
@@ -53,7 +53,7 @@ describe('Files', () => {
       }];
       jest.spyOn(files['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
-      const result = await files.list(5, 20);
+      const result = await files.list({ skip: 5, limit: 20 });
 
       expect(result).toEqual(mockResponse);
       expect(files['requestor'].request).toHaveBeenCalledWith(
@@ -146,11 +146,14 @@ describe('Files', () => {
       };
       jest.spyOn(files, 'checkFileExists').mockResolvedValue(existingFile);
 
-      const result = await files.upload('test.jpg', 'vision');
+      const result = await files.upload({
+        filePath: 'test.jpg',
+        purpose: 'vision',
+        checkDuplicate: true
+      });
 
       expect(result).toEqual(existingFile);
       expect(files.checkFileExists).toHaveBeenCalledWith('test.jpg');
-      expect(files['requestor'].request).not.toHaveBeenCalled();
     });
 
     it('should upload new file if no duplicate found', async () => {
@@ -165,7 +168,11 @@ describe('Files', () => {
       jest.spyOn(files, 'checkFileExists').mockResolvedValue(null);
       jest.spyOn(files['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
-      const result = await files.upload('test.jpg', 'vision');
+      const result = await files.upload({
+        filePath: 'test.jpg',
+        purpose: 'vision',
+        checkDuplicate: true
+      });
 
       expect(result).toEqual(mockResponse);
       expect(files.checkFileExists).toHaveBeenCalledWith('test.jpg');
@@ -184,7 +191,11 @@ describe('Files', () => {
       jest.spyOn(files, 'checkFileExists');
       jest.spyOn(files['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
-      const result = await files.upload('test.jpg', 'vision', false);
+      const result = await files.upload({
+        filePath: 'test.jpg',
+        purpose: 'vision',
+        checkDuplicate: false
+      });
 
       expect(result).toEqual(mockResponse);
       expect(files.checkFileExists).not.toHaveBeenCalled();

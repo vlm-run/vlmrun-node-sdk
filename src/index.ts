@@ -17,6 +17,8 @@ export * from "./client/files";
 export * from "./client/predictions";
 export * from "./client/feedback";
 
+export * from "./utils";
+
 export interface VlmRunConfig {
   apiKey: string;
   baseURL?: string;

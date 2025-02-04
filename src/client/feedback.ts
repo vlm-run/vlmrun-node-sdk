@@ -1,5 +1,5 @@
 import { Client, APIRequestor } from "./base_requestor";
-import { FeedbackSubmitResponse } from "./types";
+import { FeedbackSubmitResponse, FeedbackSubmitParams } from "./types";
 
 export class Feedback {
   private client: Client;
@@ -13,25 +13,16 @@ export class Feedback {
     });
   }
 
-  async submit(
-    id: string,
-    options: {
-      label?: Record<string, any>;
-      notes?: string;
-      flag?: boolean;
-    } = {}
-  ): Promise<FeedbackSubmitResponse> {
-    const { label, notes, flag } = options;
-
+  async submit(params: FeedbackSubmitParams): Promise<FeedbackSubmitResponse> {
     const [response] = await this.requestor.request<FeedbackSubmitResponse>(
       "POST",
       "feedback/submit",
       undefined,
       {
-        request_id: id,
-        response: label,
-        notes,
-        flag,
+        request_id: params.id,
+        response: params.label,
+        notes: params.notes,
+        flag: params.flag,
       }
     );
     return response;

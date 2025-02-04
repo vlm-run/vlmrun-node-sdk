@@ -1,7 +1,7 @@
 import { createHash } from 'crypto';
 import { readFile } from 'fs/promises';
 import { Client, APIRequestor } from './base_requestor';
-import { FileResponse } from './types';
+import { FileResponse, ListParams, FileUploadParams } from './types';
 
 export class Files {
   private client: Client;
@@ -12,11 +12,11 @@ export class Files {
     this.requestor = new APIRequestor(client);
   }
 
-  async list(skip: number = 0, limit: number = 10): Promise<FileResponse[]> {
+  async list(params: ListParams = {}): Promise<FileResponse[]> {
     const [response] = await this.requestor.request<FileResponse[]>(
       'GET',
       'files',
-      { skip, limit }
+      { skip: params.skip, limit: params.limit }
     );
     return response;
   }
@@ -40,29 +40,25 @@ export class Files {
     }
   }
 
-  async upload(
-    filePath: string,
-    purpose: string,
-    checkDuplicate: boolean = true
-  ): Promise<FileResponse> {
-    if (checkDuplicate) {
-      const existingFile = await this.checkFileExists(filePath);
+  async upload(params: FileUploadParams): Promise<FileResponse> {
+    if (params.checkDuplicate !== false) {
+      const existingFile = await this.checkFileExists(params.filePath);
       if (existingFile) {
         return existingFile;
       }
     }
 
-    const fileBuffer = await readFile(filePath);
+    const fileBuffer = await readFile(params.filePath);
     const formData = new FormData();
     formData.append('file', new Blob([fileBuffer]));
-    formData.append('purpose', purpose);
+    formData.append('purpose', params.purpose);
 
     const [response] = await this.requestor.request<FileResponse>(
       'POST',
       'files',
       undefined,
       undefined,
-      { file: new Blob([fileBuffer]), purpose }
+      { file: new Blob([fileBuffer]), purpose: params.purpose }
     );
     return response;
   }

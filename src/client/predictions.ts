@@ -1,5 +1,11 @@
 import { Client, APIRequestor } from './base_requestor';
-import { PredictionResponse, DetailLevel } from './types';
+import { 
+  PredictionResponse, 
+  DetailLevel, 
+  ListParams, 
+  ImagePredictionParams,
+  FilePredictionParams 
+} from './types';
 import { processImage } from '../utils/image';
 
 export class Predictions {
@@ -11,44 +17,36 @@ export class Predictions {
     this.requestor = new APIRequestor(client);
   }
 
-  async list(skip: number = 0, limit: number = 10): Promise<PredictionResponse[]> {
+  async list(params: ListParams = {}): Promise<PredictionResponse[]> {
     const [response] = await this.requestor.request<PredictionResponse[]>(
       'GET',
       'predictions',
-      { skip, limit }
+      { skip: params.skip, limit: params.limit }
     );
     return response;
   }
 
-  async get(id: string): Promise<PredictionResponse> {
+  async get(params: { id: string }): Promise<PredictionResponse> {
     const [response] = await this.requestor.request<PredictionResponse>(
       'GET',
-      `predictions/${id}`
+      `predictions/${params.id}`
     );
     return response;
   }
 }
 
 export class ImagePredictions extends Predictions {
-  async generate(
-    images: string[],
-    model: string,
-    domain: string,
-    options: {
-      jsonSchema?: Record<string, any>;
-      detail?: DetailLevel;
-      batch?: boolean;
-      metadata?: Record<string, any>;
-      callbackUrl?: string;
-    } = {}
-  ): Promise<PredictionResponse> {
+  async generate(params: ImagePredictionParams): Promise<PredictionResponse> {
     const {
+      images,
+      model,
+      domain,
       jsonSchema,
       detail = 'auto',
       batch = false,
       metadata = {},
       callbackUrl,
-    } = options;
+    } = params;
 
     const encodedImages = images.map(image => processImage(image));
 
@@ -79,25 +77,17 @@ export class FilePredictions extends Predictions {
     this.route = route;
   }
 
-  async generate(
-    fileIds: string[],
-    model: string,
-    domain: string,
-    options: {
-      jsonSchema?: Record<string, any>;
-      detail?: DetailLevel;
-      batch?: boolean;
-      metadata?: Record<string, any>;
-      callbackUrl?: string;
-    } = {}
-  ): Promise<PredictionResponse> {
+  async generate(params: FilePredictionParams): Promise<PredictionResponse> {
     const {
+      fileIds,
+      model,
+      domain,
       jsonSchema,
       detail = 'auto',
       batch = false,
       metadata = {},
       callbackUrl,
-    } = options;
+    } = params;
 
     const [response] = await this.requestor.request<PredictionResponse>(
       'POST',

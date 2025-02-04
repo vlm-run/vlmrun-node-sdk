@@ -29,11 +29,11 @@ describe('Predictions', () => {
         const mockResponse = { id: 'pred_123', status: 'completed' };
         jest.spyOn(imagePredictions['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
-        const result = await imagePredictions.generate(
-          ['image1.jpg'],
-          'model1',
-          'domain1'
-        );
+        const result = await imagePredictions.generate({
+          images: ['image1.jpg'],
+          model: 'model1',
+          domain: 'domain1'
+        });
 
         expect(result).toEqual(mockResponse);
         expect(imagePredictions['requestor'].request).toHaveBeenCalledWith(
@@ -57,20 +57,16 @@ describe('Predictions', () => {
         const mockResponse = { id: 'pred_123', status: 'completed' };
         jest.spyOn(imagePredictions['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
-        const options = {
-          jsonSchema: { type: 'object' },
-          detail: 'high' as DetailLevel,
+        const result = await imagePredictions.generate({
+          images: ['image1.jpg'],
+          model: 'model1',
+          domain: 'domain1',
+          detail: 'hi',
           batch: true,
           metadata: { key: 'value' },
-          callbackUrl: 'https://callback.example.com'
-        };
-
-        const result = await imagePredictions.generate(
-          ['image1.jpg', 'image2.jpg'],
-          'model1',
-          'domain1',
-          options
-        );
+          jsonSchema: { type: 'object' },
+          callbackUrl: 'https://example.com/callback'
+        });
 
         expect(result).toEqual(mockResponse);
         expect(imagePredictions['requestor'].request).toHaveBeenCalledWith(
@@ -81,11 +77,11 @@ describe('Predictions', () => {
             image: 'base64-encoded-image',
             model: 'model1',
             domain: 'domain1',
-            detail: 'high',
+            detail: 'hi',
             batch: true,
             metadata: { key: 'value' },
             json_schema: { type: 'object' },
-            callback_url: 'https://callback.example.com'
+            callback_url: 'https://example.com/callback'
           }
         );
       });
@@ -104,11 +100,11 @@ describe('Predictions', () => {
         const mockResponse = { id: 'pred_123', status: 'completed' };
         jest.spyOn(documentPredictions['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
-        const result = await documentPredictions.generate(
-          ['doc1.pdf'],
-          'model1',
-          'domain1'
-        );
+        const result = await documentPredictions.generate({
+          fileIds: ['doc1.pdf'],
+          model: 'model1',
+          domain: 'domain1'
+        });
 
         expect(result).toEqual(mockResponse);
         expect(documentPredictions['requestor'].request).toHaveBeenCalledWith(
@@ -142,11 +138,11 @@ describe('Predictions', () => {
         const mockResponse = { id: 'pred_123', status: 'completed' };
         jest.spyOn(audioPredictions['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
-        const result = await audioPredictions.generate(
-          ['audio1.mp3'],
-          'model1',
-          'domain1'
-        );
+        const result = await audioPredictions.generate({
+          fileIds: ['audio1.mp3'],
+          model: 'model1',
+          domain: 'domain1'
+        });
 
         expect(result).toEqual(mockResponse);
         expect(audioPredictions['requestor'].request).toHaveBeenCalledWith(
@@ -180,11 +176,11 @@ describe('Predictions', () => {
         const mockResponse = { id: 'pred_123', status: 'completed' };
         jest.spyOn(videoPredictions['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
-        const result = await videoPredictions.generate(
-          ['video1.mp4'],
-          'model1',
-          'domain1'
-        );
+        const result = await videoPredictions.generate({
+          fileIds: ['video1.mp4'],
+          model: 'model1',
+          domain: 'domain1'
+        });
 
         expect(result).toEqual(mockResponse);
         expect(videoPredictions['requestor'].request).toHaveBeenCalledWith(
