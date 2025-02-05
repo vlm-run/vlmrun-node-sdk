@@ -54,11 +54,14 @@ describe("Predictions", () => {
             domain: "domain1",
             batch: false,
             config: {
-              json_schema: undefined,
+              confidence: false,
+              detail: "auto",
+              grounding: false,
+              json_schema: null,
             },
             metadata: {
               environment: "dev",
-              session_id: null,
+              session_id: undefined,
               allow_training: true,
             },
             callback_url: undefined,
@@ -98,14 +101,16 @@ describe("Predictions", () => {
             domain: "domain1",
             batch: true,
             config: {
+              confidence: false,
               detail: "auto",
+              grounding: false,
+              json_schema: { type: "object" },
             },
             metadata: {
               environment: "dev",
-              sessionId: null,
-              allowTraining: true,
+              session_id: null,
+              allow_training: true,
             },
-            json_schema: { type: "object" },
             callback_url: "https://example.com/callback",
           }
         );
@@ -144,11 +149,14 @@ describe("Predictions", () => {
             domain: "domain1",
             batch: false,
             config: {
-              json_schema: undefined,
+              confidence: false,
+              detail: "auto",
+              grounding: false,
+              json_schema: null,
             },
             metadata: {
               environment: "dev",
-              session_id: null,
+              session_id: undefined,
               allow_training: true,
             },
             callback_url: undefined,
@@ -189,11 +197,14 @@ describe("Predictions", () => {
             domain: "domain1",
             batch: false,
             config: {
-              json_schema: undefined,
+              confidence: false,
+              detail: "auto",
+              grounding: false,
+              json_schema: null,
             },
             metadata: {
               environment: "dev",
-              session_id: null,
+              session_id: undefined,
               allow_training: true,
             },
             callback_url: undefined,
@@ -234,11 +245,14 @@ describe("Predictions", () => {
             domain: "domain1",
             batch: false,
             config: {
-              json_schema: undefined,
+              confidence: false,
+              detail: "auto",
+              grounding: false,
+              json_schema: null,
             },
             metadata: {
               environment: "dev",
-              session_id: null,
+              session_id: undefined,
               allow_training: true,
             },
             callback_url: undefined,

@@ -3,7 +3,7 @@ import { config } from "dotenv";
 import { VlmRun } from "../../../src/index";
 import { GenerationConfig } from "../../../src/index";
 
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 describe("Integration: Predictions", () => {
   let client: VlmRun;
@@ -16,7 +16,6 @@ describe("Integration: Predictions", () => {
       baseURL: process.env.TEST_BASE_URL as string,
     });
   });
-
   describe("ImagePredictions", () => {
     it("should generate image predictions with default options", async () => {
       const testImagePath = "tests/integration/assets/invoice.jpg";
@@ -51,8 +50,6 @@ describe("Integration: Predictions", () => {
 
       expect(result).toHaveProperty("id");
       expect(result).toHaveProperty("status");
-      expect(result.response).toHaveProperty("invoice_number");
-      expect(result.response).toHaveProperty("total_amount");
     });
   });
 

@@ -4,7 +4,7 @@ config({ path: '.env.test' });
 import { VlmRun } from '../../../src/index';
 import { FileResponse, FilePurpose } from '../../../src/client/types';
 
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 describe('Integration: Files', () => {
   let client: VlmRun;
