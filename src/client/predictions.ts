@@ -56,10 +56,9 @@ export class ImagePredictions extends Predictions {
       images,
       model,
       domain,
-      jsonSchema,
-      detail = "auto",
       batch = false,
-      metadata = {},
+      config,
+      metadata,
       callbackUrl,
     } = params;
 
@@ -73,10 +72,18 @@ export class ImagePredictions extends Predictions {
         image: encodedImages[0],
         model,
         domain,
-        json_schema: jsonSchema,
-        detail,
         batch,
-        metadata,
+        config: {
+          detail: config?.detail ?? "auto",
+          json_schema: config?.jsonSchema ?? null,
+          confidence: config?.confidence ?? false,
+          grounding: config?.grounding ?? false,
+        },
+        metadata: {
+          environment: metadata?.environment ?? "dev",
+          session_id: metadata?.sessionId,
+          allow_training: metadata?.allowTraining ?? true,
+        },
         callback_url: callbackUrl,
       }
     );
@@ -98,10 +105,9 @@ export class FilePredictions extends Predictions {
       url,
       model,
       domain,
-      jsonSchema,
-      detail = "auto",
       batch = false,
-      metadata = {},
+      config,
+      metadata,
       callbackUrl,
     } = params;
 
@@ -113,10 +119,18 @@ export class FilePredictions extends Predictions {
         ...(fileId ? { file_id: fileId } : { url }),
         model,
         domain,
-        json_schema: jsonSchema,
-        detail,
         batch,
-        metadata,
+        config: {
+          detail: config?.detail ?? "auto",
+          json_schema: config?.jsonSchema ?? null,
+          confidence: config?.confidence ?? false,
+          grounding: config?.grounding ?? false,
+        },
+        metadata: {
+          environment: metadata?.environment ?? "dev",
+          session_id: metadata?.sessionId,
+          allow_training: metadata?.allowTraining ?? true,
+        },
         callback_url: callbackUrl,
       }
     );
