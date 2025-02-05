@@ -49,13 +49,14 @@ const imageUrl =
   "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/invoice_1.jpg";
 const response = await client.image.generate({
   images: [imageUrl],
-  model: "vlm-1",
   domain: "document.invoice",
-  jsonSchema: {
-    type: "object",
-    properties: {
-      invoice_number: { type: "string" },
-      total_amount: { type: "number" },
+  config: {
+    jsonSchema: {
+      type: "object",
+      properties: {
+        invoice_number: { type: "string" },
+        total_amount: { type: "number" },
+      },
     },
   },
 });
