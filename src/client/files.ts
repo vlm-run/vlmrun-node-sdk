@@ -1,8 +1,6 @@
 import { createHash } from "crypto";
-import { readFile } from "fs/promises";
 import { Client, APIRequestor } from "./base_requestor";
 import { FileResponse, ListParams, FileUploadParams } from "./types";
-import path from "path";
 import { readFileFromPathAsFile } from "../utils/file";
 
 export class Files {
@@ -24,7 +22,12 @@ export class Files {
   }
 
   private async calculateMD5(filePath: string): Promise<string> {
-    const fileBuffer = await readFile(filePath);
+    if (typeof window !== "undefined") {
+      throw new Error("File hashing is not supported in the browser");
+    }
+
+    const fs = require("fs/promises");
+    const fileBuffer = await fs.readFile(filePath);
     return createHash("md5").update(fileBuffer).digest("hex");
   }
 

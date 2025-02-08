@@ -1,4 +1,3 @@
-import { readFileSync } from 'fs';
 import { extname } from 'path';
 
 /**
@@ -7,6 +6,10 @@ import { extname } from 'path';
  * @returns Base64 encoded image with data URI prefix
  */
 export function encodeImage(imagePath: string): string {
+  if (typeof window !== 'undefined') {
+    throw new Error('Image encoding is not supported in the browser');
+  }
+  const { readFileSync } = require('fs');
   const imageBuffer = readFileSync(imagePath);
   const ext = extname(imagePath).toLowerCase().slice(1);
   const mimeType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
