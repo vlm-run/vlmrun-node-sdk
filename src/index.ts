@@ -7,6 +7,7 @@ import {
   DocumentPredictions,
   AudioPredictions,
   VideoPredictions,
+  WebPredictions,
 } from "./client/predictions";
 import { Feedback } from "./client/feedback";
 
@@ -33,6 +34,7 @@ export class VlmRun {
   readonly document: ReturnType<typeof DocumentPredictions>;
   readonly audio: ReturnType<typeof AudioPredictions>;
   readonly video: ReturnType<typeof VideoPredictions>;
+  readonly web: WebPredictions;
   readonly feedback: Feedback;
 
   constructor(config: VlmRunConfig) {
@@ -49,5 +51,6 @@ export class VlmRun {
     this.audio = AudioPredictions(this.client);
     this.video = VideoPredictions(this.client);
     this.feedback = new Feedback(this.client);
+    this.web = new WebPredictions(this.client);
   }
 }
