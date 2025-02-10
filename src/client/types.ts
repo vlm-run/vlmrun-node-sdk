@@ -63,7 +63,6 @@ export interface FeedbackSubmitParams {
 export interface PredictionGenerateParams {
   model?: string;
   domain: string;
-  batch?: boolean;
   config?: GenerationConfigParams;
   metadata?: RequestMetadataParams;
   callbackUrl?: string;
@@ -157,12 +156,19 @@ export class GenerationConfig {
 export type GenerationConfigInput = GenerationConfig | GenerationConfigParams;
 
 export interface ImagePredictionParams extends PredictionGenerateParams {
+  batch?: boolean;
   images: string[];
 }
 
 export interface FilePredictionParams extends PredictionGenerateParams {
+  batch?: boolean;
   fileId?: string;
   url?: string;
+}
+
+export interface WebPredictionParams extends PredictionGenerateParams {
+  url: string;
+  mode: "fast" | "accurate";
 }
 
 export class APIError extends Error {

@@ -5,6 +5,7 @@ import {
   ListParams,
   ImagePredictionParams,
   FilePredictionParams,
+  WebPredictionParams,
 } from "./types";
 import { processImage } from "../utils/image";
 
@@ -120,6 +121,36 @@ export class FilePredictions extends Predictions {
         model,
         domain,
         batch,
+        config: {
+          detail: config?.detail ?? "auto",
+          json_schema: config?.jsonSchema ?? null,
+          confidence: config?.confidence ?? false,
+          grounding: config?.grounding ?? false,
+        },
+        metadata: {
+          environment: metadata?.environment ?? "dev",
+          session_id: metadata?.sessionId,
+          allow_training: metadata?.allowTraining ?? true,
+        },
+        callback_url: callbackUrl,
+      }
+    );
+    return response;
+  }
+}
+
+export class WebPredictions extends Predictions {
+  async generate(params: WebPredictionParams): Promise<PredictionResponse> {
+    const { url, model, domain, mode, metadata, callbackUrl, config } = params;
+    const [response] = await this.requestor.request<PredictionResponse>(
+      "POST",
+      `/web/generate`,
+      undefined,
+      {
+        url,
+        model,
+        domain,
+        mode,
         config: {
           detail: config?.detail ?? "auto",
           json_schema: config?.jsonSchema ?? null,

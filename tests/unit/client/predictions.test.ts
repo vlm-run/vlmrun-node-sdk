@@ -4,6 +4,7 @@ import {
   DocumentPredictions,
   AudioPredictions,
   VideoPredictions,
+  WebPredictions,
 } from "../../../src/client/predictions";
 import * as imageUtils from "../../../src/utils/image";
 
@@ -256,6 +257,106 @@ describe("Predictions", () => {
               allow_training: true,
             },
             callback_url: undefined,
+          }
+        );
+      });
+    });
+  });
+
+  describe("WebPredictions", () => {
+    let webPredictions: WebPredictions;
+
+    beforeEach(() => {
+      webPredictions = new WebPredictions(client);
+    });
+
+    describe("generate", () => {
+      it("should generate web predictions with default options", async () => {
+        const mockResponse = { id: "pred_123", status: "completed" };
+        jest
+          .spyOn(webPredictions["requestor"], "request")
+          .mockResolvedValue([mockResponse, 200, {}]);
+
+        const result = await webPredictions.generate({
+          url: "https://example.com",
+          model: "model1",
+          domain: "domain1",
+          mode: "accurate",
+        });
+
+        expect(result).toEqual(mockResponse);
+        expect(webPredictions["requestor"].request).toHaveBeenCalledWith(
+          "POST",
+          "/web/generate",
+          undefined,
+          {
+            url: "https://example.com",
+            model: "model1",
+            domain: "domain1",
+            mode: "accurate",
+            config: {
+              detail: "auto",
+              json_schema: null,
+              confidence: false,
+              grounding: false,
+            },
+            metadata: {
+              environment: "dev",
+              session_id: undefined,
+              allow_training: true,
+            },
+            callback_url: undefined,
+          }
+        );
+      });
+
+      it("should generate web predictions with custom options", async () => {
+        const mockResponse = { id: "pred_123", status: "completed" };
+        jest
+          .spyOn(webPredictions["requestor"], "request")
+          .mockResolvedValue([mockResponse, 200, {}]);
+
+        const result = await webPredictions.generate({
+          url: "https://example.com",
+          model: "model1",
+          domain: "domain1",
+          mode: "fast",
+          config: {
+            detail: "hi",
+            jsonSchema: { type: "object" },
+            confidence: true,
+            grounding: true,
+          },
+          metadata: {
+            environment: "prod",
+            sessionId: "session123",
+            allowTraining: false,
+          },
+          callbackUrl: "https://callback.example.com",
+        });
+
+        expect(result).toEqual(mockResponse);
+        expect(webPredictions["requestor"].request).toHaveBeenCalledWith(
+          "POST",
+          "/web/generate",
+          undefined,
+          {
+            url: "https://example.com",
+            model: "model1",
+            domain: "domain1",
+            mode: "fast",
+            config: {
+              detail: "hi",
+              json_schema: { type: "object" },
+              confidence: true,
+              grounding: true,
+            },
+            metadata: {
+              environment: "prod",
+              session_id: "session123",
+              allow_training: false,
+            },
+            callback_url: "https://callback.example.com",
           }
         );
       });
