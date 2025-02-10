@@ -16,7 +16,7 @@ describe('Integration: Files', () => {
     });
   });
 
-  describe.skip('list', () => {
+  describe('list', () => {
     it('should list files with default pagination', async () => {
       const result = await client.files.list({});
       expect(Array.isArray(result)).toBe(true);
@@ -52,6 +52,11 @@ describe('Integration: Files', () => {
       });
 
       expect(result.id).toBeTruthy();
+      expect(result.filename).toBe('google_invoice.pdf');
+      expect(result.created_at).toBeTruthy();
+      expect(result.object).toBe('file');
+      expect(result.bytes).toBeTruthy();
+      expect(result.purpose).toBe('vision' as FilePurpose);
     });
   });
 });
