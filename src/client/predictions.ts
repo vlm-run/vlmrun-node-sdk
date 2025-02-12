@@ -8,6 +8,7 @@ import {
   WebPredictionParams,
 } from "./types";
 import { processImage } from "../utils/image";
+import { convertToJsonSchema } from "../utils/utils";
 
 export class Predictions {
   protected client: Client;
@@ -65,6 +66,10 @@ export class ImagePredictions extends Predictions {
 
     const encodedImages = images.map((image) => processImage(image));
 
+    if (config?.jsonSchema) {
+      config.jsonSchema = convertToJsonSchema(config.jsonSchema);
+    }
+
     const [response] = await this.requestor.request<PredictionResponse>(
       "POST",
       "image/generate",
@@ -76,7 +81,7 @@ export class ImagePredictions extends Predictions {
         batch,
         config: {
           detail: config?.detail ?? "auto",
-          json_schema: config?.jsonSchema ?? null,
+          json_schema: config?.jsonSchema,
           confidence: config?.confidence ?? false,
           grounding: config?.grounding ?? false,
         },
@@ -112,6 +117,10 @@ export class FilePredictions extends Predictions {
       callbackUrl,
     } = params;
 
+    if (config?.jsonSchema) {
+      config.jsonSchema = convertToJsonSchema(config.jsonSchema);
+    }
+
     const [response] = await this.requestor.request<PredictionResponse>(
       "POST",
       `/${this.route}/generate`,
@@ -123,7 +132,7 @@ export class FilePredictions extends Predictions {
         batch,
         config: {
           detail: config?.detail ?? "auto",
-          json_schema: config?.jsonSchema ?? null,
+          json_schema: config?.jsonSchema,
           confidence: config?.confidence ?? false,
           grounding: config?.grounding ?? false,
         },
