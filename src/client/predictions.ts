@@ -28,12 +28,41 @@ export class Predictions {
     return response;
   }
 
-  async get(params: { id: string }): Promise<PredictionResponse> {
+  async get(id: string): Promise<PredictionResponse> {
     const [response] = await this.requestor.request<PredictionResponse>(
       "GET",
-      `predictions/${params.id}`
+      `predictions/${id}`
     );
     return response;
+  }
+
+  /**
+   * Wait for prediction to complete
+   * @param params.id - ID of prediction to wait for
+   * @param params.timeout - Timeout in seconds (default: 60)
+   * @param params.sleep - Sleep time in seconds (default: 1)
+   * @returns Promise containing the prediction response
+   * @throws TimeoutError if prediction doesn't complete within timeout
+   */
+  async wait(
+    id: string,
+    timeout: number = 60,
+    sleep: number = 1
+  ): Promise<PredictionResponse> {
+    const startTime = Date.now();
+    const timeoutMs = timeout * 1000;
+
+    while (Date.now() - startTime < timeoutMs) {
+      const response = await this.get(id);
+      if (response.status === "completed") {
+        return response;
+      }
+      await new Promise((resolve) => setTimeout(resolve, sleep * 1000));
+    }
+
+    throw new Error(
+      `Prediction ${id} did not complete within ${timeout} seconds`
+    );
   }
 }
 

@@ -74,6 +74,14 @@ export class Files {
     return response;
   }
 
+  async get(fileId: string): Promise<FileResponse> {
+    const [response] = await this.requestor.request<FileResponse>(
+      "GET",
+      `files/${fileId}`
+    );
+    return response;
+  }
+
   async delete(fileId: string): Promise<void> {
     await this.requestor.request<void>("DELETE", `files/${fileId}`);
   }
