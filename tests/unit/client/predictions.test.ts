@@ -58,7 +58,7 @@ describe("Predictions", () => {
               confidence: false,
               detail: "auto",
               grounding: false,
-              json_schema: null,
+              json_schema: undefined,
             },
             metadata: {
               environment: "dev",
@@ -153,7 +153,7 @@ describe("Predictions", () => {
               confidence: false,
               detail: "auto",
               grounding: false,
-              json_schema: null,
+              json_schema: undefined,
             },
             metadata: {
               environment: "dev",
@@ -201,7 +201,7 @@ describe("Predictions", () => {
               confidence: false,
               detail: "auto",
               grounding: false,
-              json_schema: null,
+              json_schema: undefined,
             },
             metadata: {
               environment: "dev",
@@ -249,7 +249,7 @@ describe("Predictions", () => {
               confidence: false,
               detail: "auto",
               grounding: false,
-              json_schema: null,
+              json_schema: undefined,
             },
             metadata: {
               environment: "dev",
