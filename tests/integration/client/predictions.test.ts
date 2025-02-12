@@ -226,5 +226,52 @@ describe("Integration: Predictions", () => {
       expect(result.response).not.toHaveProperty("customer_billing_address");
       expect(result.response).not.toHaveProperty("customer_shipping_address");
     });
+
+    it("should generate document predictions when batch is true using url from custom zod schema", async () => {
+      const documentUrl =
+        "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/google_invoice.pdf";
+
+      const schema = z.object({
+        invoice_id: z.string(),
+        total: z.number(),
+        sub_total: z.number(),
+        tax: z.number(),
+        items: z.array(
+          z.object({
+            name: z.string(),
+            quantity: z.number(),
+            price: z.number(),
+            total: z.number(),
+          })
+        ),
+      });
+
+      const result = await client.document.generate({
+        url: documentUrl,
+        domain: "document.invoice",
+        batch: true,
+        config: {
+          jsonSchema: schema,
+        },
+      });
+
+      expect(result.status).toBe("pending");
+
+      const waitResponse = await client.predictions.wait(result.id);
+      const response = waitResponse.response as z.infer<typeof schema>;
+
+      console.log(waitResponse);
+      expect(waitResponse.status).toBe("completed");
+      expect(waitResponse.response).toHaveProperty("invoice_id");
+      expect(waitResponse.response).toHaveProperty("total");
+      expect(waitResponse.response).toHaveProperty("sub_total");
+      expect(waitResponse.response).toHaveProperty("tax");
+      expect(waitResponse.response).toHaveProperty("items");
+
+      // Test get endpoint
+      const getResponse = await client.predictions.get({ id: result.id });
+      expect(getResponse.status).toBe("completed");
+      expect(getResponse.response).toHaveProperty("invoice_id");
+    });
   });
 });
