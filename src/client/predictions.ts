@@ -94,9 +94,9 @@ export class ImagePredictions extends Predictions {
     } = params;
 
     const encodedImages = images.map((image) => processImage(image));
-
-    if (config?.jsonSchema) {
-      config.jsonSchema = convertToJsonSchema(config.jsonSchema);
+    let jsonSchema = config?.jsonSchema;
+    if (config?.responseModel) {
+      jsonSchema = convertToJsonSchema(config.responseModel);
     }
 
     const [response] = await this.requestor.request<PredictionResponse>(
@@ -110,7 +110,7 @@ export class ImagePredictions extends Predictions {
         batch,
         config: {
           detail: config?.detail ?? "auto",
-          json_schema: config?.jsonSchema,
+          json_schema: jsonSchema,
           confidence: config?.confidence ?? false,
           grounding: config?.grounding ?? false,
         },
@@ -146,8 +146,9 @@ export class FilePredictions extends Predictions {
       callbackUrl,
     } = params;
 
-    if (config?.jsonSchema) {
-      config.jsonSchema = convertToJsonSchema(config.jsonSchema);
+    let jsonSchema = config?.jsonSchema;
+    if (config?.responseModel) {
+      jsonSchema = convertToJsonSchema(config.responseModel);
     }
 
     const [response] = await this.requestor.request<PredictionResponse>(
@@ -161,7 +162,7 @@ export class FilePredictions extends Predictions {
         batch,
         config: {
           detail: config?.detail ?? "auto",
-          json_schema: config?.jsonSchema,
+          json_schema: jsonSchema,
           confidence: config?.confidence ?? false,
           grounding: config?.grounding ?? false,
         },

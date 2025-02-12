@@ -1,3 +1,5 @@
+import { ZodType } from "zod";
+
 export type JobStatus = string;
 
 export type FilePurpose = string;
@@ -110,6 +112,7 @@ export type RequestMetadataInput = RequestMetadata | RequestMetadataParams;
 
 export type GenerationConfigParams = {
   detail?: "auto" | "hi" | "lo";
+  responseModel?: ZodType;
   jsonSchema?: Record<string, any> | null;
   confidence?: boolean;
   grounding?: boolean;
