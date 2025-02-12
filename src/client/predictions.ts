@@ -28,10 +28,10 @@ export class Predictions {
     return response;
   }
 
-  async get(params: { id: string }): Promise<PredictionResponse> {
+  async get(id: string): Promise<PredictionResponse> {
     const [response] = await this.requestor.request<PredictionResponse>(
       "GET",
-      `predictions/${params.id}`
+      `predictions/${id}`
     );
     return response;
   }
@@ -53,7 +53,7 @@ export class Predictions {
     const timeoutMs = timeout * 1000;
 
     while (Date.now() - startTime < timeoutMs) {
-      const response = await this.get({ id });
+      const response = await this.get(id);
       if (response.status === "completed") {
         return response;
       }

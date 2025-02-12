@@ -269,7 +269,7 @@ describe("Integration: Predictions", () => {
       expect(waitResponse.response).toHaveProperty("items");
 
       // Test get endpoint
-      const getResponse = await client.predictions.get({ id: result.id });
+      const getResponse = await client.predictions.get(result.id);
       expect(getResponse.status).toBe("completed");
       expect(getResponse.response).toHaveProperty("invoice_id");
     });
