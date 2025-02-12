@@ -62,6 +62,27 @@ const response = await client.image.generate({
 });
 console.log(response);
 
+// Process an image passing zod schema
+import { z } from "zod";
+
+const imageUrl =
+  "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/invoice_1.jpg";
+
+const schema = z.object({
+  invoice_number: z.string(),
+  total_amount: z.number(),
+});
+
+const response = await client.image.generate({
+  images: [imageUrl],
+  domain: "document.invoice",
+  config: {
+    jsonSchema: schema,
+  },
+});
+const response = response.response as z.infer<typeof schema>;
+console.log(response);
+
 // Process an image (using local file path)
 const response = await client.image.generate({
   images: ["tests/integration/assets/invoice.jpg"],
@@ -103,35 +124,33 @@ const response = await client.document.generate({
   domain: "document.invoice",
 });
 console.log(response);
-```
 
-### Image Utilities
+// Process a document passing zod schema
+import { z } from "zod";
 
-```typescript
-import { encodeImage, isImage } from "vlmrun";
+const schema = z.object({
+  invoice_id: z.string(),
+  total: z.number(),
+  sub_total: z.number(),
+  tax: z.number(),
+  items: z.array(
+    z.object({
+      name: z.string(),
+      quantity: z.number(),
+      price: z.number(),
+      total: z.number(),
+    })
+  ),
+});
 
-// Convert image to base64
-const base64Image = encodeImage("path/to/image.jpg");
+const response = await client.document.generate({
+  url: documentUrl,
+  domain: "document.invoice",
+  config: { jsonSchema: schema },
+});
 
-// Check if file is an image
-const isImageFile = isImage("path/to/file.jpg"); // true
-```
-
-## 📂 Directory Structure
-
-```bash
-src/
-├── client/               # Client implementation
-│   ├── base_requestor.ts # Low-level request logic
-│   ├── files.ts         # File operations
-│   ├── models.ts        # Model operations
-│   ├── predictions.ts   # Prediction operations
-│   ├── feedback.ts      # Feedback operations
-│   └── types.ts         # Type definitions
-├── utils/               # Utility functions
-│   ├── image.ts         # Image processing utilities
-│   └── index.ts         # Utility functions
-└── index.ts             # Main entry point
+const response = response.response as z.infer<typeof schema>;
+console.log(response);
 ```
 
 ## 🛠️ Examples

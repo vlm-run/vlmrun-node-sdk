@@ -1,6 +1,6 @@
 {
   "name": "vlmrun",
-  "version": "0.1.13",
+  "version": "0.2.0",
   "description": "The official TypeScript library for the VlmRun API",
   "author": "VlmRun <support@vlmrun.com>",
   "main": "dist/index.js",
@@ -26,7 +26,9 @@
   "dependencies": {
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "zod": "~3.24.2",
+    "zod-to-json-schema": "~3.24.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",

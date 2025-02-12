@@ -8,3 +8,4 @@ dist
 .idea/
 .env
 .env.test
+.vscode/
