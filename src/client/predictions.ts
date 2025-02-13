@@ -104,7 +104,7 @@ export class ImagePredictions extends Predictions {
       "image/generate",
       undefined,
       {
-        image: encodedImages[0],
+        images: encodedImages,
         model,
         domain,
         batch,

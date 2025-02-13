@@ -82,7 +82,6 @@ describe("Integration: Predictions", () => {
       });
 
       const response = result.response as z.infer<typeof schema>;
-      console.log(response);
       expect(response.invoice_id).toBe("9999999");
       expect(response.total).toBe(400);
     });
@@ -212,8 +211,6 @@ describe("Integration: Predictions", () => {
 
       const response = result.response as z.infer<typeof schema>;
 
-      console.log(response);
-
       expect(result).toHaveProperty("id");
       expect(result.status).toBe("completed");
       expect(response.invoice_id).toContain("23413561D");
@@ -260,7 +257,6 @@ describe("Integration: Predictions", () => {
       const waitResponse = await client.predictions.wait(result.id);
       const response = waitResponse.response as z.infer<typeof schema>;
 
-      console.log(waitResponse);
       expect(waitResponse.status).toBe("completed");
       expect(waitResponse.response).toHaveProperty("invoice_id");
       expect(waitResponse.response).toHaveProperty("total");
