@@ -171,6 +171,51 @@ export interface WebPredictionParams extends PredictionGenerateParams {
   mode: "fast" | "accurate";
 }
 
+export interface FinetuningResponse {
+  id: string;
+  created_at: string;
+  completed_at?: string;
+  status: JobStatus;
+  model: string;
+  training_file_id: string;
+  validation_file_id?: string;
+  num_epochs: number;
+  batch_size: number | string;
+  learning_rate: number;
+  suffix?: string;
+  wandb_url?: string;
+  message?: string;
+}
+
+export interface FinetuningProvisionResponse {
+  id: string;
+  created_at: string;
+  model: string;
+  duration: number;
+  concurrency: number;
+  status: JobStatus;
+  message?: string;
+}
+
+export interface FinetuningGenerateParams {
+  images: string[];
+  model: string;
+  prompt?: string;
+  domain?: string;
+  json_schema?: Record<string, any>;
+  max_new_tokens?: number;
+  temperature?: number;
+  detail?: "auto" | "hi" | "lo";
+  batch?: boolean;
+  metadata?: Record<string, any>;
+  callback_url?: string;
+}
+
+export interface FinetuningListParams {
+  skip?: number;
+  limit?: number;
+}
+
 export class APIError extends Error {
   constructor(
     message: string,
