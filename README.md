@@ -77,7 +77,7 @@ const response = await client.image.generate({
   images: [imageUrl],
   domain: "document.invoice",
   config: {
-    jsonSchema: schema,
+    responseModel: schema,
   },
 });
 const response = response.response as z.infer<typeof schema>;
@@ -146,7 +146,7 @@ const schema = z.object({
 const response = await client.document.generate({
   url: documentUrl,
   domain: "document.invoice",
-  config: { jsonSchema: schema },
+  config: { responseModel: schema },
 });
 
 const response = response.response as z.infer<typeof schema>;

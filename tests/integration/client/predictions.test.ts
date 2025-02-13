@@ -77,7 +77,7 @@ describe("Integration: Predictions", () => {
         model: "vlm-1",
         domain: "document.invoice",
         config: {
-          jsonSchema: schema,
+          responseModel: schema,
         },
       });
 
@@ -101,7 +101,7 @@ describe("Integration: Predictions", () => {
         model: "vlm-1",
         domain: "document.invoice",
         config: {
-          jsonSchema: schema,
+          responseModel: schema,
         },
       });
 
@@ -206,7 +206,7 @@ describe("Integration: Predictions", () => {
         model: "vlm-1",
         domain: "document.invoice",
         config: {
-          jsonSchema: schema,
+          responseModel: schema,
         },
       });
 
@@ -251,7 +251,7 @@ describe("Integration: Predictions", () => {
         domain: "document.invoice",
         batch: true,
         config: {
-          jsonSchema: schema,
+          responseModel: schema,
         },
       });
 
