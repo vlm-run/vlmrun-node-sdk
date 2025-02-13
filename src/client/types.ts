@@ -184,3 +184,9 @@ export class APIError extends Error {
     this.name = "APIError";
   }
 }
+
+export interface VlmRunError extends Error {
+  message: string;
+  code?: string;
+  cause?: Error;
+}
