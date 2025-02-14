@@ -50,7 +50,7 @@ describe("Predictions", () => {
           "image/generate",
           undefined,
           {
-            image: "base64-encoded-image",
+            images: ["base64-encoded-image"],
             model: "model1",
             domain: "domain1",
             batch: false,
@@ -97,7 +97,7 @@ describe("Predictions", () => {
           "image/generate",
           undefined,
           {
-            image: "base64-encoded-image",
+            images: ["base64-encoded-image"],
             model: "model1",
             domain: "domain1",
             batch: true,
