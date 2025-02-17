@@ -174,6 +174,79 @@ export interface WebPredictionParams extends PredictionGenerateParams {
   mode: "fast" | "accurate";
 }
 
+export interface FinetuningResponse {
+  id: string;
+  created_at: string;
+  completed_at?: string;
+  status: JobStatus;
+  model: string;
+  training_file_id: string;
+  validation_file_id?: string;
+  num_epochs: number;
+  batch_size: number | string;
+  learning_rate: number;
+  suffix?: string;
+  wandb_url?: string;
+  message?: string;
+}
+
+export interface FinetuningProvisionResponse {
+  id: string;
+  created_at: string;
+  model: string;
+  duration: number;
+  concurrency: number;
+  status: JobStatus;
+  message?: string;
+}
+
+export interface FinetuningCreateParams {
+  callbackUrl?: string;
+  model: string;
+  trainingFile: string;
+  validationFile?: string;
+  numEpochs?: number;
+  batchSize?: number | string;
+  learningRate?: number;
+  suffix?: string;
+  wandbApiKey?: string;
+  wandbBaseUrl?: string;
+  wandbProjectName?: string;
+}
+
+export interface FinetuningGenerateParams {
+  images: string[];
+  model: string;
+  prompt?: string;
+  domain?: string;
+  jsonSchema?: Record<string, any>;
+  maxNewTokens?: number;
+  temperature?: number;
+  detail?: "auto" | "hi" | "lo";
+  batch?: boolean;
+  metadata?: Record<string, any>;
+  callbackUrl?: string;
+  maxRetries?: number;
+  maxTokens?: number;
+  confidence?: boolean;
+  grounding?: boolean;
+  environment?: string;
+  sessionId?: string;
+  allowTraining?: boolean;
+  responseModel?: string;  
+}
+
+export interface FinetuningProvisionParams {
+  model: string;
+  duration?: number;
+  concurrency?: number;
+}
+
+export interface FinetuningListParams {
+  skip?: number;
+  limit?: number;
+}
+
 export class APIError extends Error {
   constructor(
     message: string,
