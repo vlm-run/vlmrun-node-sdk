@@ -1,6 +1,6 @@
 import { Client, APIRequestor } from "./base_requestor";
 import { FinetuningResponse, FinetuningProvisionResponse, FinetuningGenerateParams, FinetuningListParams, PredictionResponse, FinetuningCreateParams, FinetuningProvisionParams } from "./types";
-import { encodeImage, processImage } from "../utils";
+import { processImage } from "../utils";
 
 export class Finetuning {
   private requestor: APIRequestor;
