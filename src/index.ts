@@ -11,6 +11,7 @@ import {
 } from "./client/predictions";
 import { Feedback } from "./client/feedback";
 import { Finetuning } from "./client/fine_tuning";
+import { Datasets } from "./client/datasets";
 
 export * from "./client/types";
 export * from "./client/base_requestor";
@@ -39,6 +40,7 @@ export class VlmRun {
   readonly web: WebPredictions;
   readonly feedback: Feedback;
   readonly finetuning: Finetuning;
+  readonly dataset: Datasets;
 
   constructor(config: VlmRunConfig) {
     this.client = {
@@ -56,5 +58,6 @@ export class VlmRun {
     this.web = new WebPredictions(this.client);
     this.feedback = new Feedback(this.client);
     this.finetuning = new Finetuning(this.client);
+    this.dataset = new Datasets(this.client)
   }
 }

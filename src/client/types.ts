@@ -247,6 +247,34 @@ export interface FinetuningListParams {
   limit?: number;
 }
 
+export interface DatasetListParams {
+  skip?: number;
+  limit?: number;
+}
+
+export interface DatasetResponse {
+  id: string;
+  created_at: string;
+  completed_at?: string;
+  status: JobStatus;
+  domain: string;
+  dataset_name: string;
+  dataset_type: "images" | "videos" | "documents";
+  file_id: string;
+  wandb_url?: string;
+  message?: string;
+}
+
+export interface DatasetCreateParams {
+  datasetDirectory: string;
+  domain: string;
+  datasetName: string;
+  datasetType: "images" | "videos" | "documents";
+  wandbBaseUrl?: string;
+  wandbProjectName?: string;
+  wandbApiKey?: string;
+}
+
 export class APIError extends Error {
   constructor(
     message: string,
@@ -263,5 +291,3 @@ export interface VlmRunError extends Error {
   code?: string;
   cause?: Error;
 }
-
-
