@@ -66,3 +66,4 @@ Full Changelog: [v0.0.1-alpha.0...v0.0.1-alpha.1](https://github.com/vlm-run/vlm
 ### Documentation
 
 * minor formatting changes ([2bb0eb9](https://github.com/vlm-run/vlmrun-node-sdk/commit/2bb0eb940e4a87be9284d086445470c9497ad254))
+* update README to use correct client.image.generate API ([e64f3e4](https://github.com/vlm-run/vlmrun-node-sdk/commit/e64f3e465339505d82b8afe6d2284eca6dc2dedd))
