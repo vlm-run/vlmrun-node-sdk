@@ -1,8 +1,6 @@
 import { Client, APIRequestor } from "./base_requestor";
 import { DatasetResponse, DatasetCreateParams, DatasetListParams } from "./types";
 import { createArchive } from "../utils";
-import * as fs from "fs";
-import * as path from "path";
 import { Files } from "../index";
 
 export class Datasets {
@@ -26,12 +24,18 @@ export class Datasets {
    */
   async create(params: DatasetCreateParams): Promise<DatasetResponse> {
     const validTypes = ["images", "videos", "documents"];
+
+    if (typeof window !== "undefined") {
+      throw new Error("createArchive is not supported in a browser environment.");
+    }
+
     if (!validTypes.includes(params.datasetType)) {
       throw new Error("dataset_type must be one of: images, videos, documents");
     }
 
     // Create tar.gz archive of the dataset directory.
     const tarPath = await createArchive(params.datasetDirectory, params.datasetName);
+    const fs = require('fs');
     const tarSizeMB = (fs.statSync(tarPath).size / 1024 / 1024).toFixed(2);
     console.debug(`Created tar.gz file [path=${tarPath}, size=${tarSizeMB} MB]`);
 
