@@ -144,5 +144,49 @@ describe("Integration: File Predictions", () => {
       expect(getResponse.status).toBe("completed");
       expect(getResponse.response).toHaveProperty("invoice_id");
     });
+    it("should generate document predictions when confidence is true", async () => {
+      const documentUrl =
+        "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/google_invoice.pdf";
+
+      const schema = z.object({
+        invoice_id: z.string(),
+        total: z.number(),
+        sub_total: z.number(),
+        tax: z.number(),
+        items: z.array(
+          z.object({
+            name: z.string(),
+            quantity: z.number(),
+            price: z.number(),
+            total: z.number(),
+          })
+        ),
+      });
+
+      const result = await client.document.generate({
+        url: documentUrl,
+        domain: "document.invoice",
+        batch: false,
+        config: {
+          responseModel: schema,
+          confidence: true,
+        },
+      });
+
+      expect(result.status).toBe("completed");
+
+      expect(result.response).toHaveProperty("invoice_id");
+      expect(result.response).toHaveProperty("total");
+      expect(result.response).toHaveProperty("sub_total");
+      expect(result.response).toHaveProperty("tax");
+      expect(result.response).toHaveProperty("items");
+
+      expect(result.response.invoice_id_metadata).toHaveProperty("confidence");
+      expect(result.response.total_metadata).toHaveProperty("confidence");
+      expect(result.response.invoice_id_metadata).toHaveProperty("bbox");
+      expect(result.response.invoice_id_metadata).toHaveProperty(
+        "bbox_content"
+      );
+    });
   });
 });
