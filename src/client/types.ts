@@ -252,6 +252,22 @@ export interface DatasetListParams {
   limit?: number;
 }
 
+export interface HubInfoResponse {
+  version: string;
+}
+
+export interface HubDomainInfo {
+  domain: string;
+  name: string;
+  description: string;
+}
+
+export interface HubSchemaResponse {
+  schema_json: Record<string, any>;
+  schema_version: string;
+  schema_hash: string;
+}
+
 export interface DatasetResponse {
   id: string;
   created_at: string;

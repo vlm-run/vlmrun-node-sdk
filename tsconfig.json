@@ -8,12 +8,12 @@
       "esModuleInterop": true,
       "moduleResolution": "node",
       "outDir": "./dist",
-      "rootDir": "./src",
+      "rootDir": ".",
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true,
       "resolveJsonModule": true,
-      "lib": ["ES2019", "DOM"]
+      "lib": ["ES2019", "DOM"],
+      "types": ["jest", "node"]
     },
-    "include": ["src/**/*"]
+    "include": ["src/**/*", "tests/**/*"]
 }
-  

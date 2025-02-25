@@ -12,6 +12,7 @@ import {
 import { Feedback } from "./client/feedback";
 import { Finetuning } from "./client/fine_tuning";
 import { Datasets } from "./client/datasets";
+import { Hub } from "./client/hub";
 
 export * from "./client/types";
 export * from "./client/base_requestor";
@@ -41,6 +42,7 @@ export class VlmRun {
   readonly feedback: Feedback;
   readonly finetuning: Finetuning;
   readonly dataset: Datasets;
+  readonly hub: Hub;
 
   constructor(config: VlmRunConfig) {
     this.client = {
@@ -59,5 +61,6 @@ export class VlmRun {
     this.feedback = new Feedback(this.client);
     this.finetuning = new Finetuning(this.client);
     this.dataset = new Datasets(this.client)
+    this.hub = new Hub(this.client);
   }
 }
