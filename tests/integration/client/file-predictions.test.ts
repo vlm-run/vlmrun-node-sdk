@@ -188,5 +188,111 @@ describe("Integration: File Predictions", () => {
         "bbox_content"
       );
     });
+    it("should generate document predictions when zod schema definition is provided", async () => {
+      // Define enums and base schemas
+      enum PaymentStatus {
+        PAID = "Paid",
+        UNPAID = "Unpaid",
+        PARTIAL = "Partial",
+        OVERDUE = "Overdue",
+      }
+
+      enum PaymentMethod {
+        CREDIT_CARD = "Credit Card",
+        BANK_TRANSFER = "Bank Transfer",
+        CHECK = "Check",
+        CASH = "Cash",
+        PAYPAL = "PayPal",
+        OTHER = "Other",
+      }
+
+      const currencySchema = z
+        .number()
+        .min(0, "Currency values must be non-negative");
+
+      const dateSchema = z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format");
+
+      // Define address schema
+      const addressSchema = z.object({
+        street: z.string().nullable(),
+        city: z.string().nullable(),
+        state: z.string().nullable(),
+        postal_code: z.string().nullable(),
+        country: z.string().nullable(),
+      });
+
+      // Define line item schema
+      const lineItemSchema = z.object({
+        description: z.string(),
+        quantity: z.number().positive(),
+        unit_price: currencySchema,
+        total: currencySchema,
+      });
+
+      // Define company schema
+      const companySchema = z.object({
+        name: z.string(),
+        address: addressSchema.nullable(),
+        tax_id: z.string().nullable(),
+        phone: z.string().nullable(),
+        email: z.string().nullable(),
+        website: z.string().nullable(),
+      });
+
+      // Define invoice schema using the definitions
+      const invoiceSchema = z.object({
+        invoice_id: z.string(),
+        invoice_date: dateSchema,
+        due_date: dateSchema.nullable(),
+        vendor: companySchema,
+        customer: companySchema,
+        items: z.array(lineItemSchema),
+        subtotal: currencySchema,
+        tax: currencySchema.nullable(),
+        total: currencySchema,
+        payment_status: z.nativeEnum(PaymentStatus).nullable(),
+        payment_method: z.nativeEnum(PaymentMethod).nullable(),
+        notes: z.string().nullable(),
+      });
+
+      const documentUrl =
+        "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/google_invoice.pdf";
+
+      const result = await client.document.generate({
+        url: documentUrl,
+        domain: "document.invoice",
+        config: {
+          responseModel: invoiceSchema,
+          zodToJsonParams: {
+            definitions: {
+              address: addressSchema,
+              lineItem: lineItemSchema,
+              company: companySchema,
+            },
+            $refStrategy: "none",
+          },
+        },
+      });
+
+      expect(result.status).toBe("completed");
+      expect(result.response).toHaveProperty("invoice_id");
+      expect(result.response).toHaveProperty("invoice_date");
+      expect(result.response).toHaveProperty("vendor");
+      expect(result.response).toHaveProperty("customer");
+      expect(result.response).toHaveProperty("items");
+      expect(result.response).toHaveProperty("subtotal");
+      expect(result.response).toHaveProperty("tax");
+      expect(result.response).toHaveProperty("total");
+
+      // Check nested properties
+      expect(result.response.vendor).toHaveProperty("name");
+      expect(result.response.customer).toHaveProperty("name");
+      expect(result.response.customer.address).toHaveProperty("street");
+      expect(result.response.items.length).toBeGreaterThan(0);
+      expect(result.response.items[0]).toHaveProperty("description");
+      expect(result.response.items[0]).toHaveProperty("quantity");
+    });
   });
 });

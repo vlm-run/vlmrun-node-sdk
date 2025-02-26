@@ -153,6 +153,104 @@ const response = response.response as z.infer<typeof schema>;
 console.log(response);
 ```
 
+### Document Predictions with Zod Definitions
+
+```typescript
+import { VlmRun } from "vlmrun";
+import { z } from "zod";
+// Initialize the client
+const client = new VlmRun({
+  apiKey: "your-api-key",
+});
+
+// Define enums and base schemas
+enum PaymentStatus {
+  PAID = "Paid",
+  UNPAID = "Unpaid",
+  PARTIAL = "Partial",
+  OVERDUE = "Overdue",
+}
+
+enum PaymentMethod {
+  CREDIT_CARD = "Credit Card",
+  BANK_TRANSFER = "Bank Transfer",
+  CHECK = "Check",
+  CASH = "Cash",
+  PAYPAL = "PayPal",
+  OTHER = "Other",
+}
+
+const currencySchema = z
+  .number()
+  .min(0, "Currency values must be non-negative");
+
+const dateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format");
+
+// Define address schema
+const addressSchema = z.object({
+  street: z.string().nullable(),
+  city: z.string().nullable(),
+  state: z.string().nullable(),
+  postal_code: z.string().nullable(),
+  country: z.string().nullable(),
+});
+
+// Define line item schema
+const lineItemSchema = z.object({
+  description: z.string(),
+  quantity: z.number().positive(),
+  unit_price: currencySchema,
+  total: currencySchema,
+});
+
+// Define company schema
+const companySchema = z.object({
+  name: z.string(),
+  address: addressSchema.nullable(),
+  tax_id: z.string().nullable(),
+  phone: z.string().nullable(),
+  email: z.string().nullable(),
+  website: z.string().nullable(),
+});
+
+// Define invoice schema using the definitions
+const invoiceSchema = z.object({
+  invoice_id: z.string(),
+  invoice_date: dateSchema,
+  due_date: dateSchema.nullable(),
+  vendor: companySchema,
+  customer: companySchema,
+  items: z.array(lineItemSchema),
+  subtotal: currencySchema,
+  tax: currencySchema.nullable(),
+  total: currencySchema,
+  payment_status: z.nativeEnum(PaymentStatus).nullable(),
+  payment_method: z.nativeEnum(PaymentMethod).nullable(),
+  notes: z.string().nullable(),
+});
+
+const documentUrl =
+  "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/google_invoice.pdf";
+
+const result = await client.document.generate({
+  url: documentUrl,
+  domain: "document.invoice",
+  config: {
+    responseModel: invoiceSchema,
+    zodToJsonParams: {
+      definitions: {
+        address: addressSchema,
+        lineItem: lineItemSchema,
+        company: companySchema,
+      },
+      $refStrategy: "none",
+    },
+  },
+});
+```
+
 ## 🛠️ Examples
 
 Check out the [examples](./examples) directory for more detailed usage examples:
