@@ -96,7 +96,10 @@ export class ImagePredictions extends Predictions {
     const encodedImages = images.map((image) => processImage(image));
     let jsonSchema = config?.jsonSchema;
     if (config?.responseModel) {
-      jsonSchema = convertToJsonSchema(config.responseModel);
+      jsonSchema = convertToJsonSchema(
+        config.responseModel,
+        config.zodToJsonParams
+      );
     }
 
     const [response] = await this.requestor.request<PredictionResponse>(
@@ -148,7 +151,10 @@ export class FilePredictions extends Predictions {
 
     let jsonSchema = config?.jsonSchema;
     if (config?.responseModel) {
-      jsonSchema = convertToJsonSchema(config.responseModel);
+      jsonSchema = convertToJsonSchema(
+        config.responseModel,
+        config.zodToJsonParams
+      );
     }
 
     const [response] = await this.requestor.request<PredictionResponse>(

@@ -113,6 +113,7 @@ export type RequestMetadataInput = RequestMetadata | RequestMetadataParams;
 export type GenerationConfigParams = {
   detail?: "auto" | "hi" | "lo";
   responseModel?: ZodType;
+  zodToJsonParams?: any;
   jsonSchema?: Record<string, any> | null;
   confidence?: boolean;
   grounding?: boolean;
@@ -233,7 +234,7 @@ export interface FinetuningGenerateParams {
   environment?: string;
   sessionId?: string;
   allowTraining?: boolean;
-  responseModel?: string;  
+  responseModel?: string;
 }
 
 export interface FinetuningProvisionParams {

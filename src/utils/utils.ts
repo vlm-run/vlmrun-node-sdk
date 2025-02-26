@@ -7,14 +7,15 @@ import zodToJsonSchema from "zod-to-json-schema";
  * @returns Converted JSON schema or the original value
  */
 export function convertToJsonSchema(
-  schema: ZodType | Record<string, any> | null | undefined
+  schema: ZodType | Record<string, any> | null | undefined,
+  zodToJsonParams?: any
 ): Record<string, any> | null | undefined {
   const isZodSchema =
     schema instanceof ZodType ||
     typeof (schema as any)?.safeParse === "function";
 
   if (isZodSchema && schema) {
-    return zodToJsonSchema(schema as ZodType);
+    return zodToJsonSchema(schema as ZodType, zodToJsonParams);
   }
 
   return schema;
