@@ -38,9 +38,8 @@ describe("Integration: Hubs", () => {
   });
 
   describe("getSchema()", () => {
-    it("should successfully fetch schema", async () => {
-      const result = await client.hub.getSchema("document.invoice");
-
+    it("should successfully fetch schema without gql_stmt", async () => {
+      const result = await client.hub.getSchema({ domain: 'document.invoice' });
       expect(result).toHaveProperty("json_schema");
       expect(result).toHaveProperty("schema_version");
       expect(result).toHaveProperty("schema_hash");

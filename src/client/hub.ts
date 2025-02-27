@@ -1,5 +1,5 @@
 import { Client, APIRequestor } from './base_requestor';
-import { APIError, HubDomainInfo, HubInfoResponse, HubSchemaResponse } from './types';
+import { APIError, HubDomainInfo, HubInfoResponse, HubSchemaParams, HubSchemaResponse } from './types';
 
 export class Hub {
   private client: Client;
@@ -46,21 +46,23 @@ export class Hub {
 
   /**
    * Get the JSON schema for a given domain.
-   * @param domain Domain identifier (e.g. "document.invoice")
+   * @param params Object containing domain and optional gql_stmt
+   * @param params.domain Domain identifier (e.g. "document.invoice")
+   * @param params.gql_stmt Optional GraphQL statement for the domain
    * @returns HubSchemaResponse containing schema details
    * @throws APIError if the request fails or domain is not found
    */
-  async getSchema(domain: string): Promise<HubSchemaResponse> {
+  async getSchema(params: HubSchemaParams): Promise<HubSchemaResponse> {
     try {
       const [response] = await this.requestor.request<HubSchemaResponse>(
         'POST',
         '/hub/schema',
         undefined,
-        { domain }
+        params
       );
       return response;
     } catch (e) {
-      throw new APIError(`Failed to get schema for domain ${domain}: ${e}`);
+      throw new APIError(`Failed to get schema for domain ${params.domain}: ${e}`);
     }
   }
 }

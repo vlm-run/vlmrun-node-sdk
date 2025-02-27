@@ -62,16 +62,19 @@ describe('Hub', () => {
   });
 
   describe('getSchema', () => {
-    it('should return schema for domain', async () => {
+    it('should return schema for domain without gql_stmt', async () => {
       const mockResponse: HubSchemaResponse = {
-        schema_json: { type: 'object' },
+        json_schema: { type: 'object' },
         schema_version: '1.0.0',
         schema_hash: 'abc123',
+        domain: 'document.invoice',
+        gql_stmt: '',
+        description: 'Invoice document type',
       };
 
       jest.spyOn(client.hub['requestor'], 'request').mockResolvedValueOnce([mockResponse, 200, {}]);
 
-      const result = await client.hub.getSchema('document.invoice');
+      const result = await client.hub.getSchema({ domain: 'document.invoice' });
       expect(result).toEqual(mockResponse);
       expect(client.hub['requestor'].request).toHaveBeenCalledWith(
         'POST',
@@ -81,10 +84,33 @@ describe('Hub', () => {
       );
     });
 
+    it('should return schema for domain with gql_stmt', async () => {
+      const mockResponse: HubSchemaResponse = {
+        json_schema: { type: 'object' },
+        schema_version: '1.0.0',
+        schema_hash: 'abc123',
+        domain: 'document.invoice',
+        gql_stmt: 'query { field }',
+        description: 'Invoice document type',
+      };
+
+      jest.spyOn(client.hub['requestor'], 'request').mockResolvedValueOnce([mockResponse, 200, {}]);
+
+      const gqlStmt = 'query { field }'
+      const result = await client.hub.getSchema({ domain: 'document.invoice', gql_stmt: gqlStmt });
+      expect(result).toEqual(mockResponse);
+      expect(client.hub['requestor'].request).toHaveBeenCalledWith(
+        'POST',
+        '/hub/schema',
+        undefined,
+        { domain: 'document.invoice', gql_stmt: gqlStmt }
+      );
+    });
+
     it('should handle errors', async () => {
       jest.spyOn(client.hub['requestor'], 'request').mockRejectedValueOnce(new Error('Network error'));
 
-      await expect(client.hub.getSchema('invalid.domain')).rejects.toThrow(
+      await expect(client.hub.getSchema({ domain: 'invalid.domain' })).rejects.toThrow(
         'Failed to get schema for domain invalid.domain'
       );
     });

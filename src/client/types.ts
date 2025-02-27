@@ -117,6 +117,7 @@ export type GenerationConfigParams = {
   jsonSchema?: Record<string, any> | null;
   confidence?: boolean;
   grounding?: boolean;
+  gqlStmt?: string | null;
 };
 
 export class GenerationConfig {
@@ -140,6 +141,11 @@ export class GenerationConfig {
    */
   grounding: boolean = false;
 
+  /**
+   * The GraphQL statement to use for the model.
+   */
+  gqlStmt: string | null = null;
+
   constructor(params: Partial<GenerationConfig> = {}) {
     Object.assign(this, params);
   }
@@ -153,6 +159,7 @@ export class GenerationConfig {
       json_schema: this.jsonSchema,
       confidence: this.confidence,
       grounding: this.grounding,
+      gql_stmt: this.gqlStmt,
     };
   }
 }
@@ -264,9 +271,12 @@ export interface HubDomainInfo {
 }
 
 export interface HubSchemaResponse {
-  schema_json: Record<string, any>;
+  json_schema: Record<string, any>;
   schema_version: string;
   schema_hash: string;
+  domain: string;
+  gql_stmt: string;
+  description: string;
 }
 
 export interface DatasetResponse {
@@ -307,4 +317,9 @@ export interface VlmRunError extends Error {
   message: string;
   code?: string;
   cause?: Error;
+}
+
+export interface HubSchemaParams {
+  domain: string;
+  gql_stmt?: string;
 }
