@@ -57,6 +57,7 @@ describe("Predictions", () => {
             config: {
               confidence: false,
               detail: "auto",
+              gql_stmt: null,
               grounding: false,
               json_schema: undefined,
             },
@@ -104,6 +105,7 @@ describe("Predictions", () => {
             config: {
               confidence: false,
               detail: "auto",
+              gql_stmt: null,
               grounding: false,
               json_schema: { type: "object" },
             },
