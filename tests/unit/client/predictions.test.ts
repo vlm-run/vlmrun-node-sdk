@@ -155,6 +155,7 @@ describe("Predictions", () => {
               confidence: false,
               detail: "auto",
               grounding: false,
+              gql_stmt: null,
               json_schema: undefined,
             },
             metadata: {
@@ -203,6 +204,7 @@ describe("Predictions", () => {
               confidence: false,
               detail: "auto",
               grounding: false,
+              gql_stmt: null,
               json_schema: undefined,
             },
             metadata: {
@@ -251,6 +253,7 @@ describe("Predictions", () => {
               confidence: false,
               detail: "auto",
               grounding: false,
+              gql_stmt: null,
               json_schema: undefined,
             },
             metadata: {
@@ -300,6 +303,7 @@ describe("Predictions", () => {
               detail: "auto",
               json_schema: null,
               confidence: false,
+              gql_stmt: null,
               grounding: false,
             },
             metadata: {
@@ -351,6 +355,7 @@ describe("Predictions", () => {
               detail: "hi",
               json_schema: { type: "object" },
               confidence: true,
+              gql_stmt: null,
               grounding: true,
             },
             metadata: {

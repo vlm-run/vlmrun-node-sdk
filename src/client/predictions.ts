@@ -172,6 +172,7 @@ export class FilePredictions extends Predictions {
           json_schema: jsonSchema,
           confidence: config?.confidence ?? false,
           grounding: config?.grounding ?? false,
+          gql_stmt: config?.gqlStmt ?? null,
         },
         metadata: {
           environment: metadata?.environment ?? "dev",
@@ -202,6 +203,7 @@ export class WebPredictions extends Predictions {
           json_schema: config?.jsonSchema ?? null,
           confidence: config?.confidence ?? false,
           grounding: config?.grounding ?? false,
+          gql_stmt: config?.gqlStmt ?? null,
         },
         metadata: {
           environment: metadata?.environment ?? "dev",
