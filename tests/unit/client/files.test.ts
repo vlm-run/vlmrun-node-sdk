@@ -1,16 +1,24 @@
 import { Client } from '../../../src/client/base_requestor';
 import { Files } from '../../../src/client/files';
 import { FileResponse, FilePurpose } from '../../../src/client/types';
-import { readFile } from 'fs/promises';
 import { createHash } from 'crypto';
+import * as fs from 'fs';
+import * as fileUtils from '../../../src/utils/file';
 
 jest.mock('../../../src/client/base_requestor');
-jest.mock('fs/promises');
+jest.mock('fs');
 jest.mock('crypto');
+jest.mock('../../../src/utils/file');
+
+// Mock the File class since it's not available in Node.js
+global.File = class File {
+  constructor(public bits: any[], public name: string) {}
+} as any;
 
 describe('Files', () => {
   let client: jest.Mocked<Client>;
   let files: Files;
+  let requestMock: jest.SpyInstance;
 
   beforeEach(() => {
     client = {
@@ -18,6 +26,11 @@ describe('Files', () => {
       baseURL: 'https://api.example.com',
     } as jest.Mocked<Client>;
     files = new Files(client);
+    requestMock = jest.spyOn(files['requestor'], 'request');
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('list', () => {
@@ -30,12 +43,12 @@ describe('Files', () => {
         created_at: new Date().toISOString(),
         object: 'file'
       }];
-      jest.spyOn(files['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
       const result = await files.list({});
 
       expect(result).toEqual(mockResponse);
-      expect(files['requestor'].request).toHaveBeenCalledWith(
+      expect(requestMock).toHaveBeenCalledWith(
         'GET',
         'files',
         { skip: undefined, limit: undefined }
@@ -51,12 +64,12 @@ describe('Files', () => {
         created_at: new Date().toISOString(),
         object: 'file'
       }];
-      jest.spyOn(files['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
       const result = await files.list({ skip: 5, limit: 20 });
 
       expect(result).toEqual(mockResponse);
-      expect(files['requestor'].request).toHaveBeenCalledWith(
+      expect(requestMock).toHaveBeenCalledWith(
         'GET',
         'files',
         { skip: 5, limit: 20 }
@@ -64,73 +77,124 @@ describe('Files', () => {
     });
   });
 
-  describe('checkFileExists', () => {
+  describe('getCachedFile', () => {
     it('should return file if it exists', async () => {
-      const mockFileBuffer = Buffer.from('test file content');
-      const mockHash = 'test-hash';
-      const mockResponse: FileResponse[] = [{
+      // Mock the stream events
+      const mockStream = {
+        on: jest.fn().mockImplementation((event, callback) => {
+          if (event === 'data') {
+            callback(Buffer.from('test file content'));
+          }
+          if (event === 'end') {
+            callback();
+          }
+          return mockStream;
+        }),
+      };
+      
+      // Mock fs.createReadStream
+      (fs.createReadStream as jest.Mock).mockReturnValue(mockStream);
+      
+      // Mock createHash
+      const mockHashDigest = 'test-hash';
+      const mockHashUpdate = {
+        update: jest.fn().mockReturnThis(),
+        digest: jest.fn().mockReturnValue(mockHashDigest),
+      };
+      (createHash as jest.Mock).mockReturnValue(mockHashUpdate);
+      
+      // Mock API response
+      const mockResponse: FileResponse = {
         id: 'file_123',
         filename: 'test.jpg',
         bytes: 1000,
         purpose: 'vision' as FilePurpose,
         created_at: new Date().toISOString(),
         object: 'file'
-      }];
-
-      (readFile as jest.Mock).mockResolvedValue(mockFileBuffer);
-      const mockHashUpdate = {
-        update: jest.fn().mockReturnThis(),
-        digest: jest.fn().mockReturnValue(mockHash),
       };
-      (createHash as jest.Mock).mockReturnValue(mockHashUpdate);
-      jest.spyOn(files['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
-      const result = await files.checkFileExists('test.jpg');
+      const result = await files.getCachedFile('test.jpg');
 
-      expect(result).toEqual(mockResponse[0]);
-      expect(readFile).toHaveBeenCalledWith('test.jpg');
+      expect(result).toEqual(mockResponse);
+      expect(fs.createReadStream).toHaveBeenCalledWith('test.jpg', expect.any(Object));
       expect(createHash).toHaveBeenCalledWith('md5');
-      expect(mockHashUpdate.update).toHaveBeenCalledWith(mockFileBuffer);
+      expect(mockHashUpdate.update).toHaveBeenCalledWith(Buffer.from('test file content'));
       expect(mockHashUpdate.digest).toHaveBeenCalledWith('hex');
-      expect(files['requestor'].request).toHaveBeenCalledWith(
+      expect(requestMock).toHaveBeenCalledWith(
         'GET',
-        'files',
-        { hash: mockHash }
+        `files/hash/${mockHashDigest}`
       );
     });
 
-    it('should return null if file does not exist', async () => {
-      const mockFileBuffer = Buffer.from('test file content');
-      const mockHash = 'test-hash';
+    it('should return null if file does not exist in API', async () => {
+      // Mock the stream events
+      const mockStream = {
+        on: jest.fn().mockImplementation((event, callback) => {
+          if (event === 'data') {
+            callback(Buffer.from('test file content'));
+          }
+          if (event === 'end') {
+            callback();
+          }
+          return mockStream;
+        }),
+      };
       
-      (readFile as jest.Mock).mockResolvedValue(mockFileBuffer);
+      // Mock fs.createReadStream
+      (fs.createReadStream as jest.Mock).mockReturnValue(mockStream);
+      
+      // Mock createHash
+      const mockHashDigest = 'test-hash';
       const mockHashUpdate = {
         update: jest.fn().mockReturnThis(),
-        digest: jest.fn().mockReturnValue(mockHash),
+        digest: jest.fn().mockReturnValue(mockHashDigest),
       };
       (createHash as jest.Mock).mockReturnValue(mockHashUpdate);
-      jest.spyOn(files['requestor'], 'request').mockResolvedValue([[], 200, {}]);
+      
+      // Mock API response for file not found
+      requestMock.mockRejectedValue(new Error('File not found'));
 
-      const result = await files.checkFileExists('test.jpg');
+      const result = await files.getCachedFile('test.jpg');
 
       expect(result).toBeNull();
     });
 
-    it('should return null if request fails', async () => {
-      const mockFileBuffer = Buffer.from('test file content');
-      const mockHash = 'test-hash';
-      
-      (readFile as jest.Mock).mockResolvedValue(mockFileBuffer);
-      const mockHashUpdate = {
-        update: jest.fn().mockReturnThis(),
-        digest: jest.fn().mockReturnValue(mockHash),
+    it('should handle file system errors', async () => {
+      // Mock the stream events with an error
+      const mockStream = {
+        on: jest.fn().mockImplementation((event, callback) => {
+          if (event === 'error') {
+            callback(new Error('File system error'));
+          }
+          return mockStream;
+        }),
       };
-      (createHash as jest.Mock).mockReturnValue(mockHashUpdate);
-      jest.spyOn(files['requestor'], 'request').mockRejectedValue(new Error('Request failed'));
+      
+      // Mock fs.createReadStream
+      (fs.createReadStream as jest.Mock).mockReturnValue(mockStream);
+
+      await expect(files.getCachedFile('test.jpg')).rejects.toThrow('File system error');
+    });
+  });
+
+  describe('checkFileExists', () => {
+    it('should call getCachedFile', async () => {
+      const mockResponse: FileResponse = {
+        id: 'file_123',
+        filename: 'test.jpg',
+        bytes: 1000,
+        purpose: 'vision' as FilePurpose,
+        created_at: new Date().toISOString(),
+        object: 'file'
+      };
+      
+      jest.spyOn(files, 'getCachedFile').mockResolvedValue(mockResponse);
 
       const result = await files.checkFileExists('test.jpg');
 
-      expect(result).toBeNull();
+      expect(result).toEqual(mockResponse);
+      expect(files.getCachedFile).toHaveBeenCalledWith('test.jpg');
     });
   });
 
@@ -138,22 +202,23 @@ describe('Files', () => {
     it('should return existing file if found and checkDuplicate is true', async () => {
       const existingFile: FileResponse = {
         id: 'file_123',
-        filename: 'test.jpg',
+        filename: 'image1.jpg',
         bytes: 1000,
         purpose: 'vision' as FilePurpose,
         created_at: new Date().toISOString(),
         object: 'file'
       };
-      jest.spyOn(files, 'checkFileExists').mockResolvedValue(existingFile);
+      
+      jest.spyOn(files, 'getCachedFile').mockResolvedValue(existingFile);
 
       const result = await files.upload({
-        filePath: 'test.jpg',
+        filePath: 'image1.jpg',
         purpose: 'vision',
         checkDuplicate: true
       });
 
       expect(result).toEqual(existingFile);
-      expect(files.checkFileExists).toHaveBeenCalledWith('test.jpg');
+      expect(files.getCachedFile).toHaveBeenCalledWith('image1.jpg');
     });
 
     it('should upload new file if no duplicate found', async () => {
@@ -165,8 +230,14 @@ describe('Files', () => {
         created_at: new Date().toISOString(),
         object: 'file'
       };
-      jest.spyOn(files, 'checkFileExists').mockResolvedValue(null);
-      jest.spyOn(files['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
+      
+      jest.spyOn(files, 'getCachedFile').mockResolvedValue(null);
+      
+      // Mock readFileFromPathAsFile
+      const mockFile = new File([], 'test.jpg');
+      (fileUtils.readFileFromPathAsFile as jest.Mock).mockResolvedValue(mockFile);
+      
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
       const result = await files.upload({
         filePath: 'test.jpg',
@@ -175,8 +246,9 @@ describe('Files', () => {
       });
 
       expect(result).toEqual(mockResponse);
-      expect(files.checkFileExists).toHaveBeenCalledWith('test.jpg');
-      expect(files['requestor'].request).toHaveBeenCalled();
+      expect(files.getCachedFile).toHaveBeenCalledWith('test.jpg');
+      expect(fileUtils.readFileFromPathAsFile).toHaveBeenCalledWith('test.jpg');
+      expect(requestMock).toHaveBeenCalled();
     });
 
     it('should skip duplicate check if checkDuplicate is false', async () => {
@@ -188,8 +260,14 @@ describe('Files', () => {
         created_at: new Date().toISOString(),
         object: 'file'
       };
-      jest.spyOn(files, 'checkFileExists');
-      jest.spyOn(files['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
+      
+      jest.spyOn(files, 'getCachedFile');
+      
+      // Mock readFileFromPathAsFile
+      const mockFile = new File([], 'test.jpg');
+      (fileUtils.readFileFromPathAsFile as jest.Mock).mockResolvedValue(mockFile);
+      
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
       const result = await files.upload({
         filePath: 'test.jpg',
@@ -198,8 +276,45 @@ describe('Files', () => {
       });
 
       expect(result).toEqual(mockResponse);
-      expect(files.checkFileExists).not.toHaveBeenCalled();
-      expect(files['requestor'].request).toHaveBeenCalled();
+      expect(files.getCachedFile).not.toHaveBeenCalled();
+      expect(fileUtils.readFileFromPathAsFile).toHaveBeenCalledWith('test.jpg');
+      expect(requestMock).toHaveBeenCalled();
+    });
+  });
+
+  describe('get', () => {
+    it('should get a file by ID', async () => {
+      const mockResponse: FileResponse = {
+        id: 'file_123',
+        filename: 'test.jpg',
+        bytes: 1000,
+        purpose: 'vision' as FilePurpose,
+        created_at: new Date().toISOString(),
+        object: 'file'
+      };
+      
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await files.get('file_123');
+
+      expect(result).toEqual(mockResponse);
+      expect(requestMock).toHaveBeenCalledWith(
+        'GET',
+        'files/file_123'
+      );
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete a file by ID', async () => {
+      requestMock.mockResolvedValue([{}, 200, {}]);
+
+      await files.delete('file_123');
+
+      expect(requestMock).toHaveBeenCalledWith(
+        'DELETE',
+        'files/file_123'
+      );
     });
   });
 });

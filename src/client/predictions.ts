@@ -6,6 +6,8 @@ import {
   ImagePredictionParams,
   FilePredictionParams,
   WebPredictionParams,
+  SchemaResponse,
+  GenerationConfigParams,
 } from "./types";
 import { processImage } from "../utils/image";
 import { convertToJsonSchema } from "../utils/utils";
@@ -17,6 +19,24 @@ export class Predictions {
   constructor(client: Client) {
     this.client = client;
     this.requestor = new APIRequestor(client);
+  }
+
+  /**
+   * Cast response to schema if a schema is provided
+   * @param prediction - The prediction response
+   * @param domain - The domain used for the prediction
+   * @param config - The generation config used for the prediction
+   * @protected
+   */
+  protected _castResponseToSchema(
+    prediction: PredictionResponse,
+    domain: string,
+    config?: GenerationConfigParams
+  ): void {
+    // This is a placeholder for schema casting logic
+    // In the Python SDK, this method is used to cast the response to a schema
+    // based on the domain and config
+    // For now, we'll just return the prediction as is
   }
 
   async list(params: ListParams = {}): Promise<PredictionResponse[]> {
@@ -68,16 +88,55 @@ export class Predictions {
 
 export class ImagePredictions extends Predictions {
   /**
+   * Handle images and URLs input validation and processing
+   * @param images - Array of image inputs (file paths or base64 encoded strings)
+   * @param urls - Array of URL strings pointing to images
+   * @returns Processed image data array
+   * @private
+   */
+  private _handleImagesOrUrls(
+    images?: string[],
+    urls?: string[]
+  ): string[] {
+    // Input validation
+    if (!images && !urls) {
+      throw new Error("Either `images` or `urls` must be provided");
+    }
+    if (images && urls) {
+      throw new Error("Only one of `images` or `urls` can be provided");
+    }
+
+    if (images) {
+      if (!images.length) {
+        throw new Error("Images array cannot be empty");
+      }
+      return images.map((image) => processImage(image));
+    } else if (urls) {
+      if (!urls.length) {
+        throw new Error("URLs array cannot be empty");
+      }
+      if (!urls.every((url) => typeof url === "string")) {
+        throw new Error("All URLs must be strings");
+      }
+      if (!urls.every((url) => url.startsWith("http"))) {
+        throw new Error("URLs must start with 'http'");
+      }
+      return urls;
+    }
+
+    throw new Error("Either `images` or `urls` must be provided");
+  }
+
+  /**
    * Generate predictions from images
    * @param params.images - Array of image inputs. Each image can be:
-   *   - A URL string pointing to an image
    *   - A local file path string
    *   - A base64 encoded image string
+   * @param params.urls - Array of URL strings pointing to images
    * @param params.model - Model ID to use for prediction eg. 'vlm-1'
    * @param params.domain - Domain for the prediction eg. 'document.invoice'
-   * @param params.jsonSchema - JSON schema for selected fields of structured output
-   * @param params.detail - Detail level for the prediction (default: 'auto')
    * @param params.batch - Whether to process as batch (default: false)
+   * @param params.config - Configuration options for the prediction
    * @param params.metadata - Additional metadata to include
    * @param params.callbackUrl - URL to receive prediction completion webhook
    * @returns Promise containing the prediction response
@@ -85,7 +144,8 @@ export class ImagePredictions extends Predictions {
   async generate(params: ImagePredictionParams): Promise<PredictionResponse> {
     const {
       images,
-      model,
+      urls,
+      model = "vlm-1",
       domain,
       batch = false,
       config,
@@ -93,7 +153,8 @@ export class ImagePredictions extends Predictions {
       callbackUrl,
     } = params;
 
-    const encodedImages = images.map((image) => processImage(image));
+    const imagesData = this._handleImagesOrUrls(images, urls);
+    
     let jsonSchema = config?.jsonSchema;
     if (config?.responseModel) {
       jsonSchema = convertToJsonSchema(
@@ -107,7 +168,7 @@ export class ImagePredictions extends Predictions {
       "image/generate",
       undefined,
       {
-        images: encodedImages,
+        images: imagesData,
         model,
         domain,
         batch,
@@ -126,6 +187,41 @@ export class ImagePredictions extends Predictions {
         callback_url: callbackUrl,
       }
     );
+
+    this._castResponseToSchema(response, domain, config);
+    
+    return response;
+  }
+
+  /**
+   * Auto-generate a schema for a given image or document.
+   * @param params - Schema generation parameters
+   * @param params.images - Array of image inputs. Each image can be:
+   *   - A local file path string
+   *   - A base64 encoded image string
+   * @param params.urls - Array of URL strings pointing to images
+   * @returns Promise containing the prediction response with schema information
+   */
+  async schema(params: {
+    images?: string[];
+    urls?: string[];
+  }): Promise<PredictionResponse> {
+    const { images, urls } = params;
+    const imagesData = this._handleImagesOrUrls(images, urls);
+    
+    const [response] = await this.requestor.request<PredictionResponse>(
+      "POST",
+      "image/schema",
+      undefined,
+      {
+        images: imagesData,
+      }
+    );
+    
+    if (response.response) {
+      response.response = response.response as SchemaResponse;
+    }
+    
     return response;
   }
 }
@@ -136,6 +232,28 @@ export class FilePredictions extends Predictions {
   constructor(client: Client, route: "document" | "audio" | "video") {
     super(client);
     this.route = route;
+  }
+
+  /**
+   * Handle file or URL input validation
+   * @param fileId - File ID to use
+   * @param url - URL to use
+   * @returns Object with the appropriate parameter name and value
+   * @private
+   */
+  private _handleFileOrUrl(
+    fileId?: string,
+    url?: string
+  ): { [key: string]: string } {
+    // Input validation
+    if (!fileId && !url) {
+      throw new Error("Either `fileId` or `url` must be provided");
+    }
+    if (fileId && url) {
+      throw new Error("Only one of `fileId` or `url` can be provided");
+    }
+
+    return fileId ? { file_id: fileId } : { url: url! };
   }
 
   async generate(params: FilePredictionParams): Promise<PredictionResponse> {
@@ -150,6 +268,8 @@ export class FilePredictions extends Predictions {
       callbackUrl,
     } = params;
 
+    const fileOrUrl = this._handleFileOrUrl(fileId, url);
+
     let jsonSchema = config?.jsonSchema;
     if (config?.responseModel) {
       jsonSchema = convertToJsonSchema(
@@ -163,7 +283,7 @@ export class FilePredictions extends Predictions {
       `/${this.route}/generate`,
       undefined,
       {
-        ...(fileId ? { file_id: fileId } : { url }),
+        ...fileOrUrl,
         model,
         domain,
         batch,
@@ -182,6 +302,39 @@ export class FilePredictions extends Predictions {
         callback_url: callbackUrl,
       }
     );
+    
+    // Cast response to schema if needed
+    this._castResponseToSchema(response, domain!, config);
+    
+    return response;
+  }
+
+  /**
+   * Auto-generate a schema for a given document, audio, or video file
+   * @param params - Schema generation parameters
+   * @param params.fileId - File ID to generate schema from
+   * @param params.url - URL to generate schema from
+   * @returns Promise containing the prediction response with schema information
+   */
+  async schema(params: {
+    fileId?: string;
+    url?: string;
+  }): Promise<PredictionResponse> {
+    const { fileId, url } = params;
+    const fileOrUrl = this._handleFileOrUrl(fileId, url);
+    
+    const [response] = await this.requestor.request<PredictionResponse>(
+      "POST",
+      `/${this.route}/schema`,
+      undefined,
+      fileOrUrl
+    );
+    
+    // Cast response to SchemaResponse
+    if (response.response) {
+      response.response = response.response as SchemaResponse;
+    }
+    
     return response;
   }
 }
@@ -217,7 +370,6 @@ export class WebPredictions extends Predictions {
   }
 }
 
-// Create specialized instances for different file types
 export const DocumentPredictions = (client: Client) =>
   new FilePredictions(client, "document");
 export const AudioPredictions = (client: Client) =>

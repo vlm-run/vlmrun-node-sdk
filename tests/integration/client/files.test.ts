@@ -47,7 +47,7 @@ describe("Integration: Files", () => {
     it("should upload file and get file details", async () => {
       const result = await client.files.upload({
         filePath: testFilePath,
-        purpose: "vision",
+        purpose: "assistants",
         checkDuplicate: true,
       });
 
@@ -56,7 +56,7 @@ describe("Integration: Files", () => {
       expect(result.created_at).toBeTruthy();
       expect(result.object).toBe("file");
       expect(result.bytes).toBeTruthy();
-      expect(result.purpose).toBe("vision" as FilePurpose);
+      expect(result.purpose).toBe("assistants" as FilePurpose);
 
       // Test get endpoint
       const getResponse = await client.files.get(result.id);
@@ -70,7 +70,7 @@ describe("Integration: Files", () => {
     it("should return existing file if found and checkDuplicate is true", async () => {
       const result = await client.files.upload({
         filePath: testFilePath,
-        purpose: "vision",
+        purpose: "assistants",
         checkDuplicate: true,
       });
 
@@ -79,7 +79,7 @@ describe("Integration: Files", () => {
       expect(result.created_at).toBeTruthy();
       expect(result.object).toBe("file");
       expect(result.bytes).toBeTruthy();
-      expect(result.purpose).toBe("vision" as FilePurpose);
+      expect(result.purpose).toBe("assistants" as FilePurpose);
     });
   });
 });

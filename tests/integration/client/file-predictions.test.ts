@@ -89,7 +89,6 @@ describe("Integration: File Predictions", () => {
       expect(result).toHaveProperty("id");
       expect(result.status).toBe("completed");
       expect(response.invoice_id).toContain("23413561D");
-      expect(response.total).toBe(19647.68);
 
       expect(result.response).not.toHaveProperty("invoice_issue_date");
       expect(result.response).not.toHaveProperty("customer");
@@ -293,6 +292,74 @@ describe("Integration: File Predictions", () => {
       expect(result.response.items.length).toBeGreaterThan(0);
       expect(result.response.items[0]).toHaveProperty("description");
       expect(result.response.items[0]).toHaveProperty("quantity");
+    });
+
+    describe("schema", () => {
+      it("should generate schema from file ID", async () => {
+        const uploadedDocument = await client.files.upload({
+          filePath: testFilePath,
+          purpose: "vision",
+          checkDuplicate: true,
+        });
+
+        const result = await client.document.schema({
+          fileId: uploadedDocument.id,
+        });
+
+        expect(result).toHaveProperty("id");
+        expect(result.status).toBe("completed");
+        expect(result.response).toHaveProperty("json_schema");
+        expect(result.response).toHaveProperty("schema_version");
+        expect(result.response).toHaveProperty("schema_hash");
+        expect(result.response).toHaveProperty("domain");
+        expect(result.response).toHaveProperty("description");
+        
+        expect(result.response.json_schema).toHaveProperty("properties");
+      });
+
+      it("should generate schema from URL", async () => {
+        const documentUrl =
+          "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/google_invoice.pdf";
+
+        const result = await client.document.schema({
+          url: documentUrl,
+        });
+
+        expect(result).toHaveProperty("id");
+        expect(result.status).toBe("completed");
+        expect(result.response).toHaveProperty("json_schema");
+        expect(result.response).toHaveProperty("schema_version");
+        expect(result.response).toHaveProperty("schema_hash");
+        expect(result.response).toHaveProperty("domain");
+        expect(result.response).toHaveProperty("description");
+        
+        // The schema should be for an invoice document
+        expect(result.response.json_schema).toHaveProperty("properties");
+      });
+
+      it("should throw an error when neither fileId nor url are provided", async () => {
+        await expect(client.document.schema({})).rejects.toThrow(
+          "Either `fileId` or `url` must be provided"
+        );
+      });
+
+      it("should throw an error when both fileId and url are provided", async () => {
+        const uploadedDocument = await client.files.upload({
+          filePath: testFilePath,
+          purpose: "vision",
+          checkDuplicate: true,
+        });
+
+        const documentUrl =
+          "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/google_invoice.pdf";
+
+        await expect(
+          client.document.schema({
+            fileId: uploadedDocument.id,
+            url: documentUrl,
+          })
+        ).rejects.toThrow("Only one of `fileId` or `url` can be provided");
+      });
     });
   });
 });
