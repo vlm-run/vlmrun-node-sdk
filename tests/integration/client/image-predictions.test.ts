@@ -109,10 +109,11 @@ describe("Integration: Image Predictions", () => {
     });
 
     it("should generate image predictions with custom options", async () => {
-      const testImagePath = "tests/integration/assets/invoice.jpg";
+      const imageUrl =
+        "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/invoice_1.jpg";
 
       const result = await client.image.generate({
-        images: [testImagePath],
+        urls: [imageUrl],
         model: "vlm-1",
         domain: "document.invoice",
         config: {
@@ -138,6 +139,46 @@ describe("Integration: Image Predictions", () => {
       expect(result.response).not.toHaveProperty("customer_billing_address");
       expect(result.response).not.toHaveProperty("customer_shipping_address");
       expect(result.response).not.toHaveProperty("items");
+    });
+
+    describe("schema", () => {
+      it("should generate schema from image path", async () => {
+        const testImagePath = "tests/integration/assets/invoice.jpg";
+
+        const result = await client.image.schema({
+          images: [testImagePath],
+        });
+
+        expect(result).toHaveProperty("id");
+        expect(result.status).toBe("completed");
+        expect(result.response).toHaveProperty("json_schema");
+        expect(result.response).toHaveProperty("schema_version");
+        expect(result.response).toHaveProperty("schema_hash");
+        expect(result.response).toHaveProperty("domain");
+        expect(result.response).toHaveProperty("description");
+        
+        // The schema should be for an invoice document
+        expect(result.response.json_schema).toHaveProperty("properties");
+      });
+
+      it("should throw an error when neither images nor urls are provided", async () => {
+        await expect(client.image.schema({})).rejects.toThrow(
+          "Either `images` or `urls` must be provided"
+        );
+      });
+
+      it("should throw an error when both images and urls are provided", async () => {
+        const testImagePath = "tests/integration/assets/invoice.jpg";
+        const imageUrl =
+          "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/invoice_1.jpg";
+
+        await expect(
+          client.image.schema({
+            images: [testImagePath],
+            urls: [imageUrl],
+          })
+        ).rejects.toThrow("Only one of `images` or `urls` can be provided");
+      });
     });
   });
 });

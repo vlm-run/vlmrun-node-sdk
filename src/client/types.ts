@@ -166,13 +166,28 @@ export class GenerationConfig {
 
 export type GenerationConfigInput = GenerationConfig | GenerationConfigParams;
 
+export interface SchemaResponse {
+  json_schema: Record<string, any>;
+  schema_version: string;
+  schema_hash: string;
+  domain: string;
+  gql_stmt: string;
+  description: string;
+}
+
 export interface ImagePredictionParams extends PredictionGenerateParams {
   batch?: boolean;
-  images: string[];
+  images?: string[];
+  urls?: string[];
 }
 
 export interface FilePredictionParams extends PredictionGenerateParams {
   batch?: boolean;
+  fileId?: string;
+  url?: string;
+}
+
+export interface FilePredictionSchemaParams {
   fileId?: string;
   url?: string;
 }
