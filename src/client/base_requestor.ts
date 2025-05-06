@@ -102,11 +102,10 @@ export class APIRequestor {
         let requestId: string | undefined;
         
         try {
-          const errorData = error.response.data;
-          const errorObj = errorData.error || {};
-          errorMessage = errorObj.message || error.message || errorMessage;
-          errorType = errorObj.type;
-          requestId = errorObj.id;
+          const errorData = error.response?.data;
+          errorMessage = errorData.detail || error.message || errorMessage;
+          errorType = error.cause?.name;
+          requestId = error.response?.request?.id;
         } catch (e) {
           errorMessage = error.message || errorMessage;
         }
