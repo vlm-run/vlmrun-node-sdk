@@ -1,4 +1,5 @@
 import { extname } from 'path';
+import { DependencyError, InputError } from '../client/exceptions';
 
 /**
  * Encodes an image file to base64
@@ -7,7 +8,7 @@ import { extname } from 'path';
  */
 export function encodeImage(imagePath: string): string {
   if (typeof window !== 'undefined') {
-    throw new Error('Image encoding is not supported in the browser');
+    throw new DependencyError('Image encoding is not supported in the browser', 'browser_limitation', 'Use server-side image encoding instead');
   }
   const { readFileSync } = require('fs');
   const imageBuffer = readFileSync(imagePath);
@@ -31,5 +32,5 @@ export function processImage(image: string): string {
     return encodeImage(image);
   }
   
-  throw new Error(`Invalid image file: ${image}`);
+  throw new InputError(`Invalid image file: ${image}`, "invalid_format", "Provide a valid image file path, URL, or base64 encoded image");
 }

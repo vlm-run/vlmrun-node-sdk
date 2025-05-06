@@ -2,6 +2,7 @@ import { Client, APIRequestor } from "./base_requestor";
 import { DatasetResponse, DatasetCreateParams, DatasetListParams } from "./types";
 import { createArchive } from "../utils";
 import { Files } from "../index";
+import { DependencyError, InputError, ServerError } from "./exceptions";
 
 export class Datasets {
   private requestor: APIRequestor;
@@ -26,11 +27,11 @@ export class Datasets {
     const validTypes = ["images", "videos", "documents"];
 
     if (typeof window !== "undefined") {
-      throw new Error("createArchive is not supported in a browser environment.");
+      throw new DependencyError("createArchive is not supported in a browser environment.", "browser_limitation", "Use server-side environment to create datasets");
     }
 
     if (!validTypes.includes(params.datasetType)) {
-      throw new Error("dataset_type must be one of: images, videos, documents");
+      throw new InputError("dataset_type must be one of: images, videos, documents", "invalid_parameter", "Provide a valid dataset type: images, videos, or documents");
     }
 
     // Create tar.gz archive of the dataset directory.
@@ -99,7 +100,7 @@ export class Datasets {
       }
     );
     if (!Array.isArray(items)) {
-      throw new Error("Expected array response");
+      throw new ServerError("Expected array response", undefined, undefined, undefined, "unexpected_response", "Contact support if this issue persists");
     }
     return items;
   }

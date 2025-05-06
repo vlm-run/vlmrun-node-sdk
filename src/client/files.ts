@@ -2,6 +2,7 @@ import { createHash } from "crypto";
 import { Client, APIRequestor } from "./base_requestor";
 import { FileResponse, ListParams, FileUploadParams } from "./types";
 import { readFileFromPathAsFile } from "../utils/file";
+import { DependencyError, InputError } from "./exceptions";
 
 export class Files {
   private client: Client;
@@ -29,7 +30,7 @@ export class Files {
    */
   private async calculateMD5(filePath: string): Promise<string> {
     if (typeof window !== "undefined") {
-      throw new Error("File hashing is not supported in the browser");
+      throw new DependencyError("File hashing is not supported in the browser", "browser_limitation", "Use server-side file hashing instead");
     }
 
     const fs = require("fs");
@@ -95,7 +96,7 @@ export class Files {
 
       fileToUpload = await readFileFromPathAsFile(params.filePath);
     } else {
-      throw new Error("Either file or filePath must be provided.");
+      throw new InputError("Either file or filePath must be provided.", "missing_parameter", "Provide either a file object or a filePath string");
     }
 
     const [response] = await this.requestor.request<FileResponse>(

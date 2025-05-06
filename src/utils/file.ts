@@ -1,3 +1,5 @@
+import { DependencyError } from '../client/exceptions';
+
 export const readFileFromPathAsFile = async (filePath: string): Promise<File> => {
     try {
         if (typeof window === 'undefined') {
@@ -11,10 +13,10 @@ export const readFileFromPathAsFile = async (filePath: string): Promise<File> =>
 
             return new File([fileBuffer], fileName, { type: mimeType });
         } else {
-            throw new Error("File reading is not supported in the browser");
+            throw new DependencyError("File reading is not supported in the browser", "browser_limitation", "Use server-side file operations instead");
         }
     } catch (error: any) {
-        throw new Error(`Error reading file at ${filePath}: ${error.message}`);
+        throw new DependencyError(`Error reading file at ${filePath}: ${error.message}`, "file_operation_error", "Check file permissions and path");
     }
 };
 
@@ -41,10 +43,10 @@ export const createArchive = async (directory: string, archiveName: string): Pro
   
         return tarPath;
       } else {
-        throw new Error("createArchive is not supported in a browser environment.");
+        throw new DependencyError("createArchive is not supported in a browser environment.", "browser_limitation", "Use server-side environment to create archives");
       }
     } catch (error: any) {
-      throw new Error(`Error creating archive for ${directory}: ${error.message}`);
+      throw new DependencyError(`Error creating archive for ${directory}: ${error.message}`, "file_operation_error", "Check directory permissions and path");
     }
   };
   
