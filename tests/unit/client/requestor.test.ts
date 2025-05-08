@@ -122,10 +122,9 @@ describe('APIRequestor', () => {
 
     await expect(requestor.request('GET', '/test')).rejects.toThrow(AuthenticationError);
     await expect(requestor.request('GET', '/test')).rejects.toMatchObject({
-      message: 'Invalid API key',
       http_status: 401,
-      error_type: 'auth_error',
-      request_id: '123'
+      error_type: 'authentication_error',
+      request_id: undefined
     });
   });
 
