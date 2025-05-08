@@ -13,6 +13,7 @@ import { Feedback } from "./client/feedback";
 import { Finetuning } from "./client/fine_tuning";
 import { Datasets } from "./client/datasets";
 import { Hub } from "./client/hub";
+import { Agent } from "./client/agent";
 
 export * from "./client/types";
 export * from "./client/base_requestor";
@@ -22,6 +23,7 @@ export * from "./client/predictions";
 export * from "./client/feedback";
 export * from "./client/fine_tuning";
 export * from "./client/exceptions";
+export * from "./client/agent";
 
 export * from "./utils";
 
@@ -46,6 +48,7 @@ export class VlmRun {
   readonly finetuning: Finetuning;
   readonly dataset: Datasets;
   readonly hub: Hub;
+  readonly agent: Agent;
 
   constructor(config: VlmRunConfig) {
     this.client = {
@@ -67,5 +70,6 @@ export class VlmRun {
     this.finetuning = new Finetuning(this.client);
     this.dataset = new Datasets(this.client)
     this.hub = new Hub(this.client);
+    this.agent = new Agent(this.client);
   }
 }
