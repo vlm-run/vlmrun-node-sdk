@@ -79,7 +79,7 @@ export class APIRequestor {
           formData.append(key, value);
         });
         data = formData;
-        
+        headers.set("Content-Type", "multipart/form-data");        
       }
 
       const response = await this.axios.request({
@@ -103,7 +103,13 @@ export class APIRequestor {
         
         try {
           const errorData = error.response?.data;
-          errorMessage = errorData.detail || error.message || errorMessage;
+
+          if (Array.isArray(errorData.detail)) {
+            errorMessage = errorData.detail[0].msg || errorData.detail[0] || errorMessage;
+          } else {
+            errorMessage = errorData.detail || error.message || errorMessage;
+          }
+
           errorType = error.cause?.name;
           requestId = error.response?.request?.id;
         } catch (e) {

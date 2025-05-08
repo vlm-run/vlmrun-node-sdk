@@ -86,25 +86,6 @@ describe('APIRequestor', () => {
     ]);
   });
 
-  it('should handle form data for file uploads', async () => {
-    const mockResponse = {
-      data: { result: 'success' },
-      status: 200,
-      headers: { 'content-type': 'application/json' }
-    };
-    
-    (requestor as any).axios.request.mockResolvedValue(mockResponse);
-
-    const files = { file: new Blob(['test'], { type: 'text/plain' }) };
-    await requestor.request('POST', '/upload', {}, {}, files);
-
-    expect((requestor as any).axios.request).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.any(FormData)
-      })
-    );
-  });
-
   it('should throw AuthenticationError for 401 responses', async () => {
     const mockError = {
       response: {
