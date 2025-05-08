@@ -11,6 +11,7 @@ import {
 } from "./types";
 import { processImage } from "../utils/image";
 import { convertToJsonSchema } from "../utils/utils";
+import { InputError, RequestTimeoutError } from "./exceptions";
 
 export class Predictions {
   protected client: Client;
@@ -80,8 +81,13 @@ export class Predictions {
       await new Promise((resolve) => setTimeout(resolve, sleep * 1000));
     }
 
-    throw new Error(
-      `Prediction ${id} did not complete within ${timeout} seconds`
+    throw new RequestTimeoutError(
+      `Prediction ${id} did not complete within ${timeout} seconds`,
+      undefined,
+      undefined,
+      undefined,
+      "prediction_timeout",
+      "Try increasing the timeout or check if the prediction is taking longer than expected"
     );
   }
 }
@@ -100,31 +106,31 @@ export class ImagePredictions extends Predictions {
   ): string[] {
     // Input validation
     if (!images && !urls) {
-      throw new Error("Either `images` or `urls` must be provided");
+      throw new InputError("Either `images` or `urls` must be provided", "missing_parameter", "Provide either images or urls parameter");
     }
     if (images && urls) {
-      throw new Error("Only one of `images` or `urls` can be provided");
+      throw new InputError("Only one of `images` or `urls` can be provided", "invalid_parameters", "Provide either images or urls, not both");
     }
 
     if (images) {
       if (!images.length) {
-        throw new Error("Images array cannot be empty");
+        throw new InputError("Images array cannot be empty", "empty_array", "Provide at least one image");
       }
       return images.map((image) => processImage(image));
     } else if (urls) {
       if (!urls.length) {
-        throw new Error("URLs array cannot be empty");
+        throw new InputError("URLs array cannot be empty", "empty_array", "Provide at least one URL");
       }
       if (!urls.every((url) => typeof url === "string")) {
-        throw new Error("All URLs must be strings");
+        throw new InputError("All URLs must be strings", "invalid_type", "Ensure all URLs are string values");
       }
       if (!urls.every((url) => url.startsWith("http"))) {
-        throw new Error("URLs must start with 'http'");
+        throw new InputError("URLs must start with 'http'", "invalid_format", "Ensure all URLs start with http or https");
       }
       return urls;
     }
 
-    throw new Error("Either `images` or `urls` must be provided");
+    throw new InputError("Either `images` or `urls` must be provided", "missing_parameter", "Provide either images or urls parameter");
   }
 
   /**
@@ -247,10 +253,10 @@ export class FilePredictions extends Predictions {
   ): { [key: string]: string } {
     // Input validation
     if (!fileId && !url) {
-      throw new Error("Either `fileId` or `url` must be provided");
+      throw new InputError("Either `fileId` or `url` must be provided", "missing_parameter", "Provide either a fileId or url parameter");
     }
     if (fileId && url) {
-      throw new Error("Only one of `fileId` or `url` can be provided");
+      throw new InputError("Only one of `fileId` or `url` can be provided", "invalid_parameters", "Provide either fileId or url, not both");
     }
 
     return fileId ? { file_id: fileId } : { url: url! };

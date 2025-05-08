@@ -21,12 +21,15 @@ export * from "./client/files";
 export * from "./client/predictions";
 export * from "./client/feedback";
 export * from "./client/fine_tuning";
+export * from "./client/exceptions";
 
 export * from "./utils";
 
 export interface VlmRunConfig {
   apiKey: string;
   baseURL?: string;
+  timeout?: number;
+  maxRetries?: number;
 }
 
 export class VlmRun {
@@ -48,6 +51,8 @@ export class VlmRun {
     this.client = {
       apiKey: config.apiKey,
       baseURL: config.baseURL ?? "https://api.vlm.run/v1",
+      timeout: config.timeout,
+      maxRetries: config.maxRetries,
     };
 
     this.models = new Models(this.client);

@@ -1,6 +1,7 @@
 import { Client, APIRequestor } from "./base_requestor";
 import { FinetuningResponse, FinetuningProvisionResponse, FinetuningGenerateParams, FinetuningListParams, PredictionResponse, FinetuningCreateParams, FinetuningProvisionParams } from "./types";
 import { processImage } from "../utils";
+import { InputError, ConfigurationError } from "./exceptions";
 
 export class Finetuning {
   private requestor: APIRequestor;
@@ -30,8 +31,10 @@ export class Finetuning {
     if (params.suffix) {
       // Ensure suffix contains only alphanumeric, hyphens or underscores
       if (!/^[a-zA-Z0-9_-]+$/.test(params.suffix)) {
-        throw new Error(
-          "Suffix must be alphanumeric, hyphens or underscores without spaces"
+        throw new InputError(
+          "Suffix must be alphanumeric, hyphens or underscores without spaces",
+          "invalid_format",
+          "Use only letters, numbers, hyphens, and underscores in the suffix"
         );
       }
     }
@@ -86,27 +89,27 @@ export class Finetuning {
    */
   async generate(params: FinetuningGenerateParams): Promise<PredictionResponse> {
     if (!params.jsonSchema) {
-      throw new Error("JSON schema is required for fine-tuned model predictions");
+      throw new InputError("JSON schema is required for fine-tuned model predictions", "missing_parameter", "Provide a JSON schema for the prediction");
     }
 
     if (!params.prompt) {
-      throw new Error("Prompt is required for fine-tuned model predictions");
+      throw new InputError("Prompt is required for fine-tuned model predictions", "missing_parameter", "Provide a prompt for the prediction");
     }
 
     if (params.domain) {
-      throw new Error("Domain is not supported for fine-tuned model predictions");
+      throw new ConfigurationError("Domain is not supported for fine-tuned model predictions", "unsupported_parameter", "Remove the domain parameter for fine-tuned models");
     }
 
     if (params.detail && params.detail !== "auto") {
-      throw new Error("Detail level is not supported for fine-tuned model predictions");
+      throw new ConfigurationError("Detail level is not supported for fine-tuned model predictions", "unsupported_parameter", "Use 'auto' or remove the detail parameter for fine-tuned models");
     }
 
     if (params.batch) {
-      throw new Error("Batch mode is not supported for fine-tuned models");
+      throw new ConfigurationError("Batch mode is not supported for fine-tuned models", "unsupported_parameter", "Remove the batch parameter for fine-tuned models");
     }
 
     if (params.callbackUrl) {
-      throw new Error("Callback URL is not supported for fine-tuned model predictions");
+      throw new ConfigurationError("Callback URL is not supported for fine-tuned model predictions", "unsupported_parameter", "Remove the callbackUrl parameter for fine-tuned models");
     }
     
     const [response] = await this.requestor.request<PredictionResponse>(
@@ -176,6 +179,6 @@ export class Finetuning {
    * @param {string} jobId - ID of job to cancel
    */
   async cancel(jobId: string): Promise<Record<string, any>> {
-    throw new Error("Not implemented");
+    throw new ConfigurationError("Cancel method is not implemented yet", "not_implemented", "This feature will be available in a future release");
   }
 }

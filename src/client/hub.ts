@@ -1,5 +1,6 @@
 import { Client, APIRequestor } from './base_requestor';
-import { APIError, HubDomainInfo, HubInfoResponse, HubSchemaParams, HubSchemaResponse } from './types';
+import { APIError } from './exceptions';
+import { HubDomainInfo, HubInfoResponse, HubSchemaParams, HubSchemaResponse } from './types';
 
 export class Hub {
   private client: Client;

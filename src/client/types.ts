@@ -317,16 +317,6 @@ export interface DatasetCreateParams {
   wandbApiKey?: string;
 }
 
-export class APIError extends Error {
-  constructor(
-    message: string,
-    public http_status?: number,
-    public headers?: Record<string, string>
-  ) {
-    super(message);
-    this.name = "APIError";
-  }
-}
 
 export interface VlmRunError extends Error {
   message: string;
