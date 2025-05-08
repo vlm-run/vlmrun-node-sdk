@@ -292,6 +292,28 @@ describe("Integration: File Predictions", () => {
       expect(result.response.items[0]).toHaveProperty("quantity");
     });
 
+    it("should generate document predictions for images", async () => {
+      const testImagePath = "tests/integration/assets/invoice.jpg";
+
+      const uploadedDocument = await client.files.upload({
+        filePath: testImagePath,
+        purpose: "vision",
+        checkDuplicate: true,
+      });
+
+      const result = await client.document.generate({
+        fileId: uploadedDocument.id,
+        model: "vlm-1",
+        domain: "document.invoice",
+        batch: true,
+      });
+
+      expect(result).toHaveProperty("id");
+      expect(result.status).toBe("completed");
+      expect(result.response.invoice_id).toContain("9999999");
+      expect(result.response.invoice_issue_date).toBe("2023-11-11");
+    });
+
     describe("schema", () => {
       it("should generate schema from file ID", async () => {
         const uploadedDocument = await client.files.upload({
