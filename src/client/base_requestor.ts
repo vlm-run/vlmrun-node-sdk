@@ -11,7 +11,7 @@ import {
   NetworkError
 } from "./exceptions";
 
-const DEFAULT_TIMEOUT = 30000; // 30 seconds in ms
+const DEFAULT_TIMEOUT = 120000; // 120 seconds in ms
 const DEFAULT_MAX_RETRIES = 5;
 const INITIAL_RETRY_DELAY = 1000; // 1 second in ms
 const MAX_RETRY_DELAY = 10000; // 10 seconds in ms
@@ -31,8 +31,8 @@ export class APIRequestor {
 
   constructor(client: Client) {
     this.client = client;
-    this.timeout = client.timeout || DEFAULT_TIMEOUT;
-    this.maxRetries = client.maxRetries || DEFAULT_MAX_RETRIES;
+    this.timeout = client.timeout ?? DEFAULT_TIMEOUT;
+    this.maxRetries = client.maxRetries ?? DEFAULT_MAX_RETRIES;
     
     this.axios = axios.create({
       baseURL: client.baseURL,

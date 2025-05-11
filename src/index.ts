@@ -56,7 +56,7 @@ export class VlmRun {
     };
 
     this.models = new Models(this.client);
-    this.files = new Files(this.client);
+    this.files = new Files({...this.client, timeout: 0});
     this.predictions = new Predictions(this.client);
     this.image = new ImagePredictions(this.client);
     this.document = DocumentPredictions(this.client);
