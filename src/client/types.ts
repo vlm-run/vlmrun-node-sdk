@@ -328,3 +328,19 @@ export interface HubSchemaParams {
   domain: string;
   gql_stmt?: string;
 }
+
+export interface AgentGetParams {
+  name: string;
+  version?: string;
+}
+
+export interface AgentExecuteParams {
+  name: string;
+  version?: string;
+  fileIds?: string[];
+  urls?: string[];
+  batch?: boolean;
+  config?: GenerationConfigInput;
+  metadata?: RequestMetadataInput;
+  callbackUrl?: string;
+}
