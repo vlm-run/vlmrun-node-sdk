@@ -14,6 +14,7 @@ import { Finetuning } from "./client/fine_tuning";
 import { Datasets } from "./client/datasets";
 import { Hub } from "./client/hub";
 import { Agent } from "./client/agent";
+import { Domains } from "./client/domains";
 
 export * from "./client/types";
 export * from "./client/base_requestor";
@@ -49,6 +50,7 @@ export class VlmRun {
   readonly dataset: Datasets;
   readonly hub: Hub;
   readonly agent: Agent;
+  readonly domains: Domains;
 
   constructor(config: VlmRunConfig) {
     this.client = {
@@ -59,7 +61,7 @@ export class VlmRun {
     };
 
     this.models = new Models(this.client);
-    this.files = new Files({...this.client, timeout: 0});
+    this.files = new Files({ ...this.client, timeout: 0 });
     this.predictions = new Predictions(this.client);
     this.image = new ImagePredictions(this.client);
     this.document = DocumentPredictions(this.client);
@@ -68,8 +70,9 @@ export class VlmRun {
     this.web = new WebPredictions(this.client);
     this.feedback = new Feedback(this.client);
     this.finetuning = new Finetuning(this.client);
-    this.dataset = new Datasets(this.client)
+    this.dataset = new Datasets(this.client);
     this.hub = new Hub(this.client);
     this.agent = new Agent(this.client);
+    this.domains = new Domains(this.client);
   }
 }

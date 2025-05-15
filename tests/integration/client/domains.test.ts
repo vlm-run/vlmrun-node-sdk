@@ -4,7 +4,7 @@ import { config } from "dotenv";
 
 jest.setTimeout(60000);
 
-describe("Integration: Hubs", () => {
+describe("Integration: Domains", () => {
   let client: VlmRun;
 
   beforeAll(() => {
@@ -18,7 +18,7 @@ describe("Integration: Hubs", () => {
 
   describe("listDomains()", () => {
     it("should successfully fetch domains list", async () => {
-      const result = await client.hub.listDomains();
+      const result = await client.domains.list();
 
       expect(Array.isArray(result)).toBe(true);
       if (result.length > 0) {
@@ -27,22 +27,14 @@ describe("Integration: Hubs", () => {
         expect(domain).toHaveProperty("domain");
       }
     });
-  });
 
-  describe("info()", () => {
-    it("should successfully fetch info", async () => {
-      const result = await client.hub.info();
+    it("should handle API errors with invalid credentials", async () => {
+      const clientWithInvalidKey = new VlmRun({
+        apiKey: "invalid-api-key",
+        baseURL: process.env.TEST_BASE_URL,
+      });
 
-      expect(result).toHaveProperty("version");
-    });
-  });
-
-  describe("getSchema()", () => {
-    it("should successfully fetch schema without gql_stmt", async () => {
-      const result = await client.hub.getSchema({ domain: "document.invoice" });
-      expect(result).toHaveProperty("json_schema");
-      expect(result).toHaveProperty("schema_version");
-      expect(result).toHaveProperty("schema_hash");
+      await expect(clientWithInvalidKey.domains.list()).rejects.toThrow();
     });
   });
 });

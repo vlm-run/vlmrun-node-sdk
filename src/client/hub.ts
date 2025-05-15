@@ -1,6 +1,11 @@
-import { Client, APIRequestor } from './base_requestor';
-import { APIError } from './exceptions';
-import { HubDomainInfo, HubInfoResponse, HubSchemaParams, HubSchemaResponse } from './types';
+import { Client, APIRequestor } from "./base_requestor";
+import { APIError } from "./exceptions";
+import {
+  DomainInfo,
+  HubInfoResponse,
+  HubSchemaParams,
+  HubSchemaResponse,
+} from "./types";
 
 export class Hub {
   private client: Client;
@@ -19,8 +24,8 @@ export class Hub {
   async info(): Promise<HubInfoResponse> {
     try {
       const [response] = await this.requestor.request<HubInfoResponse>(
-        'GET',
-        '/hub/info'
+        "GET",
+        "/hub/info"
       );
       return response;
     } catch (e) {
@@ -33,11 +38,11 @@ export class Hub {
    * @returns List of domain information
    * @throws APIError if the request fails
    */
-  async listDomains(): Promise<HubDomainInfo[]> {
+  async listDomains(): Promise<DomainInfo[]> {
     try {
-      const [response] = await this.requestor.request<HubDomainInfo[]>(
-        'GET',
-        '/hub/domains'
+      const [response] = await this.requestor.request<DomainInfo[]>(
+        "GET",
+        "/hub/domains"
       );
       return response;
     } catch (e) {
@@ -56,14 +61,16 @@ export class Hub {
   async getSchema(params: HubSchemaParams): Promise<HubSchemaResponse> {
     try {
       const [response] = await this.requestor.request<HubSchemaResponse>(
-        'POST',
-        '/hub/schema',
+        "POST",
+        "/hub/schema",
         undefined,
         params
       );
       return response;
     } catch (e) {
-      throw new APIError(`Failed to get schema for domain ${params.domain}: ${e}`);
+      throw new APIError(
+        `Failed to get schema for domain ${params.domain}: ${e}`
+      );
     }
   }
 }

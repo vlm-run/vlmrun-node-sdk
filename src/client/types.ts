@@ -279,7 +279,7 @@ export interface HubInfoResponse {
   version: string;
 }
 
-export interface HubDomainInfo {
+export interface DomainInfo {
   domain: string;
   name: string;
   description: string;
@@ -316,7 +316,6 @@ export interface DatasetCreateParams {
   wandbProjectName?: string;
   wandbApiKey?: string;
 }
-
 
 export interface VlmRunError extends Error {
   message: string;
