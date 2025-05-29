@@ -27,6 +27,7 @@ describe('Files', () => {
     } as jest.Mocked<Client>;
     files = new Files(client);
     requestMock = jest.spyOn(files['requestor'], 'request');
+    (fs.existsSync as jest.Mock).mockReturnValue(true);
   });
 
   afterEach(() => {
