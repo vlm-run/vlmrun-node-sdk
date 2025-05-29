@@ -15,6 +15,16 @@ export interface FileResponse {
   object: "file";
 }
 
+export interface PresignedUrlResponse {
+  id?: string;
+  url?: string;
+  filename?: string;
+  expiration?: number;
+  method?: string;
+  content_type?: string;
+  created_at: string;
+}
+
 export interface CreditUsage {
   elements_processed?: number;
   element_type?: "image" | "page" | "video" | "audio";
@@ -53,6 +63,9 @@ export interface FileUploadParams {
   file?: File;
   purpose?: string;
   checkDuplicate?: boolean;
+  method?: "auto" | "direct" | "presigned-url";
+  expiration?: number;
+  force?: boolean;
 }
 
 export interface FeedbackSubmitParams {

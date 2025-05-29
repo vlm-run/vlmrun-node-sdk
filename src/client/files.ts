@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
+import axios from "axios";
 import { Client, APIRequestor } from "./base_requestor";
-import { FileResponse, ListParams, FileUploadParams } from "./types";
+import { FileResponse, ListParams, FileUploadParams, PresignedUrlResponse } from "./types";
 import { readFileFromPathAsFile } from "../utils/file";
 import { DependencyError, InputError } from "./exceptions";
 
@@ -82,13 +83,22 @@ export class Files {
 
   async upload(params: FileUploadParams): Promise<FileResponse> {
     let fileToUpload: File;
+    let filePath: string | undefined;
 
     if (params.file) {
       fileToUpload = params.file;
     } else if (params.filePath) {
-      if (params.checkDuplicate !== false) {
+      filePath = params.filePath;
+      
+      if (typeof window === 'undefined') {
+        const fs = require("fs");
+        if (!fs.existsSync(filePath)) {
+          throw new InputError(`File does not exist: ${filePath}`, "file_not_found", "Provide a valid file path");
+        }
+      }
+      
+      if ((params.checkDuplicate !== false) && !params.force) {
         const existingFile = await this.getCachedFile(params.filePath);
-
         if (existingFile) {
           return existingFile;
         }
@@ -99,14 +109,69 @@ export class Files {
       throw new InputError("Either file or filePath must be provided.", "missing_parameter", "Provide either a file object or a filePath string");
     }
 
-    const [response] = await this.requestor.request<FileResponse>(
-      "POST",
-      "files",
-      { purpose: params.purpose ?? "assistants" },
-      undefined,
-      { file: fileToUpload }
-    );
-    return response;
+    let method = params.method || "auto";
+    if (method === "auto") {
+      if (fileToUpload.size > 32 * 1024 * 1024) {
+        method = "presigned-url";
+      } else {
+        method = "direct";
+      }
+    }
+
+    if (method === "presigned-url") {
+      const [presignedResponse] = await this.requestor.request<PresignedUrlResponse>(
+        "POST",
+        "files/presigned-url",
+        undefined,
+        {
+          filename: fileToUpload.name,
+          purpose: params.purpose ?? "assistants",
+          expiration: params.expiration ?? 24 * 60 * 60, // 24 hours default
+        }
+      );
+
+      if (!presignedResponse.url || !presignedResponse.id) {
+        throw new Error("Invalid presigned URL response");
+      }
+
+      const startTime = Date.now();
+      try {
+        const putResponse = await axios.put(presignedResponse.url, fileToUpload, {
+          headers: {
+            'Content-Type': presignedResponse.content_type || 'application/octet-stream',
+          },
+        });
+
+        const endTime = Date.now();
+        console.log(`Uploaded file to presigned URL [file=${fileToUpload.name}, time=${(endTime - startTime) / 1000}s]`);
+
+        if (putResponse.status === 200) {
+          const [verifyResponse] = await this.requestor.request<FileResponse>(
+            "GET",
+            `files/verify-upload/${presignedResponse.id}`
+          );
+          return verifyResponse;
+        } else {
+          throw new Error(`Failed to upload file to presigned URL: ${putResponse.statusText}`);
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          throw new Error(`Failed to upload file to presigned URL: ${error.message}`);
+        }
+        throw error;
+      }
+    } else if (method === "direct") {
+      const [response] = await this.requestor.request<FileResponse>(
+        "POST",
+        "files",
+        { purpose: params.purpose ?? "assistants" },
+        undefined,
+        { file: fileToUpload }
+      );
+      return response;
+    } else {
+      throw new InputError(`Invalid upload method: ${method}`, "invalid_parameter", "Use 'auto', 'direct', or 'presigned-url'");
+    }
   }
 
   async get(fileId: string): Promise<FileResponse> {

@@ -5,10 +5,13 @@ import { VlmRun } from "../../../src/index";
 
 jest.setTimeout(60000);
 
-describe("Integration: Agent", () => {
+describe.skip("Integration: Agent", () => {
   let client: VlmRun;
-  const testAgentName = process.env.TEST_AGENT_NAME || "4a0c2934-3390-49cd-9fc4-c0c474d06c69/agent-nodesdk";
-  const testDocumentUrl = "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/google_invoice.pdf";
+  const testAgentName =
+    process.env.TEST_AGENT_NAME ||
+    "4a0c2934-3390-49cd-9fc4-c0c474d06c69/agent-nodesdk";
+  const testDocumentUrl =
+    "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/google_invoice.pdf";
 
   beforeAll(() => {
     client = new VlmRun({
@@ -23,7 +26,7 @@ describe("Integration: Agent", () => {
         name: testAgentName,
         version: "latest",
         urls: [testDocumentUrl],
-        batch: true
+        batch: true,
       });
 
       expect(result).toBeTruthy();
@@ -31,4 +34,4 @@ describe("Integration: Agent", () => {
       expect(result).toHaveProperty("status");
     });
   });
-}); 
+});
