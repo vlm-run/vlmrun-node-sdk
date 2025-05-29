@@ -9,3 +9,4 @@ dist
 .env
 .env.test
 .vscode/
+.DS_Store

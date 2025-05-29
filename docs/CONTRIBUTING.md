@@ -64,9 +64,20 @@ npm run test:integration
 
 - Run all tests: `npm test`
 - Run specific test: `npm test -- -t "test name"`
-- Run integration tests: `npm run test:integration`
+- Run integration tests (excluding audio and video): `npm run test:integration`
+- Run all integration tests: `npm run test:integration:all`
 - Run specific integration test: `npm run test:integration -- -t "test name"`
 - Run with coverage: `npm run test:coverage`
+  Example
+
+```bash
+# Run just the files integration tests
+npm run test:integration -- tests/integration/client/files.test.ts
+
+# Run specific test patterns
+npm run test:integration -- -t "upload methods"
+npm run test:integration -- -t "should upload file using direct method"
+```
 
 ## Commit Messages
 
