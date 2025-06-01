@@ -8,6 +8,8 @@ import {
   WebPredictionParams,
   SchemaResponse,
   GenerationConfigParams,
+  FeedbackResponse,
+  FeedbackParams,
 } from "./types";
 import { processImage } from "../utils/image";
 import { convertToJsonSchema } from "../utils/utils";
@@ -53,6 +55,24 @@ export class Predictions {
     const [response] = await this.requestor.request<PredictionResponse>(
       "GET",
       `predictions/${id}`
+    );
+    return response;
+  }
+
+  async getFeedbacks(requestId: string): Promise<FeedbackResponse[]> {
+    const [response] = await this.requestor.request<FeedbackResponse[]>(
+      "GET",
+      `predictions/${requestId}/feedback`
+    );
+    return response;
+  }
+
+  async createFeedback(feedback: FeedbackParams): Promise<FeedbackResponse> {
+    const [response] = await this.requestor.request<FeedbackResponse>(
+      "POST",
+      `predictions/${feedback.request_id}/feedback`,
+      undefined,
+      feedback
     );
     return response;
   }

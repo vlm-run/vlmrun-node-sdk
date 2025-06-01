@@ -356,3 +356,17 @@ export interface AgentExecuteParams {
   metadata?: RequestMetadataInput;
   callbackUrl?: string;
 }
+
+export interface FeedbackParams {
+  request_id: string;
+  response?: Record<string, any>;
+  notes?: string;
+}
+
+export interface FeedbackResponse {
+  id: string;
+  created_at: string;
+  request_id: string;
+  response: any;
+  notes?: string;
+}
