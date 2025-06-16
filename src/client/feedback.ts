@@ -1,5 +1,5 @@
 import { Client, APIRequestor } from "./base_requestor";
-import { FeedbackSubmitResponse, FeedbackSubmitParams } from "./types";
+import { FeedbackResponse, FeedbackParams } from "./types";
 
 export class Feedback {
   private client: Client;
@@ -9,21 +9,24 @@ export class Feedback {
     this.client = client;
     this.requestor = new APIRequestor({
       ...client,
-      baseURL: `${client.baseURL}/experimental`,
+      baseURL: `${client.baseURL}`,
     });
   }
 
-  async submit(params: FeedbackSubmitParams): Promise<FeedbackSubmitResponse> {
-    const [response] = await this.requestor.request<FeedbackSubmitResponse>(
+  async getFeedbacks(requestId: string): Promise<FeedbackResponse[]> {
+    const [response] = await this.requestor.request<FeedbackResponse[]>(
+      "GET",
+      `feedback/${requestId}`
+    );
+    return response;
+  }
+
+  async createFeedback(feedback: FeedbackParams): Promise<FeedbackResponse> {
+    const [response] = await this.requestor.request<FeedbackResponse>(
       "POST",
-      "feedback/submit",
+      `feedback/submit/${feedback.request_id}`,
       undefined,
-      {
-        request_id: params.id,
-        response: params.label,
-        notes: params.notes,
-        flag: params.flag,
-      }
+      feedback
     );
     return response;
   }
