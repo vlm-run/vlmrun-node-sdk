@@ -22,23 +22,28 @@ describe("Feedback", () => {
   });
 
   describe("getFeedbacks", () => {
-    it("should get feedbacks for a request", async () => {
-      const mockResponse = [
-        {
-          id: "feedback_123",
-          created_at: "2023-01-01T00:00:00Z",
-          request_id: "pred_123",
-          response: { rating: 5 },
-          notes: "Great result"
-        },
-        {
-          id: "feedback_456",
-          created_at: "2023-01-02T00:00:00Z",
-          request_id: "pred_123",
-          response: { rating: 4 },
-          notes: "Good but could be better"
-        }
-      ];
+    it("should get feedbacks for a request with default pagination", async () => {
+      const mockResponse = {
+        data: [
+          {
+            id: "feedback_123",
+            created_at: "2023-01-01T00:00:00Z",
+            request_id: "pred_123",
+            response: { rating: 5 },
+            notes: "Great result"
+          },
+          {
+            id: "feedback_456",
+            created_at: "2023-01-02T00:00:00Z",
+            request_id: "pred_123",
+            response: { rating: 4 },
+            notes: "Good but could be better"
+          }
+        ],
+        count: 2,
+        limit: 10,
+        offset: 0
+      };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
       const result = await feedback.getFeedbacks("pred_123");
@@ -46,20 +51,46 @@ describe("Feedback", () => {
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
         "GET",
-        "feedback/pred_123"
+        "feedback/pred_123",
+        { limit: 10, offset: 0 }
       );
     });
 
-    it("should return empty array when no feedbacks exist", async () => {
-      const mockResponse: any[] = [];
+    it("should get feedbacks with custom pagination parameters", async () => {
+      const mockResponse = {
+        data: [],
+        count: 0,
+        limit: 5,
+        offset: 10
+      };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
-      const result = await feedback.getFeedbacks("pred_456");
+      const result = await feedback.getFeedbacks("pred_456", { limit: 5, offset: 10 });
 
-      expect(result).toEqual([]);
+      expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
         "GET",
-        "feedback/pred_456"
+        "feedback/pred_456",
+        { limit: 5, offset: 10 }
+      );
+    });
+
+    it("should return empty data when no feedbacks exist", async () => {
+      const mockResponse = {
+        data: [],
+        count: 0,
+        limit: 10,
+        offset: 0
+      };
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await feedback.getFeedbacks("pred_789");
+
+      expect(result).toEqual(mockResponse);
+      expect(requestMock).toHaveBeenCalledWith(
+        "GET",
+        "feedback/pred_789",
+        { limit: 10, offset: 0 }
       );
     });
   });
@@ -70,18 +101,17 @@ describe("Feedback", () => {
         id: "feedback_789",
         created_at: "2023-01-03T00:00:00Z",
         request_id: "pred_123",
-        response: { rating: 5, accuracy: "high" },
-        notes: "Excellent prediction quality"
+        response: null,
+        notes: null
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
       const feedbackParams = {
-        request_id: "pred_123",
         response: { rating: 5, accuracy: "high" },
         notes: "Excellent prediction quality"
       };
 
-      const result = await feedback.createFeedback(feedbackParams);
+      const result = await feedback.createFeedback("pred_123", feedbackParams);
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
@@ -98,15 +128,13 @@ describe("Feedback", () => {
         created_at: "2023-01-04T00:00:00Z",
         request_id: "pred_456",
         response: null,
-        notes: undefined
+        notes: null
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
-      const feedbackParams = {
-        request_id: "pred_456",
-      };
+      const feedbackParams = {};
 
-      const result = await feedback.createFeedback(feedbackParams);
+      const result = await feedback.createFeedback("pred_456", feedbackParams);
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
@@ -122,16 +150,15 @@ describe("Feedback", () => {
         id: "feedback_202",
         created_at: "2023-01-05T00:00:00Z",
         request_id: "pred_789",
-        response: { thumbs_up: true, helpful: true },
-        notes: undefined
+        response: null,
+        notes: null
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
       const feedbackParams = {
-        request_id: "pred_789",
         response: { thumbs_up: true, helpful: true }
       };
-      const result = await feedback.createFeedback(feedbackParams);
+      const result = await feedback.createFeedback("pred_789", feedbackParams);
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
@@ -148,16 +175,15 @@ describe("Feedback", () => {
         created_at: "2023-01-06T00:00:00Z",
         request_id: "pred_101",
         response: null,
-        notes: "The prediction was partially correct but missed some details"
+        notes: null
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
       const feedbackParams = {
-        request_id: "pred_101",
         notes: "The prediction was partially correct but missed some details"
       };
 
-      const result = await feedback.createFeedback(feedbackParams);
+      const result = await feedback.createFeedback("pred_101", feedbackParams);
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
@@ -168,4 +194,4 @@ describe("Feedback", () => {
       );
     });
   });
-}); 
+});  
