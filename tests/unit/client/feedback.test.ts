@@ -65,7 +65,7 @@ describe("Feedback", () => {
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
-      const result = await feedback.list("pred_456", { limit: 5, offset: 10 });
+      const result = await feedback.list("pred_456", 5, 10);
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
@@ -194,4 +194,4 @@ describe("Feedback", () => {
       );
     });
   });
-});    
+});      

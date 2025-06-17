@@ -1,5 +1,5 @@
 import { Client, APIRequestor } from "./base_requestor";
-import { FeedbackResponse, FeedbackCreateParams, FeedbackListResponse, FeedbackListParams } from "./types";
+import { FeedbackResponse, FeedbackCreateParams, FeedbackListResponse } from "./types";
 
 export class Feedback {
   private client: Client;
@@ -13,8 +13,7 @@ export class Feedback {
     });
   }
 
-  async list(requestId: string, params: FeedbackListParams = {}): Promise<FeedbackListResponse> {
-    const { limit = 10, offset = 0 } = params;
+  async list(requestId: string, limit: number = 10, offset: number = 0): Promise<FeedbackListResponse> {
     const [response] = await this.requestor.request<FeedbackListResponse>(
       "GET",
       `feedback/${requestId}`,

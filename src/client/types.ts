@@ -362,8 +362,3 @@ export interface FeedbackListResponse {
   limit: number;
   offset: number;
 }
-
-export interface FeedbackListParams {
-  limit?: number;
-  offset?: number;
-}
