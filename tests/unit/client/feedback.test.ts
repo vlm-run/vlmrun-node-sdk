@@ -21,7 +21,7 @@ describe("Feedback", () => {
     requestMock.mockReset();
   });
 
-  describe("getFeedbacks", () => {
+  describe("list", () => {
     it("should get feedbacks for a request with default pagination", async () => {
       const mockResponse = {
         data: [
@@ -46,7 +46,7 @@ describe("Feedback", () => {
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
-      const result = await feedback.getFeedbacks("pred_123");
+      const result = await feedback.list("pred_123");
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
@@ -65,7 +65,7 @@ describe("Feedback", () => {
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
-      const result = await feedback.getFeedbacks("pred_456", { limit: 5, offset: 10 });
+      const result = await feedback.list("pred_456", { limit: 5, offset: 10 });
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
@@ -84,7 +84,7 @@ describe("Feedback", () => {
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
-      const result = await feedback.getFeedbacks("pred_789");
+      const result = await feedback.list("pred_789");
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
@@ -95,7 +95,7 @@ describe("Feedback", () => {
     });
   });
 
-  describe("createFeedback", () => {
+  describe("submit", () => {
     it("should create feedback with all parameters", async () => {
       const mockResponse = {
         id: "feedback_789",
@@ -111,7 +111,7 @@ describe("Feedback", () => {
         notes: "Excellent prediction quality"
       };
 
-      const result = await feedback.createFeedback("pred_123", feedbackParams);
+      const result = await feedback.submit("pred_123", feedbackParams);
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
@@ -134,7 +134,7 @@ describe("Feedback", () => {
 
       const feedbackParams = {};
 
-      const result = await feedback.createFeedback("pred_456", feedbackParams);
+      const result = await feedback.submit("pred_456", feedbackParams);
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
@@ -158,7 +158,7 @@ describe("Feedback", () => {
       const feedbackParams = {
         response: { thumbs_up: true, helpful: true }
       };
-      const result = await feedback.createFeedback("pred_789", feedbackParams);
+      const result = await feedback.submit("pred_789", feedbackParams);
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
@@ -183,7 +183,7 @@ describe("Feedback", () => {
         notes: "The prediction was partially correct but missed some details"
       };
 
-      const result = await feedback.createFeedback("pred_101", feedbackParams);
+      const result = await feedback.submit("pred_101", feedbackParams);
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
@@ -194,4 +194,4 @@ describe("Feedback", () => {
       );
     });
   });
-});  
+});    

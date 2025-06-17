@@ -13,7 +13,7 @@ export class Feedback {
     });
   }
 
-  async getFeedbacks(requestId: string, params: FeedbackListParams = {}): Promise<FeedbackListResponse> {
+  async list(requestId: string, params: FeedbackListParams = {}): Promise<FeedbackListResponse> {
     const { limit = 10, offset = 0 } = params;
     const [response] = await this.requestor.request<FeedbackListResponse>(
       "GET",
@@ -23,7 +23,7 @@ export class Feedback {
     return response;
   }
 
-  async createFeedback(requestId: string, feedback: FeedbackCreateParams): Promise<FeedbackResponse> {
+  async submit(requestId: string, feedback: FeedbackCreateParams): Promise<FeedbackResponse> {
     const [response] = await this.requestor.request<FeedbackResponse>(
       "POST",
       `feedback/submit/${requestId}`,
