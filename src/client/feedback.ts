@@ -1,5 +1,5 @@
 import { Client, APIRequestor } from "./base_requestor";
-import { FeedbackSubmitResponse, FeedbackSubmitRequest } from "./types";
+import { FeedbackSubmitResponse, FeedbackSubmitRequest, FeedbackListResponse } from "./types";
 
 export class Feedback {
   private client: Client;
@@ -13,8 +13,8 @@ export class Feedback {
     });
   }
 
-  async list(requestId: string, limit: number = 10, offset: number = 0): Promise<FeedbackSubmitResponse> {
-    const [response] = await this.requestor.request<FeedbackSubmitResponse>(
+  async get(requestId: string, limit: number = 10, offset: number = 0): Promise<FeedbackListResponse> {
+    const [response] = await this.requestor.request<FeedbackListResponse>(
       "GET",
       `feedback/${requestId}`,
       { limit, offset }
@@ -22,13 +22,23 @@ export class Feedback {
     return response;
   }
 
-  async submit(requestId: string, feedback: FeedbackSubmitRequest): Promise<FeedbackSubmitResponse> {
-    const [response] = await this.requestor.request<FeedbackSubmitResponse>(
+  async submit(requestId: string, response?: Record<string, any> | null, notes?: string | null): Promise<FeedbackSubmitResponse> {
+    if (response === null && notes === null) {
+      throw new Error("`response` or `notes` parameter is required and cannot be null");
+    }
+
+    const feedbackData: FeedbackSubmitRequest = {
+      request_id: requestId,
+      response,
+      notes
+    };
+
+    const [responseData] = await this.requestor.request<FeedbackSubmitResponse>(
       "POST",
-      `feedback/submit/${requestId}`,
+      `feedback/submit`,
       undefined,
-      feedback
+      feedbackData
     );
-    return response;
+    return responseData;
   }
 }

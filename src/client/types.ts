@@ -356,7 +356,13 @@ export interface FeedbackItem {
   notes: string | null;
 }
 
-export interface FeedbackSubmitResponse {
+export interface FeedbackListResponse {
   request_id: string;
   items: FeedbackItem[];
+}
+
+export interface FeedbackSubmitResponse {
+  id: string;
+  request_id: string;
+  created_at: string;
 }

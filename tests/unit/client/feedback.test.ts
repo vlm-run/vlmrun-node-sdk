@@ -21,7 +21,7 @@ describe("Feedback", () => {
     requestMock.mockReset();
   });
 
-  describe("list", () => {
+  describe("get", () => {
     it("should get feedbacks for a request with default pagination", async () => {
       const mockResponse = {
         request_id: "pred_123",
@@ -42,7 +42,7 @@ describe("Feedback", () => {
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
-      const result = await feedback.list("pred_123");
+      const result = await feedback.get("pred_123");
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
@@ -59,7 +59,7 @@ describe("Feedback", () => {
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
-      const result = await feedback.list("pred_456", 5, 10);
+      const result = await feedback.get("pred_456", 5, 10);
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
@@ -76,7 +76,7 @@ describe("Feedback", () => {
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
-      const result = await feedback.list("pred_789");
+      const result = await feedback.get("pred_789");
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
@@ -90,121 +90,100 @@ describe("Feedback", () => {
   describe("submit", () => {
     it("should create feedback with all parameters", async () => {
       const mockResponse = {
+        id: "feedback_789",
         request_id: "pred_123",
-        items: [
-          {
-            id: "feedback_789",
-            created_at: "2023-01-03T00:00:00Z",
-            response: { rating: 5, accuracy: "high" },
-            notes: "Excellent prediction quality"
-          }
-        ]
+        created_at: "2023-01-03T00:00:00Z"
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
-      const feedbackParams = {
-        request_id: "pred_123",
-        response: { rating: 5, accuracy: "high" },
-        notes: "Excellent prediction quality"
-      };
-
-      const result = await feedback.submit("pred_123", feedbackParams);
+      const result = await feedback.submit("pred_123", { rating: 5, accuracy: "high" }, "Excellent prediction quality");
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
         "POST",
-        "feedback/submit/pred_123",
+        "feedback/submit",
         undefined,
-        feedbackParams
+        {
+          request_id: "pred_123",
+          response: { rating: 5, accuracy: "high" },
+          notes: "Excellent prediction quality"
+        }
       );
     });
 
     it("should create feedback with minimal parameters", async () => {
       const mockResponse = {
+        id: "feedback_101",
         request_id: "pred_456",
-        items: [
-          {
-            id: "feedback_101",
-            created_at: "2023-01-04T00:00:00Z",
-            response: null,
-            notes: null
-          }
-        ]
+        created_at: "2023-01-04T00:00:00Z"
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
-      const feedbackParams = {
-        request_id: "pred_456"
-      };
-
-      const result = await feedback.submit("pred_456", feedbackParams);
+      const result = await feedback.submit("pred_456", { rating: 3 });
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
         "POST",
-        "feedback/submit/pred_456",
+        "feedback/submit",
         undefined,
-        feedbackParams
+        {
+          request_id: "pred_456",
+          response: { rating: 3 },
+          notes: undefined
+        }
       );
     });
 
     it("should create feedback with only response data", async () => {
       const mockResponse = {
+        id: "feedback_202",
         request_id: "pred_789",
-        items: [
-          {
-            id: "feedback_202",
-            created_at: "2023-01-05T00:00:00Z",
-            response: { thumbs_up: true, helpful: true },
-            notes: null
-          }
-        ]
+        created_at: "2023-01-05T00:00:00Z"
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
-      const feedbackParams = {
-        request_id: "pred_789",
-        response: { thumbs_up: true, helpful: true }
-      };
-      const result = await feedback.submit("pred_789", feedbackParams);
+      const result = await feedback.submit("pred_789", { thumbs_up: true, helpful: true });
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
         "POST",
-        "feedback/submit/pred_789",
+        "feedback/submit",
         undefined,
-        feedbackParams
+        {
+          request_id: "pred_789",
+          response: { thumbs_up: true, helpful: true },
+          notes: undefined
+        }
       );
     });
 
     it("should create feedback with only notes", async () => {
       const mockResponse = {
+        id: "feedback_303",
         request_id: "pred_101",
-        items: [
-          {
-            id: "feedback_303",
-            created_at: "2023-01-06T00:00:00Z",
-            response: null,
-            notes: "The prediction was partially correct but missed some details"
-          }
-        ]
+        created_at: "2023-01-06T00:00:00Z"
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
-      const feedbackParams = {
-        request_id: "pred_101",
-        notes: "The prediction was partially correct but missed some details"
-      };
-
-      const result = await feedback.submit("pred_101", feedbackParams);
+      const result = await feedback.submit("pred_101", null, "The prediction was partially correct but missed some details");
 
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
         "POST",
-        "feedback/submit/pred_101",
+        "feedback/submit",
         undefined,
-        feedbackParams
+        {
+          request_id: "pred_101",
+          response: null,
+          notes: "The prediction was partially correct but missed some details"
+        }
+      );
+    });
+
+    it("should throw error when both response and notes are null", async () => {
+      await expect(feedback.submit("pred_123", null, null)).rejects.toThrow(
+        "`response` or `notes` parameter is required and cannot be null"
       );
     });
   });
-});          
+});            
