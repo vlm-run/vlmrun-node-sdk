@@ -46,13 +46,6 @@ export interface PredictionResponse {
   usage?: CreditUsage;
 }
 
-export interface FeedbackSubmitResponse {
-  id: string;
-  created_at: string;
-  request_id: string;
-  response: any;
-}
-
 export interface ListParams {
   skip?: number;
   limit?: number;
@@ -66,13 +59,6 @@ export interface FileUploadParams {
   method?: "auto" | "direct" | "presigned-url";
   expiration?: number;
   force?: boolean;
-}
-
-export interface FeedbackSubmitParams {
-  id: string;
-  label?: Record<string, any>;
-  notes?: string;
-  flag?: boolean;
 }
 
 export interface PredictionGenerateParams {
@@ -357,16 +343,26 @@ export interface AgentExecuteParams {
   callbackUrl?: string;
 }
 
-export interface FeedbackParams {
+export interface FeedbackSubmitRequest {
   request_id: string;
-  response?: Record<string, any>;
-  notes?: string;
+  response?: Record<string, any> | null;
+  notes?: string | null;
 }
 
-export interface FeedbackResponse {
+export interface FeedbackItem {
   id: string;
   created_at: string;
+  response: Record<string, any> | null;
+  notes: string | null;
+}
+
+export interface FeedbackListResponse {
   request_id: string;
-  response: any;
-  notes?: string;
+  items: FeedbackItem[];
+}
+
+export interface FeedbackSubmitResponse {
+  id: string;
+  request_id: string;
+  created_at: string;
 }
