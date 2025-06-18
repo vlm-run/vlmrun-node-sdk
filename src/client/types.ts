@@ -343,22 +343,20 @@ export interface AgentExecuteParams {
   callbackUrl?: string;
 }
 
-export interface FeedbackCreateParams {
-  response?: Record<string, any>;
-  notes?: string;
+export interface FeedbackSubmitRequest {
+  request_id: string;
+  response?: Record<string, any> | null;
+  notes?: string | null;
 }
 
-export interface FeedbackResponse {
+export interface FeedbackItem {
   id: string;
   created_at: string;
-  request_id: string;
   response: Record<string, any> | null;
   notes: string | null;
 }
 
-export interface FeedbackListResponse {
-  data: FeedbackResponse[];
-  count: number;
-  limit: number;
-  offset: number;
+export interface FeedbackSubmitResponse {
+  request_id: string;
+  items: FeedbackItem[];
 }

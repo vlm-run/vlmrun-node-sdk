@@ -24,25 +24,21 @@ describe("Feedback", () => {
   describe("list", () => {
     it("should get feedbacks for a request with default pagination", async () => {
       const mockResponse = {
-        data: [
+        request_id: "pred_123",
+        items: [
           {
             id: "feedback_123",
             created_at: "2023-01-01T00:00:00Z",
-            request_id: "pred_123",
             response: { rating: 5 },
             notes: "Great result"
           },
           {
             id: "feedback_456",
             created_at: "2023-01-02T00:00:00Z",
-            request_id: "pred_123",
             response: { rating: 4 },
             notes: "Good but could be better"
           }
-        ],
-        count: 2,
-        limit: 10,
-        offset: 0
+        ]
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
@@ -58,10 +54,8 @@ describe("Feedback", () => {
 
     it("should get feedbacks with custom pagination parameters", async () => {
       const mockResponse = {
-        data: [],
-        count: 0,
-        limit: 5,
-        offset: 10
+        request_id: "pred_456",
+        items: []
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
@@ -75,12 +69,10 @@ describe("Feedback", () => {
       );
     });
 
-    it("should return empty data when no feedbacks exist", async () => {
+    it("should return empty items when no feedbacks exist", async () => {
       const mockResponse = {
-        data: [],
-        count: 0,
-        limit: 10,
-        offset: 0
+        request_id: "pred_789",
+        items: []
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
@@ -98,15 +90,20 @@ describe("Feedback", () => {
   describe("submit", () => {
     it("should create feedback with all parameters", async () => {
       const mockResponse = {
-        id: "feedback_789",
-        created_at: "2023-01-03T00:00:00Z",
         request_id: "pred_123",
-        response: null,
-        notes: null
+        items: [
+          {
+            id: "feedback_789",
+            created_at: "2023-01-03T00:00:00Z",
+            response: { rating: 5, accuracy: "high" },
+            notes: "Excellent prediction quality"
+          }
+        ]
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
       const feedbackParams = {
+        request_id: "pred_123",
         response: { rating: 5, accuracy: "high" },
         notes: "Excellent prediction quality"
       };
@@ -124,15 +121,21 @@ describe("Feedback", () => {
 
     it("should create feedback with minimal parameters", async () => {
       const mockResponse = {
-        id: "feedback_101",
-        created_at: "2023-01-04T00:00:00Z",
         request_id: "pred_456",
-        response: null,
-        notes: null
+        items: [
+          {
+            id: "feedback_101",
+            created_at: "2023-01-04T00:00:00Z",
+            response: null,
+            notes: null
+          }
+        ]
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
-      const feedbackParams = {};
+      const feedbackParams = {
+        request_id: "pred_456"
+      };
 
       const result = await feedback.submit("pred_456", feedbackParams);
 
@@ -147,15 +150,20 @@ describe("Feedback", () => {
 
     it("should create feedback with only response data", async () => {
       const mockResponse = {
-        id: "feedback_202",
-        created_at: "2023-01-05T00:00:00Z",
         request_id: "pred_789",
-        response: null,
-        notes: null
+        items: [
+          {
+            id: "feedback_202",
+            created_at: "2023-01-05T00:00:00Z",
+            response: { thumbs_up: true, helpful: true },
+            notes: null
+          }
+        ]
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
       const feedbackParams = {
+        request_id: "pred_789",
         response: { thumbs_up: true, helpful: true }
       };
       const result = await feedback.submit("pred_789", feedbackParams);
@@ -171,15 +179,20 @@ describe("Feedback", () => {
 
     it("should create feedback with only notes", async () => {
       const mockResponse = {
-        id: "feedback_303",
-        created_at: "2023-01-06T00:00:00Z",
         request_id: "pred_101",
-        response: null,
-        notes: null
+        items: [
+          {
+            id: "feedback_303",
+            created_at: "2023-01-06T00:00:00Z",
+            response: null,
+            notes: "The prediction was partially correct but missed some details"
+          }
+        ]
       };
       requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
       const feedbackParams = {
+        request_id: "pred_101",
         notes: "The prediction was partially correct but missed some details"
       };
 
@@ -194,4 +207,4 @@ describe("Feedback", () => {
       );
     });
   });
-});      
+});          
