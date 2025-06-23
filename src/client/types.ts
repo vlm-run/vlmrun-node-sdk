@@ -366,3 +366,14 @@ export interface FeedbackSubmitResponse {
   request_id: string;
   created_at: string;
 }
+
+export interface FileExecuteParams {
+  name: string;
+  version?: string;
+  fileId?: string;
+  url?: string;
+  batch?: boolean;
+  config?: GenerationConfigInput;
+  metadata?: RequestMetadataInput;
+  callbackUrl?: string;
+}

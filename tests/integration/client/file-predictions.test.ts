@@ -379,5 +379,35 @@ describe("Integration: File Predictions", () => {
         ).rejects.toThrow("Only one of `fileId` or `url` can be provided");
       });
     });
+
+    it("should execute a document agent on a file", async () => {
+      // Use the same test file as other tests
+      const uploadedDocument = await client.files.upload({
+        filePath: testFilePath,
+        purpose: "vision",
+        checkDuplicate: true,
+      });
+
+      // Use a public/test agent name (update as needed for your environment)
+      const agentName =
+        process.env.TEST_AGENT_NAME ||
+        "4a0c2934-3390-49cd-9fc4-c0c474d06c69/agent-nodesdk";
+
+      const result = await client.document.execute({
+        name: agentName,
+        fileId: uploadedDocument.id,
+        batch: true,
+        // Optionally, you can add config, metadata, etc.
+      });
+
+      expect(result).toHaveProperty("id");
+      expect(result).toHaveProperty("status");
+      // Status may be 'pending' or 'completed' depending on agent/model
+      expect(["pending", "completed"]).toContain(result.status);
+      // Optionally, check for response structure if status is completed
+      if (result.status === "completed") {
+        expect(result).toHaveProperty("response");
+      }
+    });
   });
 });

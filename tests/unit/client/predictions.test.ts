@@ -39,34 +39,30 @@ describe("Predictions", () => {
       it("should list predictions with default parameters", async () => {
         const mockResponse = [
           { id: "pred_123", status: "completed" },
-          { id: "pred_456", status: "processing" }
+          { id: "pred_456", status: "processing" },
         ];
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await predictions.list();
 
         expect(result).toEqual(mockResponse);
-        expect(requestMock).toHaveBeenCalledWith(
-          "GET",
-          "predictions",
-          { skip: undefined, limit: undefined }
-        );
+        expect(requestMock).toHaveBeenCalledWith("GET", "predictions", {
+          skip: undefined,
+          limit: undefined,
+        });
       });
 
       it("should list predictions with custom parameters", async () => {
-        const mockResponse = [
-          { id: "pred_789", status: "completed" }
-        ];
+        const mockResponse = [{ id: "pred_789", status: "completed" }];
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await predictions.list({ skip: 10, limit: 5 });
 
         expect(result).toEqual(mockResponse);
-        expect(requestMock).toHaveBeenCalledWith(
-          "GET",
-          "predictions",
-          { skip: 10, limit: 5 }
-        );
+        expect(requestMock).toHaveBeenCalledWith("GET", "predictions", {
+          skip: 10,
+          limit: 5,
+        });
       });
     });
 
@@ -78,35 +74,28 @@ describe("Predictions", () => {
         const result = await predictions.get("pred_123");
 
         expect(result).toEqual(mockResponse);
-        expect(requestMock).toHaveBeenCalledWith(
-          "GET",
-          "predictions/pred_123"
-        );
+        expect(requestMock).toHaveBeenCalledWith("GET", "predictions/pred_123");
       });
     });
   });
 
   describe("ImagePredictions", () => {
     let imagePredictions: ImagePredictions;
+    let requestMock: jest.SpyInstance;
 
     beforeEach(() => {
       imagePredictions = new ImagePredictions(client);
+      requestMock = jest.spyOn(imagePredictions["requestor"], "request");
       (imageUtils.processImage as jest.Mock).mockReturnValue(
         "base64-encoded-image"
       );
     });
 
+    afterEach(() => {
+      requestMock.mockReset();
+    });
+
     describe("generate", () => {
-      let requestMock: jest.SpyInstance;
-
-      beforeEach(() => {
-        requestMock = jest.spyOn(imagePredictions["requestor"], "request");
-      });
-
-      afterEach(() => {
-        requestMock.mockReset();
-      });
-
       it("should generate image predictions with default options", async () => {
         const mockResponse = { id: "pred_123", status: "completed" };
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
@@ -203,8 +192,8 @@ describe("Predictions", () => {
       });
 
       it("should generate schema from images", async () => {
-        const mockResponse = { 
-          id: "pred_123", 
+        const mockResponse = {
+          id: "pred_123",
           status: "completed",
           response: {
             json_schema: { type: "object", properties: {} },
@@ -212,10 +201,10 @@ describe("Predictions", () => {
             schema_hash: "abc123",
             domain: "document.invoice",
             gql_stmt: "",
-            description: "Invoice schema"
-          }
+            description: "Invoice schema",
+          },
         };
-        
+
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await imagePredictions.schema({
@@ -234,8 +223,8 @@ describe("Predictions", () => {
       });
 
       it("should generate schema from URLs", async () => {
-        const mockResponse = { 
-          id: "pred_123", 
+        const mockResponse = {
+          id: "pred_123",
           status: "completed",
           response: {
             json_schema: { type: "object", properties: {} },
@@ -243,10 +232,10 @@ describe("Predictions", () => {
             schema_hash: "abc123",
             domain: "document.invoice",
             gql_stmt: "",
-            description: "Invoice schema"
-          }
+            description: "Invoice schema",
+          },
         };
-        
+
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await imagePredictions.schema({
@@ -268,7 +257,7 @@ describe("Predictions", () => {
         await expect(imagePredictions.schema({})).rejects.toThrow(
           "Either `images` or `urls` must be provided"
         );
-        
+
         expect(requestMock).not.toHaveBeenCalled();
       });
 
@@ -279,7 +268,7 @@ describe("Predictions", () => {
             urls: ["https://example.com/image.jpg"],
           })
         ).rejects.toThrow("Only one of `images` or `urls` can be provided");
-        
+
         expect(requestMock).not.toHaveBeenCalled();
       });
     });
@@ -380,7 +369,7 @@ describe("Predictions", () => {
             domain: "domain1",
           })
         ).rejects.toThrow("Either `fileId` or `url` must be provided");
-        
+
         expect(requestMock).not.toHaveBeenCalled();
       });
 
@@ -393,15 +382,15 @@ describe("Predictions", () => {
             domain: "domain1",
           })
         ).rejects.toThrow("Only one of `fileId` or `url` can be provided");
-        
+
         expect(requestMock).not.toHaveBeenCalled();
       });
     });
 
     describe("schema", () => {
       it("should generate schema from fileId", async () => {
-        const mockResponse = { 
-          id: "pred_123", 
+        const mockResponse = {
+          id: "pred_123",
           status: "completed",
           response: {
             json_schema: { type: "object", properties: {} },
@@ -409,10 +398,10 @@ describe("Predictions", () => {
             schema_hash: "abc123",
             domain: "document.invoice",
             gql_stmt: "",
-            description: "Invoice schema"
-          }
+            description: "Invoice schema",
+          },
         };
-        
+
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await documentPredictions.schema({
@@ -431,8 +420,8 @@ describe("Predictions", () => {
       });
 
       it("should generate schema from URL", async () => {
-        const mockResponse = { 
-          id: "pred_123", 
+        const mockResponse = {
+          id: "pred_123",
           status: "completed",
           response: {
             json_schema: { type: "object", properties: {} },
@@ -440,10 +429,10 @@ describe("Predictions", () => {
             schema_hash: "abc123",
             domain: "document.invoice",
             gql_stmt: "",
-            description: "Invoice schema"
-          }
+            description: "Invoice schema",
+          },
         };
-        
+
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await documentPredictions.schema({
@@ -465,7 +454,7 @@ describe("Predictions", () => {
         await expect(documentPredictions.schema({})).rejects.toThrow(
           "Either `fileId` or `url` must be provided"
         );
-        
+
         expect(requestMock).not.toHaveBeenCalled();
       });
 
@@ -476,7 +465,7 @@ describe("Predictions", () => {
             url: "https://example.com/doc.pdf",
           })
         ).rejects.toThrow("Only one of `fileId` or `url` can be provided");
-        
+
         expect(requestMock).not.toHaveBeenCalled();
       });
     });
@@ -573,8 +562,8 @@ describe("Predictions", () => {
 
     describe("schema", () => {
       it("should generate schema from fileId", async () => {
-        const mockResponse = { 
-          id: "pred_123", 
+        const mockResponse = {
+          id: "pred_123",
           status: "completed",
           response: {
             json_schema: { type: "object", properties: {} },
@@ -582,10 +571,10 @@ describe("Predictions", () => {
             schema_hash: "abc123",
             domain: "audio.transcription",
             gql_stmt: "",
-            description: "Audio schema"
-          }
+            description: "Audio schema",
+          },
         };
-        
+
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await audioPredictions.schema({
@@ -696,8 +685,8 @@ describe("Predictions", () => {
 
     describe("schema", () => {
       it("should generate schema from fileId", async () => {
-        const mockResponse = { 
-          id: "pred_123", 
+        const mockResponse = {
+          id: "pred_123",
           status: "completed",
           response: {
             json_schema: { type: "object", properties: {} },
@@ -705,10 +694,10 @@ describe("Predictions", () => {
             schema_hash: "abc123",
             domain: "video.analysis",
             gql_stmt: "",
-            description: "Video schema"
-          }
+            description: "Video schema",
+          },
         };
-        
+
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await videoPredictions.schema({
@@ -723,6 +712,167 @@ describe("Predictions", () => {
           {
             file_id: "video1.mp4",
           }
+        );
+      });
+    });
+  });
+
+  describe("FilePredictions", () => {
+    let documentPredictions: any;
+    let requestMock: jest.SpyInstance;
+
+    beforeEach(() => {
+      documentPredictions = DocumentPredictions(client);
+      requestMock = jest.spyOn(documentPredictions["requestor"], "request");
+    });
+
+    afterEach(() => {
+      requestMock.mockReset();
+    });
+
+    describe("execute", () => {
+      it("should execute with fileId parameter", async () => {
+        const mockResponse = {
+          id: "pred_123",
+          status: "completed",
+          response: { result: "test" },
+          created_at: "2023-01-01T00:00:00Z",
+        };
+        requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+        const result = await documentPredictions.execute({
+          name: "test-agent",
+          version: "v1.0",
+          fileId: "file_123",
+          batch: false,
+          config: { detail: "hi" },
+          metadata: { environment: "prod" },
+          callbackUrl: "https://callback.example.com",
+        });
+
+        expect(result).toEqual(mockResponse);
+        expect(requestMock).toHaveBeenCalledWith(
+          "POST",
+          "/document/execute",
+          undefined,
+          {
+            name: "test-agent",
+            version: "v1.0",
+            file_id: "file_123",
+            batch: false,
+            config: {
+              detail: "hi",
+              json_schema: undefined,
+              confidence: false,
+              grounding: false,
+              gql_stmt: null,
+            },
+            metadata: {
+              environment: "prod",
+              session_id: undefined,
+              allow_training: true,
+            },
+            callback_url: "https://callback.example.com",
+          }
+        );
+      });
+
+      it("should execute with url parameter", async () => {
+        const mockResponse = {
+          id: "pred_456",
+          status: "completed",
+          response: { result: "test" },
+          created_at: "2023-01-01T00:00:00Z",
+        };
+        requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+        const result = await documentPredictions.execute({
+          name: "test-agent",
+          url: "https://example.com/document.pdf",
+        });
+
+        expect(result).toEqual(mockResponse);
+        expect(requestMock).toHaveBeenCalledWith(
+          "POST",
+          "/document/execute",
+          undefined,
+          {
+            name: "test-agent",
+            version: "latest",
+            url: "https://example.com/document.pdf",
+            batch: true,
+            config: {
+              detail: "auto",
+              json_schema: undefined,
+              confidence: false,
+              grounding: false,
+              gql_stmt: null,
+            },
+            metadata: {
+              environment: "dev",
+              session_id: undefined,
+              allow_training: true,
+            },
+            callback_url: undefined,
+          }
+        );
+      });
+
+      it("should throw error when neither fileId nor url provided", async () => {
+        await expect(
+          documentPredictions.execute({
+            name: "test-agent",
+          })
+        ).rejects.toThrow("Either `fileId` or `url` must be provided");
+      });
+
+      it("should throw error when both fileId and url provided", async () => {
+        await expect(
+          documentPredictions.execute({
+            name: "test-agent",
+            fileId: "file_123",
+            url: "https://example.com/document.pdf",
+          })
+        ).rejects.toThrow("Only one of `fileId` or `url` can be provided");
+      });
+
+      it("should handle responseModel config", async () => {
+        const mockResponse = {
+          id: "pred_789",
+          status: "completed",
+          response: { result: "test" },
+          created_at: "2023-01-01T00:00:00Z",
+        };
+        requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+        const mockSchema = { type: "object", properties: {} };
+        const mockConvertToJsonSchema = jest.fn().mockReturnValue(mockSchema);
+        jest.doMock("../../../src/utils/utils", () => ({
+          convertToJsonSchema: mockConvertToJsonSchema,
+        }));
+
+        const { convertToJsonSchema } = require("../../../src/utils/utils");
+        const mockZodSchema = {} as any;
+
+        const result = await documentPredictions.execute({
+          name: "test-agent",
+          fileId: "file_123",
+          config: {
+            responseModel: mockZodSchema,
+            zodToJsonParams: { definitions: true },
+          },
+        });
+
+        expect(result).toEqual(mockResponse);
+        expect(requestMock).toHaveBeenCalledWith(
+          "POST",
+          "/document/execute",
+          undefined,
+          expect.objectContaining({
+            config: expect.objectContaining({
+              json_schema: {},
+            }),
+          })
         );
       });
     });

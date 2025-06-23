@@ -4,6 +4,7 @@ import {
   ListParams,
   ImagePredictionParams,
   FilePredictionParams,
+  FileExecuteParams,
   WebPredictionParams,
   SchemaResponse,
   GenerationConfigParams,
@@ -99,37 +100,62 @@ export class ImagePredictions extends Predictions {
    * @returns Processed image data array
    * @private
    */
-  private _handleImagesOrUrls(
-    images?: string[],
-    urls?: string[]
-  ): string[] {
+  private _handleImagesOrUrls(images?: string[], urls?: string[]): string[] {
     // Input validation
     if (!images && !urls) {
-      throw new InputError("Either `images` or `urls` must be provided", "missing_parameter", "Provide either images or urls parameter");
+      throw new InputError(
+        "Either `images` or `urls` must be provided",
+        "missing_parameter",
+        "Provide either images or urls parameter"
+      );
     }
     if (images && urls) {
-      throw new InputError("Only one of `images` or `urls` can be provided", "invalid_parameters", "Provide either images or urls, not both");
+      throw new InputError(
+        "Only one of `images` or `urls` can be provided",
+        "invalid_parameters",
+        "Provide either images or urls, not both"
+      );
     }
 
     if (images) {
       if (!images.length) {
-        throw new InputError("Images array cannot be empty", "empty_array", "Provide at least one image");
+        throw new InputError(
+          "Images array cannot be empty",
+          "empty_array",
+          "Provide at least one image"
+        );
       }
       return images.map((image) => processImage(image));
     } else if (urls) {
       if (!urls.length) {
-        throw new InputError("URLs array cannot be empty", "empty_array", "Provide at least one URL");
+        throw new InputError(
+          "URLs array cannot be empty",
+          "empty_array",
+          "Provide at least one URL"
+        );
       }
       if (!urls.every((url) => typeof url === "string")) {
-        throw new InputError("All URLs must be strings", "invalid_type", "Ensure all URLs are string values");
+        throw new InputError(
+          "All URLs must be strings",
+          "invalid_type",
+          "Ensure all URLs are string values"
+        );
       }
       if (!urls.every((url) => url.startsWith("http"))) {
-        throw new InputError("URLs must start with 'http'", "invalid_format", "Ensure all URLs start with http or https");
+        throw new InputError(
+          "URLs must start with 'http'",
+          "invalid_format",
+          "Ensure all URLs start with http or https"
+        );
       }
       return urls;
     }
 
-    throw new InputError("Either `images` or `urls` must be provided", "missing_parameter", "Provide either images or urls parameter");
+    throw new InputError(
+      "Either `images` or `urls` must be provided",
+      "missing_parameter",
+      "Provide either images or urls parameter"
+    );
   }
 
   /**
@@ -159,9 +185,9 @@ export class ImagePredictions extends Predictions {
     } = params;
 
     const imagesData = this._handleImagesOrUrls(images, urls);
-    
+
     let jsonSchema = config?.jsonSchema;
-    if (config?.responseModel) {
+    if (config && "responseModel" in config && config.responseModel) {
       jsonSchema = convertToJsonSchema(
         config.responseModel,
         config.zodToJsonParams
@@ -194,7 +220,7 @@ export class ImagePredictions extends Predictions {
     );
 
     this._castResponseToSchema(response, domain, config);
-    
+
     return response;
   }
 
@@ -213,7 +239,7 @@ export class ImagePredictions extends Predictions {
   }): Promise<PredictionResponse> {
     const { images, urls } = params;
     const imagesData = this._handleImagesOrUrls(images, urls);
-    
+
     const [response] = await this.requestor.request<PredictionResponse>(
       "POST",
       "image/schema",
@@ -222,11 +248,11 @@ export class ImagePredictions extends Predictions {
         images: imagesData,
       }
     );
-    
+
     if (response.response) {
       response.response = response.response as SchemaResponse;
     }
-    
+
     return response;
   }
 }
@@ -252,10 +278,18 @@ export class FilePredictions extends Predictions {
   ): { [key: string]: string } {
     // Input validation
     if (!fileId && !url) {
-      throw new InputError("Either `fileId` or `url` must be provided", "missing_parameter", "Provide either a fileId or url parameter");
+      throw new InputError(
+        "Either `fileId` or `url` must be provided",
+        "missing_parameter",
+        "Provide either a fileId or url parameter"
+      );
     }
     if (fileId && url) {
-      throw new InputError("Only one of `fileId` or `url` can be provided", "invalid_parameters", "Provide either fileId or url, not both");
+      throw new InputError(
+        "Only one of `fileId` or `url` can be provided",
+        "invalid_parameters",
+        "Provide either fileId or url, not both"
+      );
     }
 
     return fileId ? { file_id: fileId } : { url: url! };
@@ -276,7 +310,7 @@ export class FilePredictions extends Predictions {
     const fileOrUrl = this._handleFileOrUrl(fileId, url);
 
     let jsonSchema = config?.jsonSchema;
-    if (config?.responseModel) {
+    if (config && "responseModel" in config && config.responseModel) {
       jsonSchema = convertToJsonSchema(
         config.responseModel,
         config.zodToJsonParams
@@ -307,10 +341,74 @@ export class FilePredictions extends Predictions {
         callback_url: callbackUrl,
       }
     );
-    
+
     // Cast response to schema if needed
     this._castResponseToSchema(response, domain!, config);
-    
+
+    return response;
+  }
+
+  /**
+   * Execute a named model/agent on files
+   * @param params.name - Name of the model/agent to execute
+   * @param params.version - Version of the model/agent (default: "latest")
+   * @param params.fileId - File ID to use
+   * @param params.url - URL to use
+   * @param params.batch - Whether to process as batch (default: false)
+   * @param params.config - Configuration options for the prediction
+   * @param params.metadata - Additional metadata to include
+   * @param params.callbackUrl - URL to receive prediction completion webhook
+   * @returns Promise containing the prediction response
+   */
+  async execute(params: FileExecuteParams): Promise<PredictionResponse> {
+    const {
+      name,
+      version = "latest",
+      fileId,
+      url,
+      batch = true,
+      config,
+      metadata,
+      callbackUrl,
+    } = params;
+
+    const fileOrUrl = this._handleFileOrUrl(fileId, url);
+
+    let jsonSchema = config?.jsonSchema;
+    if (config && "responseModel" in config && config.responseModel) {
+      jsonSchema = convertToJsonSchema(
+        config.responseModel,
+        config.zodToJsonParams
+      );
+    }
+
+    const [response] = await this.requestor.request<PredictionResponse>(
+      "POST",
+      `/${this.route}/execute`,
+      undefined,
+      {
+        name,
+        version,
+        ...fileOrUrl,
+        batch,
+        config: {
+          detail: config?.detail ?? "auto",
+          json_schema: jsonSchema,
+          confidence: config?.confidence ?? false,
+          grounding: config?.grounding ?? false,
+          gql_stmt: config?.gqlStmt ?? null,
+        },
+        metadata: {
+          environment: metadata?.environment ?? "dev",
+          session_id: metadata?.sessionId,
+          allow_training: metadata?.allowTraining ?? true,
+        },
+        callback_url: callbackUrl,
+      }
+    );
+
+    this._castResponseToSchema(response, name, config);
+
     return response;
   }
 
@@ -327,19 +425,19 @@ export class FilePredictions extends Predictions {
   }): Promise<PredictionResponse> {
     const { fileId, url } = params;
     const fileOrUrl = this._handleFileOrUrl(fileId, url);
-    
+
     const [response] = await this.requestor.request<PredictionResponse>(
       "POST",
       `/${this.route}/schema`,
       undefined,
       fileOrUrl
     );
-    
+
     // Cast response to SchemaResponse
     if (response.response) {
       response.response = response.response as SchemaResponse;
     }
-    
+
     return response;
   }
 }
