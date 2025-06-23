@@ -366,3 +366,25 @@ export interface FeedbackSubmitResponse {
   request_id: string;
   created_at: string;
 }
+
+export interface ImageExecuteParams {
+  name: string;
+  version?: string;
+  images?: string[];
+  urls?: string[];
+  batch?: boolean;
+  config?: GenerationConfigInput;
+  metadata?: RequestMetadataInput;
+  callbackUrl?: string;
+}
+
+export interface FileExecuteParams {
+  name: string;
+  version?: string;
+  fileId?: string;
+  url?: string;
+  batch?: boolean;
+  config?: GenerationConfigInput;
+  metadata?: RequestMetadataInput;
+  callbackUrl?: string;
+}

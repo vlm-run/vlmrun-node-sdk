@@ -3,7 +3,9 @@ import {
   PredictionResponse,
   ListParams,
   ImagePredictionParams,
+  ImageExecuteParams,
   FilePredictionParams,
+  FileExecuteParams,
   WebPredictionParams,
   SchemaResponse,
   GenerationConfigParams,
@@ -161,7 +163,7 @@ export class ImagePredictions extends Predictions {
     const imagesData = this._handleImagesOrUrls(images, urls);
     
     let jsonSchema = config?.jsonSchema;
-    if (config?.responseModel) {
+    if (config && 'responseModel' in config && config.responseModel) {
       jsonSchema = convertToJsonSchema(
         config.responseModel,
         config.zodToJsonParams
@@ -194,6 +196,72 @@ export class ImagePredictions extends Predictions {
     );
 
     this._castResponseToSchema(response, domain, config);
+    
+    return response;
+  }
+
+  /**
+   * Execute a named model/agent on images
+   * @param params.name - Name of the model/agent to execute
+   * @param params.version - Version of the model/agent (default: "latest")
+   * @param params.images - Array of image inputs. Each image can be:
+   *   - A local file path string
+   *   - A base64 encoded image string
+   * @param params.urls - Array of URL strings pointing to images
+   * @param params.batch - Whether to process as batch (default: false)
+   * @param params.config - Configuration options for the prediction
+   * @param params.metadata - Additional metadata to include
+   * @param params.callbackUrl - URL to receive prediction completion webhook
+   * @returns Promise containing the prediction response
+   */
+  async execute(params: ImageExecuteParams): Promise<PredictionResponse> {
+    const {
+      name,
+      version = "latest",
+      images,
+      urls,
+      batch = false,
+      config,
+      metadata,
+      callbackUrl,
+    } = params;
+
+    const imagesData = this._handleImagesOrUrls(images, urls);
+    
+    let jsonSchema = config?.jsonSchema;
+    if (config && 'responseModel' in config && config.responseModel) {
+      jsonSchema = convertToJsonSchema(
+        config.responseModel,
+        config.zodToJsonParams
+      );
+    }
+
+    const [response] = await this.requestor.request<PredictionResponse>(
+      "POST",
+      "image/execute",
+      undefined,
+      {
+        name,
+        version,
+        images: imagesData,
+        batch,
+        config: {
+          detail: config?.detail ?? "auto",
+          json_schema: jsonSchema,
+          confidence: config?.confidence ?? false,
+          grounding: config?.grounding ?? false,
+          gql_stmt: config?.gqlStmt ?? null,
+        },
+        metadata: {
+          environment: metadata?.environment ?? "dev",
+          session_id: metadata?.sessionId,
+          allow_training: metadata?.allowTraining ?? true,
+        },
+        callback_url: callbackUrl,
+      }
+    );
+
+    this._castResponseToSchema(response, name, config);
     
     return response;
   }
@@ -276,7 +344,7 @@ export class FilePredictions extends Predictions {
     const fileOrUrl = this._handleFileOrUrl(fileId, url);
 
     let jsonSchema = config?.jsonSchema;
-    if (config?.responseModel) {
+    if (config && 'responseModel' in config && config.responseModel) {
       jsonSchema = convertToJsonSchema(
         config.responseModel,
         config.zodToJsonParams
@@ -310,6 +378,70 @@ export class FilePredictions extends Predictions {
     
     // Cast response to schema if needed
     this._castResponseToSchema(response, domain!, config);
+    
+    return response;
+  }
+
+  /**
+   * Execute a named model/agent on files
+   * @param params.name - Name of the model/agent to execute
+   * @param params.version - Version of the model/agent (default: "latest")
+   * @param params.fileId - File ID to use
+   * @param params.url - URL to use
+   * @param params.batch - Whether to process as batch (default: false)
+   * @param params.config - Configuration options for the prediction
+   * @param params.metadata - Additional metadata to include
+   * @param params.callbackUrl - URL to receive prediction completion webhook
+   * @returns Promise containing the prediction response
+   */
+  async execute(params: FileExecuteParams): Promise<PredictionResponse> {
+    const {
+      name,
+      version = "latest",
+      fileId,
+      url,
+      batch = false,
+      config,
+      metadata,
+      callbackUrl,
+    } = params;
+
+    const fileOrUrl = this._handleFileOrUrl(fileId, url);
+
+    let jsonSchema = config?.jsonSchema;
+    if (config && 'responseModel' in config && config.responseModel) {
+      jsonSchema = convertToJsonSchema(
+        config.responseModel,
+        config.zodToJsonParams
+      );
+    }
+
+    const [response] = await this.requestor.request<PredictionResponse>(
+      "POST",
+      `/${this.route}/execute`,
+      undefined,
+      {
+        name,
+        version,
+        ...fileOrUrl,
+        batch,
+        config: {
+          detail: config?.detail ?? "auto",
+          json_schema: jsonSchema,
+          confidence: config?.confidence ?? false,
+          grounding: config?.grounding ?? false,
+          gql_stmt: config?.gqlStmt ?? null,
+        },
+        metadata: {
+          environment: metadata?.environment ?? "dev",
+          session_id: metadata?.sessionId,
+          allow_training: metadata?.allowTraining ?? true,
+        },
+        callback_url: callbackUrl,
+      }
+    );
+    
+    this._castResponseToSchema(response, name, config);
     
     return response;
   }

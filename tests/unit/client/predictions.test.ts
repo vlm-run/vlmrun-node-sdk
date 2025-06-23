@@ -88,24 +88,21 @@ describe("Predictions", () => {
 
   describe("ImagePredictions", () => {
     let imagePredictions: ImagePredictions;
+    let requestMock: jest.SpyInstance;
 
     beforeEach(() => {
       imagePredictions = new ImagePredictions(client);
+      requestMock = jest.spyOn(imagePredictions["requestor"], "request");
       (imageUtils.processImage as jest.Mock).mockReturnValue(
         "base64-encoded-image"
       );
     });
 
+    afterEach(() => {
+      requestMock.mockReset();
+    });
+
     describe("generate", () => {
-      let requestMock: jest.SpyInstance;
-
-      beforeEach(() => {
-        requestMock = jest.spyOn(imagePredictions["requestor"], "request");
-      });
-
-      afterEach(() => {
-        requestMock.mockReset();
-      });
 
       it("should generate image predictions with default options", async () => {
         const mockResponse = { id: "pred_123", status: "completed" };
@@ -281,6 +278,155 @@ describe("Predictions", () => {
         ).rejects.toThrow("Only one of `images` or `urls` can be provided");
         
         expect(requestMock).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("execute", () => {
+      it("should execute with images parameter", async () => {
+        const mockResponse = {
+          id: "pred_123",
+          status: "completed",
+          response: { result: "test" },
+          created_at: "2023-01-01T00:00:00Z"
+        };
+        requestMock.mockResolvedValue([mockResponse, 200, {}]);
+        (imageUtils.processImage as jest.Mock).mockReturnValue("base64-image-data");
+
+        const result = await imagePredictions.execute({
+          name: "test-agent",
+          version: "v1.0",
+          images: ["test-image.jpg"],
+          batch: false,
+          config: { detail: "hi" },
+          metadata: { environment: "prod" },
+          callbackUrl: "https://callback.example.com"
+        });
+
+        expect(result).toEqual(mockResponse);
+        expect(requestMock).toHaveBeenCalledWith(
+          "POST",
+          "image/execute",
+          undefined,
+          {
+            name: "test-agent",
+            version: "v1.0",
+            images: ["base64-image-data"],
+            batch: false,
+            config: {
+              detail: "hi",
+              json_schema: undefined,
+              confidence: false,
+              grounding: false,
+              gql_stmt: null,
+            },
+            metadata: {
+              environment: "prod",
+              session_id: undefined,
+              allow_training: true,
+            },
+            callback_url: "https://callback.example.com",
+          }
+        );
+      });
+
+      it("should execute with urls parameter", async () => {
+        const mockResponse = {
+          id: "pred_456",
+          status: "completed",
+          response: { result: "test" },
+          created_at: "2023-01-01T00:00:00Z"
+        };
+        requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+        const result = await imagePredictions.execute({
+          name: "test-agent",
+          urls: ["https://example.com/image.jpg"],
+        });
+
+        expect(result).toEqual(mockResponse);
+        expect(requestMock).toHaveBeenCalledWith(
+          "POST",
+          "image/execute",
+          undefined,
+          {
+            name: "test-agent",
+            version: "latest",
+            images: ["https://example.com/image.jpg"],
+            batch: false,
+            config: {
+              detail: "auto",
+              json_schema: undefined,
+              confidence: false,
+              grounding: false,
+              gql_stmt: null,
+            },
+            metadata: {
+              environment: "dev",
+              session_id: undefined,
+              allow_training: true,
+            },
+            callback_url: undefined,
+          }
+        );
+      });
+
+      it("should throw error when neither images nor urls provided", async () => {
+        await expect(
+          imagePredictions.execute({
+            name: "test-agent",
+          })
+        ).rejects.toThrow("Either `images` or `urls` must be provided");
+      });
+
+      it("should throw error when both images and urls provided", async () => {
+        await expect(
+          imagePredictions.execute({
+            name: "test-agent",
+            images: ["test.jpg"],
+            urls: ["https://example.com/image.jpg"],
+          })
+        ).rejects.toThrow("Only one of `images` or `urls` can be provided");
+      });
+
+      it("should handle responseModel config", async () => {
+        const mockResponse = {
+          id: "pred_789",
+          status: "completed",
+          response: { result: "test" },
+          created_at: "2023-01-01T00:00:00Z"
+        };
+        requestMock.mockResolvedValue([mockResponse, 200, {}]);
+        (imageUtils.processImage as jest.Mock).mockReturnValue("base64-image-data");
+
+        const mockSchema = { type: "object", properties: {} };
+        const mockConvertToJsonSchema = jest.fn().mockReturnValue(mockSchema);
+        jest.doMock("../../../src/utils/utils", () => ({
+          convertToJsonSchema: mockConvertToJsonSchema,
+        }));
+
+        const { convertToJsonSchema } = require("../../../src/utils/utils");
+        const mockZodSchema = {} as any;
+
+        const result = await imagePredictions.execute({
+          name: "test-agent",
+          images: ["test.jpg"],
+          config: {
+            responseModel: mockZodSchema,
+            zodToJsonParams: { definitions: true },
+          },
+        });
+
+        expect(result).toEqual(mockResponse);
+        expect(requestMock).toHaveBeenCalledWith(
+          "POST",
+          "image/execute",
+          undefined,
+          expect.objectContaining({
+            config: expect.objectContaining({
+              json_schema: {},
+            }),
+          })
+        );
       });
     });
   });
@@ -723,6 +869,229 @@ describe("Predictions", () => {
           {
             file_id: "video1.mp4",
           }
+        );
+      });
+    });
+
+
+  });
+
+  describe("FilePredictions", () => {
+    let documentPredictions: any;
+    let requestMock: jest.SpyInstance;
+
+    beforeEach(() => {
+      documentPredictions = DocumentPredictions(client);
+      requestMock = jest.spyOn(documentPredictions["requestor"], "request");
+    });
+
+    afterEach(() => {
+      requestMock.mockReset();
+    });
+
+    describe("execute", () => {
+      it("should execute with fileId parameter", async () => {
+        const mockResponse = {
+          id: "pred_123",
+          status: "completed",
+          response: { result: "test" },
+          created_at: "2023-01-01T00:00:00Z"
+        };
+        requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+        const result = await documentPredictions.execute({
+          name: "test-agent",
+          version: "v1.0",
+          fileId: "file_123",
+          batch: false,
+          config: { detail: "hi" },
+          metadata: { environment: "prod" },
+          callbackUrl: "https://callback.example.com"
+        });
+
+        expect(result).toEqual(mockResponse);
+        expect(requestMock).toHaveBeenCalledWith(
+          "POST",
+          "/document/execute",
+          undefined,
+          {
+            name: "test-agent",
+            version: "v1.0",
+            file_id: "file_123",
+            batch: false,
+            config: {
+              detail: "hi",
+              json_schema: undefined,
+              confidence: false,
+              grounding: false,
+              gql_stmt: null,
+            },
+            metadata: {
+              environment: "prod",
+              session_id: undefined,
+              allow_training: true,
+            },
+            callback_url: "https://callback.example.com",
+          }
+        );
+      });
+
+      it("should execute with url parameter", async () => {
+        const mockResponse = {
+          id: "pred_456",
+          status: "completed",
+          response: { result: "test" },
+          created_at: "2023-01-01T00:00:00Z"
+        };
+        requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+        const result = await documentPredictions.execute({
+          name: "test-agent",
+          url: "https://example.com/document.pdf",
+        });
+
+        expect(result).toEqual(mockResponse);
+        expect(requestMock).toHaveBeenCalledWith(
+          "POST",
+          "/document/execute",
+          undefined,
+          {
+            name: "test-agent",
+            version: "latest",
+            url: "https://example.com/document.pdf",
+            batch: false,
+            config: {
+              detail: "auto",
+              json_schema: undefined,
+              confidence: false,
+              grounding: false,
+              gql_stmt: null,
+            },
+            metadata: {
+              environment: "dev",
+              session_id: undefined,
+              allow_training: true,
+            },
+            callback_url: undefined,
+          }
+        );
+      });
+
+      it("should execute for audio route", async () => {
+        const audioPredictions = AudioPredictions(client);
+        const audioRequestMock = jest.spyOn(audioPredictions["requestor"], "request");
+        
+        const mockResponse = {
+          id: "pred_audio",
+          status: "completed",
+          response: { result: "test" },
+          created_at: "2023-01-01T00:00:00Z"
+        };
+        audioRequestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+        const result = await audioPredictions.execute({
+          name: "audio-agent",
+          fileId: "audio_file_123",
+        });
+
+        expect(result).toEqual(mockResponse);
+        expect(audioRequestMock).toHaveBeenCalledWith(
+          "POST",
+          "/audio/execute",
+          undefined,
+          expect.objectContaining({
+            name: "audio-agent",
+            version: "latest",
+            file_id: "audio_file_123",
+          })
+        );
+      });
+
+      it("should execute for video route", async () => {
+        const videoPredictions = VideoPredictions(client);
+        const videoRequestMock = jest.spyOn(videoPredictions["requestor"], "request");
+        
+        const mockResponse = {
+          id: "pred_video",
+          status: "completed",
+          response: { result: "test" },
+          created_at: "2023-01-01T00:00:00Z"
+        };
+        videoRequestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+        const result = await videoPredictions.execute({
+          name: "video-agent",
+          url: "https://example.com/video.mp4",
+        });
+
+        expect(result).toEqual(mockResponse);
+        expect(videoRequestMock).toHaveBeenCalledWith(
+          "POST",
+          "/video/execute",
+          undefined,
+          expect.objectContaining({
+            name: "video-agent",
+            version: "latest",
+            url: "https://example.com/video.mp4",
+          })
+        );
+      });
+
+      it("should throw error when neither fileId nor url provided", async () => {
+        await expect(
+          documentPredictions.execute({
+            name: "test-agent",
+          })
+        ).rejects.toThrow("Either `fileId` or `url` must be provided");
+      });
+
+      it("should throw error when both fileId and url provided", async () => {
+        await expect(
+          documentPredictions.execute({
+            name: "test-agent",
+            fileId: "file_123",
+            url: "https://example.com/document.pdf",
+          })
+        ).rejects.toThrow("Only one of `fileId` or `url` can be provided");
+      });
+
+      it("should handle responseModel config", async () => {
+        const mockResponse = {
+          id: "pred_789",
+          status: "completed",
+          response: { result: "test" },
+          created_at: "2023-01-01T00:00:00Z"
+        };
+        requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+        const mockSchema = { type: "object", properties: {} };
+        const mockConvertToJsonSchema = jest.fn().mockReturnValue(mockSchema);
+        jest.doMock("../../../src/utils/utils", () => ({
+          convertToJsonSchema: mockConvertToJsonSchema,
+        }));
+
+        const { convertToJsonSchema } = require("../../../src/utils/utils");
+        const mockZodSchema = {} as any;
+
+        const result = await documentPredictions.execute({
+          name: "test-agent",
+          fileId: "file_123",
+          config: {
+            responseModel: mockZodSchema,
+            zodToJsonParams: { definitions: true },
+          },
+        });
+
+        expect(result).toEqual(mockResponse);
+        expect(requestMock).toHaveBeenCalledWith(
+          "POST",
+          "/document/execute",
+          undefined,
+          expect.objectContaining({
+            config: expect.objectContaining({
+              json_schema: {},
+            }),
+          })
         );
       });
     });
