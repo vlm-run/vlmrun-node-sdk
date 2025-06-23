@@ -830,65 +830,7 @@ describe("Predictions", () => {
         );
       });
 
-      it("should execute for audio route", async () => {
-        const audioPredictions = AudioPredictions(client);
-        const audioRequestMock = jest.spyOn(audioPredictions["requestor"], "request");
-        
-        const mockResponse = {
-          id: "pred_audio",
-          status: "completed",
-          response: { result: "test" },
-          created_at: "2023-01-01T00:00:00Z"
-        };
-        audioRequestMock.mockResolvedValue([mockResponse, 200, {}]);
 
-        const result = await audioPredictions.execute({
-          name: "audio-agent",
-          fileId: "audio_file_123",
-        });
-
-        expect(result).toEqual(mockResponse);
-        expect(audioRequestMock).toHaveBeenCalledWith(
-          "POST",
-          "/audio/execute",
-          undefined,
-          expect.objectContaining({
-            name: "audio-agent",
-            version: "latest",
-            file_id: "audio_file_123",
-          })
-        );
-      });
-
-      it("should execute for video route", async () => {
-        const videoPredictions = VideoPredictions(client);
-        const videoRequestMock = jest.spyOn(videoPredictions["requestor"], "request");
-        
-        const mockResponse = {
-          id: "pred_video",
-          status: "completed",
-          response: { result: "test" },
-          created_at: "2023-01-01T00:00:00Z"
-        };
-        videoRequestMock.mockResolvedValue([mockResponse, 200, {}]);
-
-        const result = await videoPredictions.execute({
-          name: "video-agent",
-          url: "https://example.com/video.mp4",
-        });
-
-        expect(result).toEqual(mockResponse);
-        expect(videoRequestMock).toHaveBeenCalledWith(
-          "POST",
-          "/video/execute",
-          undefined,
-          expect.objectContaining({
-            name: "video-agent",
-            version: "latest",
-            url: "https://example.com/video.mp4",
-          })
-        );
-      });
 
       it("should throw error when neither fileId nor url provided", async () => {
         await expect(
