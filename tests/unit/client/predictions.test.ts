@@ -39,34 +39,30 @@ describe("Predictions", () => {
       it("should list predictions with default parameters", async () => {
         const mockResponse = [
           { id: "pred_123", status: "completed" },
-          { id: "pred_456", status: "processing" }
+          { id: "pred_456", status: "processing" },
         ];
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await predictions.list();
 
         expect(result).toEqual(mockResponse);
-        expect(requestMock).toHaveBeenCalledWith(
-          "GET",
-          "predictions",
-          { skip: undefined, limit: undefined }
-        );
+        expect(requestMock).toHaveBeenCalledWith("GET", "predictions", {
+          skip: undefined,
+          limit: undefined,
+        });
       });
 
       it("should list predictions with custom parameters", async () => {
-        const mockResponse = [
-          { id: "pred_789", status: "completed" }
-        ];
+        const mockResponse = [{ id: "pred_789", status: "completed" }];
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await predictions.list({ skip: 10, limit: 5 });
 
         expect(result).toEqual(mockResponse);
-        expect(requestMock).toHaveBeenCalledWith(
-          "GET",
-          "predictions",
-          { skip: 10, limit: 5 }
-        );
+        expect(requestMock).toHaveBeenCalledWith("GET", "predictions", {
+          skip: 10,
+          limit: 5,
+        });
       });
     });
 
@@ -78,10 +74,7 @@ describe("Predictions", () => {
         const result = await predictions.get("pred_123");
 
         expect(result).toEqual(mockResponse);
-        expect(requestMock).toHaveBeenCalledWith(
-          "GET",
-          "predictions/pred_123"
-        );
+        expect(requestMock).toHaveBeenCalledWith("GET", "predictions/pred_123");
       });
     });
   });
@@ -103,7 +96,6 @@ describe("Predictions", () => {
     });
 
     describe("generate", () => {
-
       it("should generate image predictions with default options", async () => {
         const mockResponse = { id: "pred_123", status: "completed" };
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
@@ -200,8 +192,8 @@ describe("Predictions", () => {
       });
 
       it("should generate schema from images", async () => {
-        const mockResponse = { 
-          id: "pred_123", 
+        const mockResponse = {
+          id: "pred_123",
           status: "completed",
           response: {
             json_schema: { type: "object", properties: {} },
@@ -209,10 +201,10 @@ describe("Predictions", () => {
             schema_hash: "abc123",
             domain: "document.invoice",
             gql_stmt: "",
-            description: "Invoice schema"
-          }
+            description: "Invoice schema",
+          },
         };
-        
+
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await imagePredictions.schema({
@@ -231,8 +223,8 @@ describe("Predictions", () => {
       });
 
       it("should generate schema from URLs", async () => {
-        const mockResponse = { 
-          id: "pred_123", 
+        const mockResponse = {
+          id: "pred_123",
           status: "completed",
           response: {
             json_schema: { type: "object", properties: {} },
@@ -240,10 +232,10 @@ describe("Predictions", () => {
             schema_hash: "abc123",
             domain: "document.invoice",
             gql_stmt: "",
-            description: "Invoice schema"
-          }
+            description: "Invoice schema",
+          },
         };
-        
+
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await imagePredictions.schema({
@@ -265,7 +257,7 @@ describe("Predictions", () => {
         await expect(imagePredictions.schema({})).rejects.toThrow(
           "Either `images` or `urls` must be provided"
         );
-        
+
         expect(requestMock).not.toHaveBeenCalled();
       });
 
@@ -276,12 +268,10 @@ describe("Predictions", () => {
             urls: ["https://example.com/image.jpg"],
           })
         ).rejects.toThrow("Only one of `images` or `urls` can be provided");
-        
+
         expect(requestMock).not.toHaveBeenCalled();
       });
     });
-
-
   });
 
   describe("DocumentPredictions", () => {
@@ -379,7 +369,7 @@ describe("Predictions", () => {
             domain: "domain1",
           })
         ).rejects.toThrow("Either `fileId` or `url` must be provided");
-        
+
         expect(requestMock).not.toHaveBeenCalled();
       });
 
@@ -392,15 +382,15 @@ describe("Predictions", () => {
             domain: "domain1",
           })
         ).rejects.toThrow("Only one of `fileId` or `url` can be provided");
-        
+
         expect(requestMock).not.toHaveBeenCalled();
       });
     });
 
     describe("schema", () => {
       it("should generate schema from fileId", async () => {
-        const mockResponse = { 
-          id: "pred_123", 
+        const mockResponse = {
+          id: "pred_123",
           status: "completed",
           response: {
             json_schema: { type: "object", properties: {} },
@@ -408,10 +398,10 @@ describe("Predictions", () => {
             schema_hash: "abc123",
             domain: "document.invoice",
             gql_stmt: "",
-            description: "Invoice schema"
-          }
+            description: "Invoice schema",
+          },
         };
-        
+
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await documentPredictions.schema({
@@ -430,8 +420,8 @@ describe("Predictions", () => {
       });
 
       it("should generate schema from URL", async () => {
-        const mockResponse = { 
-          id: "pred_123", 
+        const mockResponse = {
+          id: "pred_123",
           status: "completed",
           response: {
             json_schema: { type: "object", properties: {} },
@@ -439,10 +429,10 @@ describe("Predictions", () => {
             schema_hash: "abc123",
             domain: "document.invoice",
             gql_stmt: "",
-            description: "Invoice schema"
-          }
+            description: "Invoice schema",
+          },
         };
-        
+
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await documentPredictions.schema({
@@ -464,7 +454,7 @@ describe("Predictions", () => {
         await expect(documentPredictions.schema({})).rejects.toThrow(
           "Either `fileId` or `url` must be provided"
         );
-        
+
         expect(requestMock).not.toHaveBeenCalled();
       });
 
@@ -475,7 +465,7 @@ describe("Predictions", () => {
             url: "https://example.com/doc.pdf",
           })
         ).rejects.toThrow("Only one of `fileId` or `url` can be provided");
-        
+
         expect(requestMock).not.toHaveBeenCalled();
       });
     });
@@ -572,8 +562,8 @@ describe("Predictions", () => {
 
     describe("schema", () => {
       it("should generate schema from fileId", async () => {
-        const mockResponse = { 
-          id: "pred_123", 
+        const mockResponse = {
+          id: "pred_123",
           status: "completed",
           response: {
             json_schema: { type: "object", properties: {} },
@@ -581,10 +571,10 @@ describe("Predictions", () => {
             schema_hash: "abc123",
             domain: "audio.transcription",
             gql_stmt: "",
-            description: "Audio schema"
-          }
+            description: "Audio schema",
+          },
         };
-        
+
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await audioPredictions.schema({
@@ -695,8 +685,8 @@ describe("Predictions", () => {
 
     describe("schema", () => {
       it("should generate schema from fileId", async () => {
-        const mockResponse = { 
-          id: "pred_123", 
+        const mockResponse = {
+          id: "pred_123",
           status: "completed",
           response: {
             json_schema: { type: "object", properties: {} },
@@ -704,10 +694,10 @@ describe("Predictions", () => {
             schema_hash: "abc123",
             domain: "video.analysis",
             gql_stmt: "",
-            description: "Video schema"
-          }
+            description: "Video schema",
+          },
         };
-        
+
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
         const result = await videoPredictions.schema({
@@ -725,8 +715,6 @@ describe("Predictions", () => {
         );
       });
     });
-
-
   });
 
   describe("FilePredictions", () => {
@@ -748,7 +736,7 @@ describe("Predictions", () => {
           id: "pred_123",
           status: "completed",
           response: { result: "test" },
-          created_at: "2023-01-01T00:00:00Z"
+          created_at: "2023-01-01T00:00:00Z",
         };
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
@@ -759,7 +747,7 @@ describe("Predictions", () => {
           batch: false,
           config: { detail: "hi" },
           metadata: { environment: "prod" },
-          callbackUrl: "https://callback.example.com"
+          callbackUrl: "https://callback.example.com",
         });
 
         expect(result).toEqual(mockResponse);
@@ -794,7 +782,7 @@ describe("Predictions", () => {
           id: "pred_456",
           status: "completed",
           response: { result: "test" },
-          created_at: "2023-01-01T00:00:00Z"
+          created_at: "2023-01-01T00:00:00Z",
         };
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
@@ -812,7 +800,7 @@ describe("Predictions", () => {
             name: "test-agent",
             version: "latest",
             url: "https://example.com/document.pdf",
-            batch: false,
+            batch: true,
             config: {
               detail: "auto",
               json_schema: undefined,
@@ -829,8 +817,6 @@ describe("Predictions", () => {
           }
         );
       });
-
-
 
       it("should throw error when neither fileId nor url provided", async () => {
         await expect(
@@ -855,7 +841,7 @@ describe("Predictions", () => {
           id: "pred_789",
           status: "completed",
           response: { result: "test" },
-          created_at: "2023-01-01T00:00:00Z"
+          created_at: "2023-01-01T00:00:00Z",
         };
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
