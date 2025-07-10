@@ -76,25 +76,6 @@ describe("Domains class methods", () => {
     });
   });
 
-  describe("listDomains", () => {
-    it("should delegate to list() method", async () => {
-      const mockResponse: DomainInfo[] = [
-        {
-          domain: "document.invoice",
-          name: "Invoice",
-          description: "Invoice document type",
-        },
-      ];
-
-      jest
-        .spyOn(client.domains, "list")
-        .mockResolvedValueOnce(mockResponse);
-
-      const result = await client.domains.listDomains();
-      expect(result).toEqual(mockResponse);
-      expect(client.domains.list).toHaveBeenCalled();
-    });
-  });
 
   describe("list", () => {
     it("should call /domains endpoint", async () => {

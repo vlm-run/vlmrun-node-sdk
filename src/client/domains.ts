@@ -58,12 +58,4 @@ export class Domains {
     }
   }
 
-  /**
-   * List all available domains.
-   * @returns List of domain information
-   * @throws APIError if the request fails
-   */
-  async listDomains(): Promise<DomainInfo[]> {
-    return this.list();
-  }
 }
