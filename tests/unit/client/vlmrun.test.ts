@@ -5,7 +5,7 @@ import {
   GenerationConfig,
 } from "../../../src/client/types";
 
-describe("VlmRun client-level methods", () => {
+describe("Domains class methods", () => {
   let client: VlmRun;
 
   beforeEach(() => {
@@ -27,12 +27,12 @@ describe("VlmRun client-level methods", () => {
       };
 
       jest
-        .spyOn(client["requestor"], "request")
+        .spyOn(client.domains["requestor"], "request")
         .mockResolvedValueOnce([mockResponse, 200, {}]);
 
-      const result = await client.getSchema("document.invoice");
+      const result = await client.domains.getSchema("document.invoice");
       expect(result).toEqual(mockResponse);
-      expect(client["requestor"].request).toHaveBeenCalledWith(
+      expect(client.domains["requestor"].request).toHaveBeenCalledWith(
         "POST",
         "/schema",
         undefined,
@@ -53,12 +53,12 @@ describe("VlmRun client-level methods", () => {
       const customConfig = new GenerationConfig({ detail: "hi", confidence: true });
 
       jest
-        .spyOn(client["requestor"], "request")
+        .spyOn(client.domains["requestor"], "request")
         .mockResolvedValueOnce([mockResponse, 200, {}]);
 
-      const result = await client.getSchema("document.invoice", customConfig);
+      const result = await client.domains.getSchema("document.invoice", customConfig);
       expect(result).toEqual(mockResponse);
-      expect(client["requestor"].request).toHaveBeenCalledWith(
+      expect(client.domains["requestor"].request).toHaveBeenCalledWith(
         "POST",
         "/schema",
         undefined,
@@ -77,7 +77,7 @@ describe("VlmRun client-level methods", () => {
   });
 
   describe("listDomains", () => {
-    it("should delegate to domains.list()", async () => {
+    it("should delegate to list() method", async () => {
       const mockResponse: DomainInfo[] = [
         {
           domain: "document.invoice",
@@ -90,9 +90,32 @@ describe("VlmRun client-level methods", () => {
         .spyOn(client.domains, "list")
         .mockResolvedValueOnce(mockResponse);
 
-      const result = await client.listDomains();
+      const result = await client.domains.listDomains();
       expect(result).toEqual(mockResponse);
       expect(client.domains.list).toHaveBeenCalled();
+    });
+  });
+
+  describe("list", () => {
+    it("should call /domains endpoint", async () => {
+      const mockResponse: DomainInfo[] = [
+        {
+          domain: "document.invoice",
+          name: "Invoice",
+          description: "Invoice document type",
+        },
+      ];
+
+      jest
+        .spyOn(client.domains["requestor"], "request")
+        .mockResolvedValueOnce([mockResponse, 200, {}]);
+
+      const result = await client.domains.list();
+      expect(result).toEqual(mockResponse);
+      expect(client.domains["requestor"].request).toHaveBeenCalledWith(
+        "GET",
+        "/domains"
+      );
     });
   });
 });
