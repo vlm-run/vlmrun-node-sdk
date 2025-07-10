@@ -1,6 +1,6 @@
 import { Models } from "./client/models";
 import { Files } from "./client/files";
-import { Client } from "./client/base_requestor";
+import { Client, APIRequestor } from "./client/base_requestor";
 import {
   Predictions,
   ImagePredictions,
@@ -15,6 +15,12 @@ import { Datasets } from "./client/datasets";
 import { Hub } from "./client/hub";
 import { Agent } from "./client/agent";
 import { Domains } from "./client/domains";
+import {
+  DomainInfo,
+  SchemaResponse,
+  GenerationConfig,
+  GenerationConfigInput,
+} from "./client/types";
 
 export * from "./client/types";
 export * from "./client/base_requestor";
@@ -37,6 +43,7 @@ export interface VlmRunConfig {
 
 export class VlmRun {
   private client: Client;
+  private _requestor?: APIRequestor;
   readonly models: Models;
   readonly files: Files;
   readonly predictions: Predictions;
@@ -51,6 +58,13 @@ export class VlmRun {
   readonly hub: Hub;
   readonly agent: Agent;
   readonly domains: Domains;
+
+  get requestor(): APIRequestor {
+    if (!this._requestor) {
+      this._requestor = new APIRequestor(this.client);
+    }
+    return this._requestor;
+  }
 
   constructor(config: VlmRunConfig) {
     this.client = {
@@ -74,5 +88,33 @@ export class VlmRun {
     this.hub = new Hub(this.client);
     this.agent = new Agent(this.client);
     this.domains = new Domains(this.client);
+  }
+
+  /**
+   * Get the schema for a domain.
+   * @param domain Domain name (e.g. "document.invoice")
+   * @param config Optional generation config
+   * @returns Schema response containing JSON schema and metadata
+   */
+  async getSchema(
+    domain: string,
+    config?: GenerationConfigInput
+  ): Promise<SchemaResponse> {
+    const configObj = config instanceof GenerationConfig ? config : new GenerationConfig(config);
+    const [response] = await this.requestor.request<SchemaResponse>(
+      "POST",
+      "/schema",
+      undefined,
+      { domain, config: configObj.toJSON() }
+    );
+    return response;
+  }
+
+  /**
+   * List all available domains.
+   * @returns List of domain information
+   */
+  async listDomains(): Promise<DomainInfo[]> {
+    return this.domains.list();
   }
 }
