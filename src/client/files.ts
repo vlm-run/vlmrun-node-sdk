@@ -95,7 +95,6 @@ export class Files {
   async upload(params: FileUploadParams): Promise<FileResponse> {
     let fileToUpload: File;
     let filePath: string | undefined;
-    console.log(params);
 
     if (params.file) {
       fileToUpload = params.file;
@@ -121,7 +120,6 @@ export class Files {
       }
 
       fileToUpload = await readFileFromPathAsFile(params.filePath);
-      console.log(fileToUpload);
     } else {
       throw new InputError(
         "Either file or filePath must be provided.",
@@ -170,11 +168,6 @@ export class Files {
         );
 
         const endTime = Date.now();
-        console.log(
-          `Uploaded file to presigned URL [file=${fileToUpload.name}, time=${
-            (endTime - startTime) / 1000
-          }s]`
-        );
 
         if (putResponse.status === 200) {
           const [verifyResponse] = await this.requestor.request<FileResponse>(
