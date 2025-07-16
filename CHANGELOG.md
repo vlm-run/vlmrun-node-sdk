@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.1 (2025-01-16)
+
+Full Changelog: [v0.4.0...v0.4.1](https://github.com/vlm-run/vlmrun-node-sdk/compare/v0.4.0...v0.4.1)
+
+### Features
+
+* bump patch version to 0.4.1
+
 ## 0.1.3 (2025-01-10)
 
 Full Changelog: [v0.1.1...v0.1.3](https://github.com/vlm-run/vlmrun-node-sdk/compare/v0.1.1...v0.1.3)
