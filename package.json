@@ -1,6 +1,6 @@
 {
   "name": "vlmrun",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "The official TypeScript library for the VlmRun API",
   "author": "VlmRun <support@vlmrun.com>",
   "main": "dist/index.js",
