@@ -127,9 +127,9 @@ export class Finetuning {
           confidence: params.confidence ?? false,
           grounding: params.grounding ?? false,
           max_retries: params.maxRetries ?? 3,
-          max_tokens: params.maxTokens ?? 4096,
+          max_tokens: params.maxTokens ?? 65535,
         },
-        max_new_tokens: params.maxNewTokens ?? 1024,
+        max_new_tokens: params.maxNewTokens ?? 65535,
         temperature: params.temperature ?? 0.0,
         metadata: {
           environment: params?.environment ?? "dev",
