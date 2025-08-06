@@ -414,29 +414,39 @@ export interface AgentExecutionResponse {
   usage: CreditUsage;
 }
 
-export interface AgentExecutionConfig {
+export class AgentExecutionConfig {
   prompt?: string;
   responseModel?: ZodType;
   jsonSchema?: Record<string, any>;
-}
 
-export class AgentExecutionConfigClass {
-  prompt?: string;
-  jsonSchema?: Record<string, any>;
-
-  constructor(params: Partial<AgentExecutionConfigClass> = {}) {
+  constructor(params: Partial<AgentExecutionConfig> = {}) {
     Object.assign(this, params);
   }
 
   toJSON() {
-    return {
+    if (this.responseModel && this.jsonSchema) {
+      throw new Error("`responseModel` and `jsonSchema` cannot be used together");
+    }
+
+    const data: Record<string, any> = {
       prompt: this.prompt,
-      json_schema: this.jsonSchema,
     };
+
+    if (this.responseModel) {
+      data.json_schema = this.jsonSchema;
+    } else if (this.jsonSchema) {
+      data.json_schema = this.jsonSchema;
+    }
+
+    return data;
   }
 }
 
-export type AgentExecutionConfigInput = AgentExecutionConfigClass | AgentExecutionConfig;
+export type AgentExecutionConfigInput = AgentExecutionConfig | {
+  prompt?: string;
+  responseModel?: ZodType;
+  jsonSchema?: Record<string, any>;
+};
 
 export interface FileExecuteParams {
   name: string;

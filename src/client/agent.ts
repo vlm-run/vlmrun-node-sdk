@@ -10,7 +10,7 @@ import {
   AgentExecuteParams,
   AgentInfo,
   AgentExecutionResponse,
-  AgentExecutionConfigClass,
+  AgentExecutionConfig,
 } from "./types";
 
 export class Agent {
@@ -80,7 +80,7 @@ export class Agent {
     };
 
     if (config) {
-      if (config instanceof AgentExecutionConfigClass) {
+      if (config instanceof AgentExecutionConfig) {
         data.config = config.toJSON();
       } else {
         data.config = {
