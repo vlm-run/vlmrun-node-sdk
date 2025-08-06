@@ -365,7 +365,11 @@ export interface AgentExecuteParams {
   version?: string;
   inputs?: Record<string, any>;
   batch?: boolean;
-  config?: AgentExecutionConfigInput;
+  config?: AgentExecutionConfig | {
+    prompt?: string;
+    responseModel?: ZodType;
+    jsonSchema?: Record<string, any>;
+  };
   metadata?: RequestMetadataInput;
   callbackUrl?: string;
 }
@@ -442,11 +446,6 @@ export class AgentExecutionConfig {
   }
 }
 
-export type AgentExecutionConfigInput = AgentExecutionConfig | {
-  prompt?: string;
-  responseModel?: ZodType;
-  jsonSchema?: Record<string, any>;
-};
 
 export interface FileExecuteParams {
   name: string;
