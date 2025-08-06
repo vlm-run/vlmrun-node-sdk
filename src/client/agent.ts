@@ -5,12 +5,11 @@
 import { Client, APIRequestor } from "./base_requestor";
 import { InputError, ServerError } from "./exceptions";
 import { 
-  PredictionResponse, 
-  GenerationConfig, 
   RequestMetadata,
   AgentGetParams,
   AgentExecuteParams,
   AgentInfo,
+  AgentExecutionResponse,
   AgentExecutionConfigClass,
 } from "./types";
 
@@ -57,14 +56,11 @@ export class Agent {
    * 
    * @param params - Agent execution parameters
    * @returns Agent execution response
-   * @throws {Error} If neither fileIds, urls, nor inputs are provided, or if multiple are provided
    */
-  async execute(params: AgentExecuteParams): Promise<PredictionResponse> {
+  async execute(params: AgentExecuteParams): Promise<AgentExecutionResponse> {
     const { 
       name, 
       version = "latest", 
-      fileIds, 
-      urls, 
       inputs,
       batch = true,
       config,
@@ -72,52 +68,45 @@ export class Agent {
       callbackUrl
     } = params;
 
-    // Validation: exactly one of fileIds, urls, or inputs must be provided
-    const providedInputs = [fileIds, urls, inputs].filter(Boolean);
-    if (providedInputs.length === 0) {
-      throw new InputError("Either `fileIds`, `urls`, or `inputs` must be provided");
-    }
-    if (providedInputs.length > 1) {
-      throw new InputError("Only one of `fileIds`, `urls`, or `inputs` can be provided");
+    if (!batch) {
+      throw new Error("Batch mode is required for agent execution");
     }
 
     const data: Record<string, any> = {
       name,
       version,
       batch,
+      inputs,
     };
 
-    // Handle legacy parameters
-    if (fileIds) {
-      data.file_ids = fileIds;
-    }
-    if (urls) {
-      data.urls = urls;
-    }
-    
-    if (inputs) {
-      data.inputs = inputs;
-    }
-
     if (config) {
-      if (config instanceof GenerationConfig) {
-        data.config = config.toJSON();
-      } else if (config instanceof AgentExecutionConfigClass) {
+      if (config instanceof AgentExecutionConfigClass) {
         data.config = config.toJSON();
       } else {
-        data.config = config;
+        data.config = {
+          prompt: config.prompt,
+          json_schema: config.jsonSchema,
+        };
       }
     }
 
     if (metadata) {
-      data.metadata = metadata instanceof RequestMetadata ? metadata.toJSON() : metadata;
+      if (metadata instanceof RequestMetadata) {
+        data.metadata = metadata.toJSON();
+      } else {
+        data.metadata = {
+          environment: metadata.environment,
+          session_id: metadata.sessionId,
+          allow_training: metadata.allowTraining,
+        };
+      }
     }
 
     if (callbackUrl) {
       data.callback_url = callbackUrl;
     }
 
-    const [response] = await this.requestor.request<PredictionResponse>(
+    const [response] = await this.requestor.request<AgentExecutionResponse>(
       "POST",
       "agent/execute",
       undefined,

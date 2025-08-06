@@ -1,6 +1,6 @@
 import { Client } from '../../../src/client/base_requestor';
 import { Agent } from '../../../src/client/agent';
-import { PredictionResponse, AgentInfo } from '../../../src/client/types';
+import { AgentExecutionResponse, AgentInfo } from '../../../src/client/types';
 
 jest.mock('../../../src/client/base_requestor');
 
@@ -73,87 +73,14 @@ describe('Agent', () => {
   });
 
   describe('execute', () => {
-    it('should execute agent with file IDs', async () => {
-      const mockResponse: PredictionResponse = {
-        id: 'exec_123',
-        status: 'running',
-        created_at: new Date().toISOString(),
-      };
-
-      jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
-
-      const result = await agent.execute({
+    it('should execute agent with inputs parameter', async () => {
+      const mockResponse: AgentExecutionResponse = {
+        id: 'exec_789',
         name: 'test-agent',
         version: 'v1',
-        fileIds: ['file_123', 'file_456'],
-        batch: true,
-        config: {
-          detail: 'hi',
-          confidence: true,
-        },
-        metadata: {
-          environment: 'dev',
-          sessionId: 'test-session',
-        },
-        callbackUrl: 'https://webhook.example.com/callback',
-      });
-
-      expect(result).toEqual(mockResponse);
-      expect(agent['requestor'].request).toHaveBeenCalledWith(
-        'POST',
-        'agent/execute',
-        undefined,
-        {
-          name: 'test-agent',
-          version: 'v1',
-          batch: true,
-          file_ids: ['file_123', 'file_456'],
-          config: {
-            detail: 'hi',
-            confidence: true,
-          },
-          metadata: {
-            environment: 'dev',
-            sessionId: 'test-session',
-          },
-          callback_url: 'https://webhook.example.com/callback',
-        }
-      );
-    });
-
-    it('should execute agent with URLs', async () => {
-      const mockResponse: PredictionResponse = {
-        id: 'exec_456',
         status: 'running',
         created_at: new Date().toISOString(),
-      };
-
-      jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
-
-      const result = await agent.execute({
-        name: 'test-agent',
-        urls: ['https://example.com/test.pdf'],
-      });
-
-      expect(result).toEqual(mockResponse);
-      expect(agent['requestor'].request).toHaveBeenCalledWith(
-        'POST',
-        'agent/execute',
-        undefined,
-        {
-          name: 'test-agent',
-          version: 'latest',
-          batch: true,
-          urls: ['https://example.com/test.pdf'],
-        }
-      );
-    });
-
-    it('should execute agent with inputs parameter', async () => {
-      const mockResponse: PredictionResponse = {
-        id: 'exec_789',
-        status: 'running',
-        created_at: new Date().toISOString(),
+        usage: { credits_used: 5 },
       };
 
       jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
@@ -185,32 +112,62 @@ describe('Agent', () => {
       );
     });
 
-    it('should throw error if multiple input types are provided', async () => {
-      await expect(agent.execute({
+    it('should execute agent with config and metadata', async () => {
+      const mockResponse: AgentExecutionResponse = {
+        id: 'exec_123',
         name: 'test-agent',
-        fileIds: ['file_123'],
-        inputs: { documents: ['file_456'] },
-      })).rejects.toThrow('Only one of `fileIds`, `urls`, or `inputs` can be provided');
+        version: 'v1',
+        status: 'running',
+        created_at: new Date().toISOString(),
+        usage: { credits_used: 10 },
+      };
+
+      jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await agent.execute({
+        name: 'test-agent',
+        version: 'v1',
+        inputs: { prompt: 'Test prompt' },
+        batch: true,
+        config: {
+          prompt: 'System prompt',
+          jsonSchema: { type: 'object' },
+        },
+        metadata: {
+          environment: 'dev',
+          sessionId: 'session_123',
+        },
+        callbackUrl: 'https://example.com/callback',
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(agent['requestor'].request).toHaveBeenCalledWith(
+        'POST',
+        'agent/execute',
+        undefined,
+        {
+          name: 'test-agent',
+          version: 'v1',
+          batch: true,
+          inputs: { prompt: 'Test prompt' },
+          config: {
+            prompt: 'System prompt',
+            json_schema: { type: 'object' },
+          },
+          metadata: {
+            environment: 'dev',
+            session_id: 'session_123',
+          },
+          callback_url: 'https://example.com/callback',
+        }
+      );
     });
 
-    it('should throw error if no input types are provided', async () => {
+    it('should throw error if batch is false', async () => {
       await expect(agent.execute({
         name: 'test-agent',
-      })).rejects.toThrow('Either `fileIds`, `urls`, or `inputs` must be provided');
-    });
-
-    it('should throw error if neither fileIds nor urls are provided', async () => {
-      await expect(agent.execute({
-        name: 'test-agent',
-      })).rejects.toThrow('Either `fileIds`, `urls`, or `inputs` must be provided');
-    });
-
-    it('should throw error if both fileIds and urls are provided', async () => {
-      await expect(agent.execute({
-        name: 'test-agent',
-        fileIds: ['file_123'],
-        urls: ['https://example.com/test.pdf'],
-      })).rejects.toThrow('Only one of `fileIds`, `urls`, or `inputs` can be provided');
+        batch: false,
+      })).rejects.toThrow('Batch mode is required for agent execution');
     });
 
     it('should throw error for non-object response', async () => {
@@ -218,8 +175,8 @@ describe('Agent', () => {
 
       await expect(agent.execute({
         name: 'test-agent',
-        fileIds: ['file_123'],
+        inputs: { prompt: 'test' },
       })).rejects.toThrow('Expected object response');
     });
   });
-});  
+});          

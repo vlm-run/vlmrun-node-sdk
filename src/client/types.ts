@@ -363,11 +363,9 @@ export interface AgentGetParams {
 export interface AgentExecuteParams {
   name: string;
   version?: string;
-  fileIds?: string[];
-  urls?: string[];
   inputs?: Record<string, any>;
   batch?: boolean;
-  config?: GenerationConfigInput | AgentExecutionConfigInput;
+  config?: AgentExecutionConfigInput;
   metadata?: RequestMetadataInput;
   callbackUrl?: string;
 }
