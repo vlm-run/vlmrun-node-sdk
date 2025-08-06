@@ -111,9 +111,13 @@ export type RequestMetadataInput = RequestMetadata | RequestMetadataParams;
 
 export type GenerationConfigParams = {
   detail?: "auto" | "hi" | "lo";
+  prompt?: string;
   responseModel?: ZodType;
   zodToJsonParams?: any;
   jsonSchema?: Record<string, any> | null;
+  maxTokens?: number;
+  temperature?: number;
+  maxRetries?: number;
   confidence?: boolean;
   grounding?: boolean;
   gqlStmt?: string | null;
@@ -126,9 +130,29 @@ export class GenerationConfig {
   detail: "auto" | "hi" | "lo" = "auto";
 
   /**
+   * The prompt to use for the model.
+   */
+  prompt?: string;
+
+  /**
    * The JSON schema to use for the model.
    */
   jsonSchema: Record<string, any> | null = null;
+
+  /**
+   * Maximum number of tokens to generate.
+   */
+  maxTokens: number = 65535;
+
+  /**
+   * Temperature for generation.
+   */
+  temperature: number = 0.0;
+
+  /**
+   * Maximum number of retries.
+   */
+  maxRetries: number = 3;
 
   /**
    * Include confidence scores in the response (included in the `_metadata` field).
@@ -155,7 +179,11 @@ export class GenerationConfig {
   toJSON() {
     return {
       detail: this.detail,
+      prompt: this.prompt,
       json_schema: this.jsonSchema,
+      max_tokens: this.maxTokens,
+      temperature: this.temperature,
+      max_retries: this.maxRetries,
       confidence: this.confidence,
       grounding: this.grounding,
       gql_stmt: this.gqlStmt,
@@ -337,8 +365,9 @@ export interface AgentExecuteParams {
   version?: string;
   fileIds?: string[];
   urls?: string[];
+  inputs?: Record<string, any>;
   batch?: boolean;
-  config?: GenerationConfigInput;
+  config?: GenerationConfigInput | AgentExecutionConfigInput;
   metadata?: RequestMetadataInput;
   callbackUrl?: string;
 }
@@ -366,6 +395,50 @@ export interface FeedbackSubmitResponse {
   request_id: string;
   created_at: string;
 }
+
+export interface AgentInfo {
+  id: string;
+  name: string;
+  version: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AgentExecutionResponse {
+  id: string;
+  name: string;
+  version: string;
+  created_at: string;
+  completed_at?: string;
+  response?: Record<string, any>;
+  status: JobStatus;
+  usage: CreditUsage;
+}
+
+export interface AgentExecutionConfig {
+  prompt?: string;
+  responseModel?: ZodType;
+  jsonSchema?: Record<string, any>;
+}
+
+export class AgentExecutionConfigClass {
+  prompt?: string;
+  jsonSchema?: Record<string, any>;
+
+  constructor(params: Partial<AgentExecutionConfigClass> = {}) {
+    Object.assign(this, params);
+  }
+
+  toJSON() {
+    return {
+      prompt: this.prompt,
+      json_schema: this.jsonSchema,
+    };
+  }
+}
+
+export type AgentExecutionConfigInput = AgentExecutionConfigClass | AgentExecutionConfig;
 
 export interface FileExecuteParams {
   name: string;

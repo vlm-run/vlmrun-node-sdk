@@ -1,6 +1,6 @@
 import { Client } from '../../../src/client/base_requestor';
 import { Agent } from '../../../src/client/agent';
-import { PredictionResponse } from '../../../src/client/types';
+import { PredictionResponse, AgentInfo } from '../../../src/client/types';
 
 jest.mock('../../../src/client/base_requestor');
 
@@ -19,15 +19,13 @@ describe('Agent', () => {
 
   describe('get', () => {
     it('should get agent by name and version', async () => {
-      const mockResponse: PredictionResponse = {
+      const mockResponse: AgentInfo = {
         id: 'agent_123',
-        status: 'completed',
+        name: 'test-agent',
+        version: 'v1',
+        description: 'Test agent for unit tests',
         created_at: new Date().toISOString(),
-        completed_at: new Date().toISOString(),
-        response: {
-          name: 'test-agent',
-          description: 'Test agent for unit tests',
-        },
+        updated_at: new Date().toISOString(),
       };
 
       jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
@@ -45,15 +43,13 @@ describe('Agent', () => {
     });
 
     it('should use "latest" as default version', async () => {
-      const mockResponse: PredictionResponse = {
+      const mockResponse: AgentInfo = {
         id: 'agent_123',
-        status: 'completed',
+        name: 'test-agent',
+        version: 'latest',
+        description: 'Test agent for unit tests',
         created_at: new Date().toISOString(),
-        completed_at: new Date().toISOString(),
-        response: {
-          name: 'test-agent',
-          description: 'Test agent for unit tests',
-        },
+        updated_at: new Date().toISOString(),
       };
 
       jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
@@ -153,10 +149,60 @@ describe('Agent', () => {
       );
     });
 
+    it('should execute agent with inputs parameter', async () => {
+      const mockResponse: PredictionResponse = {
+        id: 'exec_789',
+        status: 'running',
+        created_at: new Date().toISOString(),
+      };
+
+      jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await agent.execute({
+        name: 'test-agent',
+        version: 'v1',
+        inputs: { 
+          documents: ['file_123'], 
+          prompt: 'Extract invoice data' 
+        },
+        batch: true,
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(agent['requestor'].request).toHaveBeenCalledWith(
+        'POST',
+        'agent/execute',
+        undefined,
+        {
+          name: 'test-agent',
+          version: 'v1',
+          batch: true,
+          inputs: { 
+            documents: ['file_123'], 
+            prompt: 'Extract invoice data' 
+          },
+        }
+      );
+    });
+
+    it('should throw error if multiple input types are provided', async () => {
+      await expect(agent.execute({
+        name: 'test-agent',
+        fileIds: ['file_123'],
+        inputs: { documents: ['file_456'] },
+      })).rejects.toThrow('Only one of `fileIds`, `urls`, or `inputs` can be provided');
+    });
+
+    it('should throw error if no input types are provided', async () => {
+      await expect(agent.execute({
+        name: 'test-agent',
+      })).rejects.toThrow('Either `fileIds`, `urls`, or `inputs` must be provided');
+    });
+
     it('should throw error if neither fileIds nor urls are provided', async () => {
       await expect(agent.execute({
         name: 'test-agent',
-      })).rejects.toThrow('Either `fileIds` or `urls` must be provided');
+      })).rejects.toThrow('Either `fileIds`, `urls`, or `inputs` must be provided');
     });
 
     it('should throw error if both fileIds and urls are provided', async () => {
@@ -164,7 +210,7 @@ describe('Agent', () => {
         name: 'test-agent',
         fileIds: ['file_123'],
         urls: ['https://example.com/test.pdf'],
-      })).rejects.toThrow('Only one of `fileIds` or `urls` can be provided');
+      })).rejects.toThrow('Only one of `fileIds`, `urls`, or `inputs` can be provided');
     });
 
     it('should throw error for non-object response', async () => {
@@ -176,4 +222,4 @@ describe('Agent', () => {
       })).rejects.toThrow('Expected object response');
     });
   });
-}); 
+});  

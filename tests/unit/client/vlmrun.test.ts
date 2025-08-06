@@ -70,6 +70,10 @@ describe("Domains class methods", () => {
             confidence: true,
             grounding: false,
             gql_stmt: null,
+            max_retries: 3,
+            max_tokens: 65535,
+            prompt: undefined,
+            temperature: 0,
           }
         }
       );

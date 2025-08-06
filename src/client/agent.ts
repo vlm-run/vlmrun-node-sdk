@@ -10,6 +10,8 @@ import {
   RequestMetadata,
   AgentGetParams,
   AgentExecuteParams,
+  AgentInfo,
+  AgentExecutionConfigClass,
 } from "./types";
 
 export class Agent {
@@ -35,10 +37,10 @@ export class Agent {
    * @param params - Agent request parameters
    * @returns Agent response
    */
-  async get(params: AgentGetParams): Promise<PredictionResponse> {
+  async get(params: AgentGetParams): Promise<AgentInfo> {
     const { name, version = "latest" } = params;
 
-    const [response] = await this.requestor.request<PredictionResponse>(
+    const [response] = await this.requestor.request<AgentInfo>(
       "GET",
       `agent/${name}/${version}`,
     );
@@ -55,7 +57,7 @@ export class Agent {
    * 
    * @param params - Agent execution parameters
    * @returns Agent execution response
-   * @throws {Error} If neither fileIds nor urls are provided, or if both are provided
+   * @throws {Error} If neither fileIds, urls, nor inputs are provided, or if multiple are provided
    */
   async execute(params: AgentExecuteParams): Promise<PredictionResponse> {
     const { 
@@ -63,18 +65,20 @@ export class Agent {
       version = "latest", 
       fileIds, 
       urls, 
+      inputs,
       batch = true,
       config,
       metadata,
       callbackUrl
     } = params;
 
-    if (!fileIds && !urls) {
-      throw new InputError("Either `fileIds` or `urls` must be provided");
+    // Validation: exactly one of fileIds, urls, or inputs must be provided
+    const providedInputs = [fileIds, urls, inputs].filter(Boolean);
+    if (providedInputs.length === 0) {
+      throw new InputError("Either `fileIds`, `urls`, or `inputs` must be provided");
     }
-
-    if (fileIds && urls) {
-      throw new InputError("Only one of `fileIds` or `urls` can be provided");
+    if (providedInputs.length > 1) {
+      throw new InputError("Only one of `fileIds`, `urls`, or `inputs` can be provided");
     }
 
     const data: Record<string, any> = {
@@ -83,16 +87,26 @@ export class Agent {
       batch,
     };
 
+    // Handle legacy parameters
     if (fileIds) {
       data.file_ids = fileIds;
     }
-
     if (urls) {
       data.urls = urls;
     }
+    
+    if (inputs) {
+      data.inputs = inputs;
+    }
 
     if (config) {
-      data.config = config instanceof GenerationConfig ? config.toJSON() : config;
+      if (config instanceof GenerationConfig) {
+        data.config = config.toJSON();
+      } else if (config instanceof AgentExecutionConfigClass) {
+        data.config = config.toJSON();
+      } else {
+        data.config = config;
+      }
     }
 
     if (metadata) {
