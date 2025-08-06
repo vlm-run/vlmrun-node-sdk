@@ -1,4 +1,5 @@
 import { ZodType } from "zod";
+import { convertToJsonSchema } from "../utils/utils";
 
 export type JobStatus = string;
 
@@ -437,7 +438,7 @@ export class AgentExecutionConfig {
     };
 
     if (this.responseModel) {
-      data.json_schema = this.jsonSchema;
+      data.json_schema = convertToJsonSchema(this.responseModel);
     } else if (this.jsonSchema) {
       data.json_schema = this.jsonSchema;
     }
