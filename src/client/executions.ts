@@ -20,7 +20,7 @@ export class Executions {
      * @param client - VLM Run API instance
      */
     this.client = client;
-    this.requestor = new APIRequestor(client);
+    this.requestor = new APIRequestor({ ...client, timeout: 120000 });
   }
 
   /**
