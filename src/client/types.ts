@@ -1,4 +1,5 @@
 import { ZodType } from "zod";
+import { convertToJsonSchema } from "../utils/utils";
 
 export type JobStatus = string;
 
@@ -111,9 +112,13 @@ export type RequestMetadataInput = RequestMetadata | RequestMetadataParams;
 
 export type GenerationConfigParams = {
   detail?: "auto" | "hi" | "lo";
+  prompt?: string;
   responseModel?: ZodType;
   zodToJsonParams?: any;
   jsonSchema?: Record<string, any> | null;
+  maxTokens?: number;
+  temperature?: number;
+  maxRetries?: number;
   confidence?: boolean;
   grounding?: boolean;
   gqlStmt?: string | null;
@@ -126,9 +131,29 @@ export class GenerationConfig {
   detail: "auto" | "hi" | "lo" = "auto";
 
   /**
+   * The prompt to use for the model.
+   */
+  prompt?: string;
+
+  /**
    * The JSON schema to use for the model.
    */
   jsonSchema: Record<string, any> | null = null;
+
+  /**
+   * Maximum number of tokens to generate.
+   */
+  maxTokens: number = 65535;
+
+  /**
+   * Temperature for generation.
+   */
+  temperature: number = 0.0;
+
+  /**
+   * Maximum number of retries.
+   */
+  maxRetries: number = 3;
 
   /**
    * Include confidence scores in the response (included in the `_metadata` field).
@@ -155,7 +180,11 @@ export class GenerationConfig {
   toJSON() {
     return {
       detail: this.detail,
+      prompt: this.prompt,
       json_schema: this.jsonSchema,
+      max_tokens: this.maxTokens,
+      temperature: this.temperature,
+      max_retries: this.maxRetries,
       confidence: this.confidence,
       grounding: this.grounding,
       gql_stmt: this.gqlStmt,
@@ -335,10 +364,13 @@ export interface AgentGetParams {
 export interface AgentExecuteParams {
   name: string;
   version?: string;
-  fileIds?: string[];
-  urls?: string[];
+  inputs?: Record<string, any>;
   batch?: boolean;
-  config?: GenerationConfigInput;
+  config?: AgentExecutionConfig | {
+    prompt?: string;
+    responseModel?: ZodType;
+    jsonSchema?: Record<string, any>;
+  };
   metadata?: RequestMetadataInput;
   callbackUrl?: string;
 }
@@ -366,6 +398,68 @@ export interface FeedbackSubmitResponse {
   request_id: string;
   created_at: string;
 }
+
+export interface AgentInfo {
+  id: string;
+  name: string;
+  version: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AgentExecutionResponse {
+  id: string;
+  name: string;
+  version: string;
+  created_at: string;
+  completed_at?: string;
+  response?: Record<string, any>;
+  status: JobStatus;
+  usage: CreditUsage;
+}
+
+export interface AgentCreationResponse {
+  id: string;
+  name: string;
+  version: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+  output_json_sample?: Record<string, any>;
+  output_json_schema?: Record<string, any>;
+  input_type: "text" | "document" | "image" | "video" | "audio" | "mixed";
+  input_json_schema?: Record<string, any>;
+}
+
+export class AgentExecutionConfig {
+  prompt?: string;
+  responseModel?: ZodType;
+  jsonSchema?: Record<string, any>;
+
+  constructor(params: Partial<AgentExecutionConfig> = {}) {
+    Object.assign(this, params);
+  }
+
+  toJSON() {
+    if (this.responseModel && this.jsonSchema) {
+      throw new Error("`responseModel` and `jsonSchema` cannot be used together");
+    }
+
+    const data: Record<string, any> = {
+      prompt: this.prompt,
+    };
+
+    if (this.responseModel) {
+      data.json_schema = convertToJsonSchema(this.responseModel);
+    } else if (this.jsonSchema) {
+      data.json_schema = this.jsonSchema;
+    }
+
+    return data;
+  }
+}
+
 
 export interface FileExecuteParams {
   name: string;

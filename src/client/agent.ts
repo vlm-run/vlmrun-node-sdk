@@ -5,11 +5,12 @@
 import { Client, APIRequestor } from "./base_requestor";
 import { InputError, ServerError } from "./exceptions";
 import { 
-  PredictionResponse, 
-  GenerationConfig, 
   RequestMetadata,
   AgentGetParams,
   AgentExecuteParams,
+  AgentInfo,
+  AgentExecutionResponse,
+  AgentExecutionConfig,
 } from "./types";
 
 export class Agent {
@@ -35,10 +36,10 @@ export class Agent {
    * @param params - Agent request parameters
    * @returns Agent response
    */
-  async get(params: AgentGetParams): Promise<PredictionResponse> {
+  async get(params: AgentGetParams): Promise<AgentInfo> {
     const { name, version = "latest" } = params;
 
-    const [response] = await this.requestor.request<PredictionResponse>(
+    const [response] = await this.requestor.request<AgentInfo>(
       "GET",
       `agent/${name}/${version}`,
     );
@@ -55,55 +56,57 @@ export class Agent {
    * 
    * @param params - Agent execution parameters
    * @returns Agent execution response
-   * @throws {Error} If neither fileIds nor urls are provided, or if both are provided
    */
-  async execute(params: AgentExecuteParams): Promise<PredictionResponse> {
+  async execute(params: AgentExecuteParams): Promise<AgentExecutionResponse> {
     const { 
       name, 
       version = "latest", 
-      fileIds, 
-      urls, 
+      inputs,
       batch = true,
       config,
       metadata,
       callbackUrl
     } = params;
 
-    if (!fileIds && !urls) {
-      throw new InputError("Either `fileIds` or `urls` must be provided");
-    }
-
-    if (fileIds && urls) {
-      throw new InputError("Only one of `fileIds` or `urls` can be provided");
+    if (!batch) {
+      throw new Error("Batch mode is required for agent execution");
     }
 
     const data: Record<string, any> = {
       name,
       version,
       batch,
+      inputs,
     };
 
-    if (fileIds) {
-      data.file_ids = fileIds;
-    }
-
-    if (urls) {
-      data.urls = urls;
-    }
-
     if (config) {
-      data.config = config instanceof GenerationConfig ? config.toJSON() : config;
+      if (config instanceof AgentExecutionConfig) {
+        data.config = config.toJSON();
+      } else {
+        data.config = {
+          prompt: config.prompt,
+          json_schema: config.jsonSchema,
+        };
+      }
     }
 
     if (metadata) {
-      data.metadata = metadata instanceof RequestMetadata ? metadata.toJSON() : metadata;
+      if (metadata instanceof RequestMetadata) {
+        data.metadata = metadata.toJSON();
+      } else {
+        data.metadata = {
+          environment: metadata.environment,
+          session_id: metadata.sessionId,
+          allow_training: metadata.allowTraining,
+        };
+      }
     }
 
     if (callbackUrl) {
       data.callback_url = callbackUrl;
     }
 
-    const [response] = await this.requestor.request<PredictionResponse>(
+    const [response] = await this.requestor.request<AgentExecutionResponse>(
       "POST",
       "agent/execute",
       undefined,

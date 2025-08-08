@@ -1,6 +1,6 @@
 import { Client } from '../../../src/client/base_requestor';
 import { Agent } from '../../../src/client/agent';
-import { PredictionResponse } from '../../../src/client/types';
+import { AgentExecutionResponse, AgentInfo } from '../../../src/client/types';
 
 jest.mock('../../../src/client/base_requestor');
 
@@ -19,15 +19,13 @@ describe('Agent', () => {
 
   describe('get', () => {
     it('should get agent by name and version', async () => {
-      const mockResponse: PredictionResponse = {
+      const mockResponse: AgentInfo = {
         id: 'agent_123',
-        status: 'completed',
+        name: 'test-agent',
+        version: 'v1',
+        description: 'Test agent for unit tests',
         created_at: new Date().toISOString(),
-        completed_at: new Date().toISOString(),
-        response: {
-          name: 'test-agent',
-          description: 'Test agent for unit tests',
-        },
+        updated_at: new Date().toISOString(),
       };
 
       jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
@@ -45,15 +43,13 @@ describe('Agent', () => {
     });
 
     it('should use "latest" as default version', async () => {
-      const mockResponse: PredictionResponse = {
+      const mockResponse: AgentInfo = {
         id: 'agent_123',
-        status: 'completed',
+        name: 'test-agent',
+        version: 'latest',
+        description: 'Test agent for unit tests',
         created_at: new Date().toISOString(),
-        completed_at: new Date().toISOString(),
-        response: {
-          name: 'test-agent',
-          description: 'Test agent for unit tests',
-        },
+        updated_at: new Date().toISOString(),
       };
 
       jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
@@ -77,11 +73,14 @@ describe('Agent', () => {
   });
 
   describe('execute', () => {
-    it('should execute agent with file IDs', async () => {
-      const mockResponse: PredictionResponse = {
-        id: 'exec_123',
+    it('should execute agent with inputs parameter', async () => {
+      const mockResponse: AgentExecutionResponse = {
+        id: 'exec_789',
+        name: 'test-agent',
+        version: 'v1',
         status: 'running',
         created_at: new Date().toISOString(),
+        usage: { credits_used: 5 },
       };
 
       jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
@@ -89,17 +88,11 @@ describe('Agent', () => {
       const result = await agent.execute({
         name: 'test-agent',
         version: 'v1',
-        fileIds: ['file_123', 'file_456'],
+        inputs: { 
+          documents: ['file_123'], 
+          prompt: 'Extract invoice data' 
+        },
         batch: true,
-        config: {
-          detail: 'hi',
-          confidence: true,
-        },
-        metadata: {
-          environment: 'dev',
-          sessionId: 'test-session',
-        },
-        callbackUrl: 'https://webhook.example.com/callback',
       });
 
       expect(result).toEqual(mockResponse);
@@ -111,32 +104,40 @@ describe('Agent', () => {
           name: 'test-agent',
           version: 'v1',
           batch: true,
-          file_ids: ['file_123', 'file_456'],
-          config: {
-            detail: 'hi',
-            confidence: true,
+          inputs: { 
+            documents: ['file_123'], 
+            prompt: 'Extract invoice data' 
           },
-          metadata: {
-            environment: 'dev',
-            sessionId: 'test-session',
-          },
-          callback_url: 'https://webhook.example.com/callback',
         }
       );
     });
 
-    it('should execute agent with URLs', async () => {
-      const mockResponse: PredictionResponse = {
-        id: 'exec_456',
+    it('should execute agent with config and metadata', async () => {
+      const mockResponse: AgentExecutionResponse = {
+        id: 'exec_123',
+        name: 'test-agent',
+        version: 'v1',
         status: 'running',
         created_at: new Date().toISOString(),
+        usage: { credits_used: 10 },
       };
 
       jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
       const result = await agent.execute({
         name: 'test-agent',
-        urls: ['https://example.com/test.pdf'],
+        version: 'v1',
+        inputs: { prompt: 'Test prompt' },
+        batch: true,
+        config: {
+          prompt: 'System prompt',
+          jsonSchema: { type: 'object' },
+        },
+        metadata: {
+          environment: 'dev',
+          sessionId: 'session_123',
+        },
+        callbackUrl: 'https://example.com/callback',
       });
 
       expect(result).toEqual(mockResponse);
@@ -146,25 +147,27 @@ describe('Agent', () => {
         undefined,
         {
           name: 'test-agent',
-          version: 'latest',
+          version: 'v1',
           batch: true,
-          urls: ['https://example.com/test.pdf'],
+          inputs: { prompt: 'Test prompt' },
+          config: {
+            prompt: 'System prompt',
+            json_schema: { type: 'object' },
+          },
+          metadata: {
+            environment: 'dev',
+            session_id: 'session_123',
+          },
+          callback_url: 'https://example.com/callback',
         }
       );
     });
 
-    it('should throw error if neither fileIds nor urls are provided', async () => {
+    it('should throw error if batch is false', async () => {
       await expect(agent.execute({
         name: 'test-agent',
-      })).rejects.toThrow('Either `fileIds` or `urls` must be provided');
-    });
-
-    it('should throw error if both fileIds and urls are provided', async () => {
-      await expect(agent.execute({
-        name: 'test-agent',
-        fileIds: ['file_123'],
-        urls: ['https://example.com/test.pdf'],
-      })).rejects.toThrow('Only one of `fileIds` or `urls` can be provided');
+        batch: false,
+      })).rejects.toThrow('Batch mode is required for agent execution');
     });
 
     it('should throw error for non-object response', async () => {
@@ -172,8 +175,8 @@ describe('Agent', () => {
 
       await expect(agent.execute({
         name: 'test-agent',
-        fileIds: ['file_123'],
+        inputs: { prompt: 'test' },
       })).rejects.toThrow('Expected object response');
     });
   });
-}); 
+});          
