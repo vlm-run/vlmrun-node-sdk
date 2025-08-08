@@ -419,6 +419,19 @@ export interface AgentExecutionResponse {
   usage: CreditUsage;
 }
 
+export interface AgentCreationResponse {
+  id: string;
+  name: string;
+  version: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+  output_json_sample?: Record<string, any>;
+  output_json_schema?: Record<string, any>;
+  input_type: "text" | "document" | "image" | "video" | "audio" | "mixed";
+  input_json_schema?: Record<string, any>;
+}
+
 export class AgentExecutionConfig {
   prompt?: string;
   responseModel?: ZodType;
