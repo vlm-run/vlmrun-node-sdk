@@ -3,7 +3,7 @@
  */
 
 import { Client, APIRequestor } from "./base_requestor";
-import { ServerError } from "./exceptions";
+import { ServerError, RequestTimeoutError } from "./exceptions";
 import { AgentExecutionResponse, ListParams } from "./types";
 
 export class Executions {
@@ -89,8 +89,13 @@ export class Executions {
       
       const elapsed = (Date.now() - startTime) / 1000;
       if (elapsed >= timeout) {
-        throw new Error(
-          `Execution ${id} did not complete within ${timeout} seconds. Last status: ${response.status}`
+        throw new RequestTimeoutError(
+          `Execution ${id} did not complete within ${timeout} seconds. Last status: ${response.status}`,
+          408,
+          undefined,
+          undefined,
+          "timeout_error",
+          "Try again later or increase the timeout"
         );
       }
       

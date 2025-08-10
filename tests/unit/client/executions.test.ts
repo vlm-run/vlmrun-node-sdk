@@ -1,6 +1,7 @@
 import { Client } from '../../../src/client/base_requestor';
 import { Executions } from '../../../src/client/executions';
 import { AgentExecutionResponse } from '../../../src/client/types';
+import { RequestTimeoutError } from '../../../src/client/exceptions';
 
 jest.mock('../../../src/client/base_requestor');
 
@@ -135,7 +136,7 @@ describe('Executions', () => {
       expect(executions.get).toHaveBeenCalledTimes(2);
     });
 
-    it('should timeout if execution does not complete', async () => {
+    it('should throw RequestTimeoutError if execution does not complete', async () => {
       const runningResponse: AgentExecutionResponse = {
         id: 'exec_123',
         name: 'test-agent',
@@ -151,6 +152,7 @@ describe('Executions', () => {
         return {} as any;
       });
 
+      await expect(executions.wait('exec_123', 0.001, 0.001)).rejects.toThrow(RequestTimeoutError);
       await expect(executions.wait('exec_123', 0.001, 0.001)).rejects.toThrow(
         'Execution exec_123 did not complete within 0.001 seconds. Last status: running'
       );

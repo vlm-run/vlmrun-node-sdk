@@ -69,7 +69,11 @@ export class Agent {
     } = params;
 
     if (!batch) {
-      throw new Error("Batch mode is required for agent execution");
+      throw new InputError(
+        "Batch mode is required for agent execution",
+        "not_implemented_error",
+        "Set batch: true in your agent execution parameters"
+      );
     }
 
     const data: Record<string, any> = {

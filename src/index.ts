@@ -1,6 +1,7 @@
 import { Models } from "./client/models";
 import { Files } from "./client/files";
-import { Client } from "./client/base_requestor";
+import { Client, APIRequestor } from "./client/base_requestor";
+import { AuthenticationError } from "./client/exceptions";
 import {
   Predictions,
   ImagePredictions,
@@ -78,5 +79,34 @@ export class VlmRun {
     this.agent = new Agent(this.client);
     this.executions = new Executions(this.client);
     this.domains = new Domains(this.client);
+  }
+
+  async validateApiKey(): Promise<void> {
+    try {
+      const requestor = new APIRequestor(this.client);
+      const [, statusCode] = await requestor.request("GET", "/health");
+      if (statusCode !== 200) {
+        throw new AuthenticationError(
+          "Invalid API key",
+          statusCode,
+          undefined,
+          undefined,
+          "invalid_api_key",
+          "Please check your API key and ensure it is valid. You can get your API key at https://app.vlm.run/dashboard"
+        );
+      }
+    } catch (error) {
+      if (error instanceof AuthenticationError) {
+        throw error;
+      }
+      throw new AuthenticationError(
+        "Invalid API key",
+        401,
+        undefined,
+        undefined,
+        "invalid_api_key",
+        "Please check your API key and ensure it is valid. You can get your API key at https://app.vlm.run/dashboard"
+      );
+    }
   }
 }

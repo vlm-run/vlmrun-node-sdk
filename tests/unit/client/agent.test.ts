@@ -163,7 +163,7 @@ describe('Agent', () => {
       );
     });
 
-    it('should throw error if batch is false', async () => {
+    it('should throw InputError if batch is false', async () => {
       await expect(agent.execute({
         name: 'test-agent',
         batch: false,
@@ -179,4 +179,4 @@ describe('Agent', () => {
       })).rejects.toThrow('Expected object response');
     });
   });
-});          
+});            
