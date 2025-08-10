@@ -64,7 +64,6 @@ export class VlmRun {
       maxRetries: config.maxRetries,
     };
 
-    this.validateApiKey();
 
     this.models = new Models(this.client);
     this.files = new Files({ ...this.client, timeout: 0 });
@@ -83,7 +82,7 @@ export class VlmRun {
     this.domains = new Domains(this.client);
   }
 
-  private async validateApiKey(): Promise<void> {
+  async validateApiKey(): Promise<void> {
     try {
       const requestor = new APIRequestor(this.client);
       const [, statusCode] = await requestor.request("GET", "/health");
