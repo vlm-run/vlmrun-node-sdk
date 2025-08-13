@@ -1,6 +1,6 @@
 import { Client } from '../../../src/client/base_requestor';
 import { Agent } from '../../../src/client/agent';
-import { PredictionResponse } from '../../../src/client/types';
+import { PredictionResponse, AgentInfo } from '../../../src/client/types';
 
 jest.mock('../../../src/client/base_requestor');
 
@@ -19,15 +19,15 @@ describe('Agent', () => {
 
   describe('get', () => {
     it('should get agent by name and version', async () => {
-      const mockResponse: PredictionResponse = {
+      const mockResponse: AgentInfo = {
         id: 'agent_123',
-        status: 'completed',
+        name: 'test-agent',
+        version: 'v1',
+        description: 'Test agent for unit tests',
+        prompt: 'Test prompt',
         created_at: new Date().toISOString(),
-        completed_at: new Date().toISOString(),
-        response: {
-          name: 'test-agent',
-          description: 'Test agent for unit tests',
-        },
+        updated_at: new Date().toISOString(),
+        status: 'completed',
       };
 
       jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
@@ -40,20 +40,21 @@ describe('Agent', () => {
       expect(result).toEqual(mockResponse);
       expect(agent['requestor'].request).toHaveBeenCalledWith(
         'GET',
-        'agent/test-agent/v1'
+        'agent/lookup',
+        { name: 'test-agent', version: 'v1' }
       );
     });
 
     it('should use "latest" as default version', async () => {
-      const mockResponse: PredictionResponse = {
+      const mockResponse: AgentInfo = {
         id: 'agent_123',
-        status: 'completed',
+        name: 'test-agent',
+        version: 'latest',
+        description: 'Test agent for unit tests',
+        prompt: 'Test prompt',
         created_at: new Date().toISOString(),
-        completed_at: new Date().toISOString(),
-        response: {
-          name: 'test-agent',
-          description: 'Test agent for unit tests',
-        },
+        updated_at: new Date().toISOString(),
+        status: 'completed',
       };
 
       jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
@@ -65,7 +66,8 @@ describe('Agent', () => {
       expect(result).toEqual(mockResponse);
       expect(agent['requestor'].request).toHaveBeenCalledWith(
         'GET',
-        'agent/test-agent/latest'
+        'agent/lookup',
+        { name: 'test-agent' }
       );
     });
 
@@ -86,7 +88,7 @@ describe('Agent', () => {
 
       jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
-      const result = await agent.execute({
+      const result = await agent.executeLegacy({
         name: 'test-agent',
         version: 'v1',
         fileIds: ['file_123', 'file_456'],
@@ -134,7 +136,7 @@ describe('Agent', () => {
 
       jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
-      const result = await agent.execute({
+      const result = await agent.executeLegacy({
         name: 'test-agent',
         urls: ['https://example.com/test.pdf'],
       });
@@ -154,13 +156,13 @@ describe('Agent', () => {
     });
 
     it('should throw error if neither fileIds nor urls are provided', async () => {
-      await expect(agent.execute({
+      await expect(agent.executeLegacy({
         name: 'test-agent',
       })).rejects.toThrow('Either `fileIds` or `urls` must be provided');
     });
 
     it('should throw error if both fileIds and urls are provided', async () => {
-      await expect(agent.execute({
+      await expect(agent.executeLegacy({
         name: 'test-agent',
         fileIds: ['file_123'],
         urls: ['https://example.com/test.pdf'],
@@ -170,10 +172,128 @@ describe('Agent', () => {
     it('should throw error for non-object response', async () => {
       jest.spyOn(agent['requestor'], 'request').mockResolvedValue(['not-an-object', 200, {}]);
 
-      await expect(agent.execute({
+      await expect(agent.executeLegacy({
         name: 'test-agent',
         fileIds: ['file_123'],
       })).rejects.toThrow('Expected object response');
     });
   });
-}); 
+
+  describe('create', () => {
+    it('should create an agent successfully', async () => {
+      const mockResponse = {
+        id: 'agent_123',
+        name: 'test-agent',
+        version: 'v1',
+        created_at: '2023-01-01T00:00:00Z',
+        updated_at: '2023-01-01T00:00:00Z',
+        status: 'completed',
+      };
+
+      jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await agent.create({
+        config: {
+          prompt: 'Test prompt',
+        },
+        name: 'test-agent',
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(agent['requestor'].request).toHaveBeenCalledWith(
+        'POST',
+        'agent/create',
+        undefined,
+        {
+          name: 'test-agent',
+          inputs: undefined,
+          config: {
+            prompt: 'Test prompt',
+            json_schema: undefined,
+          },
+        }
+      );
+    });
+
+    it('should throw error when prompt is missing', async () => {
+      await expect(agent.create({
+        config: {},
+        name: 'test-agent',
+      })).rejects.toThrow('Prompt is not provided as a request parameter, please provide a prompt');
+    });
+  });
+
+  describe('execute (new method)', () => {
+    it('should execute an agent successfully', async () => {
+      const mockResponse = {
+        id: 'execution_123',
+        name: 'test-agent',
+        version: 'v1',
+        created_at: '2023-01-01T00:00:00Z',
+        completed_at: '2023-01-01T00:00:01Z',
+        response: { result: 'success' },
+        status: 'completed',
+        usage: { credits_used: 10 },
+      };
+
+      jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await agent.execute({
+        name: 'test-agent',
+        version: 'v1',
+        inputs: { test: 'data' },
+        config: {
+          prompt: 'Test prompt',
+        },
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(agent['requestor'].request).toHaveBeenCalledWith(
+        'POST',
+        'agent/execute',
+        undefined,
+        {
+          name: 'test-agent',
+          version: 'v1',
+          batch: true,
+          inputs: { test: 'data' },
+          config: {
+            prompt: 'Test prompt',
+            json_schema: undefined,
+          },
+        }
+      );
+    });
+
+    it('should throw error when batch is false', async () => {
+      await expect(agent.execute({
+        name: 'test-agent',
+        batch: false,
+      })).rejects.toThrow('Batch mode is required for agent execution');
+    });
+  });
+
+  describe('list', () => {
+    it('should list agents successfully', async () => {
+      const mockResponse = [
+        {
+          id: 'agent_123',
+          name: 'test-agent',
+          version: 'v1',
+          description: 'Test agent',
+          prompt: 'Test prompt',
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z',
+          status: 'completed',
+        },
+      ];
+
+      jest.spyOn(agent['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await agent.list();
+
+      expect(result).toEqual(mockResponse);
+      expect(agent['requestor'].request).toHaveBeenCalledWith('GET', 'agent');
+    });
+  });
+});       
