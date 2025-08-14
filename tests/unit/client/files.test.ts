@@ -4,11 +4,13 @@ import { FileResponse, FilePurpose } from '../../../src/client/types';
 import { createHash } from 'crypto';
 import * as fs from 'fs';
 import * as fileUtils from '../../../src/utils/file';
+import axios from 'axios';
 
 jest.mock('../../../src/client/base_requestor');
 jest.mock('fs');
 jest.mock('crypto');
 jest.mock('../../../src/utils/file');
+jest.mock('axios');
 
 // Mock the File class since it's not available in Node.js
 global.File = class File {
@@ -19,6 +21,7 @@ describe('Files', () => {
   let client: jest.Mocked<Client>;
   let files: Files;
   let requestMock: jest.SpyInstance;
+  const mockedAxios = axios as jest.Mocked<typeof axios>;
 
   beforeEach(() => {
     client = {
@@ -28,6 +31,8 @@ describe('Files', () => {
     files = new Files(client);
     requestMock = jest.spyOn(files['requestor'], 'request');
     (fs.existsSync as jest.Mock).mockReturnValue(true);
+    
+    mockedAxios.put.mockResolvedValue({ status: 200, statusText: 'OK' });
   });
 
   afterEach(() => {
@@ -238,7 +243,9 @@ describe('Files', () => {
       const mockFile = new File([], 'test.jpg');
       (fileUtils.readFileFromPathAsFile as jest.Mock).mockResolvedValue(mockFile);
       
-      requestMock.mockResolvedValue([mockResponse, 200, {}]);
+      requestMock
+        .mockResolvedValueOnce([{ url: 'https://presigned-url.com', id: 'file_123' }, 200, {}])
+        .mockResolvedValueOnce([mockResponse, 200, {}]);
 
       const result = await files.upload({
         filePath: 'test.jpg',
@@ -249,7 +256,7 @@ describe('Files', () => {
       expect(result).toEqual(mockResponse);
       expect(files.getCachedFile).toHaveBeenCalledWith('test.jpg');
       expect(fileUtils.readFileFromPathAsFile).toHaveBeenCalledWith('test.jpg');
-      expect(requestMock).toHaveBeenCalled();
+      expect(requestMock).toHaveBeenCalledTimes(2);
     });
 
     it('should skip duplicate check if checkDuplicate is false', async () => {
@@ -268,7 +275,9 @@ describe('Files', () => {
       const mockFile = new File([], 'test.jpg');
       (fileUtils.readFileFromPathAsFile as jest.Mock).mockResolvedValue(mockFile);
       
-      requestMock.mockResolvedValue([mockResponse, 200, {}]);
+      requestMock
+        .mockResolvedValueOnce([{ url: 'https://presigned-url.com', id: 'file_123' }, 200, {}])
+        .mockResolvedValueOnce([mockResponse, 200, {}]);
 
       const result = await files.upload({
         filePath: 'test.jpg',
@@ -279,7 +288,7 @@ describe('Files', () => {
       expect(result).toEqual(mockResponse);
       expect(files.getCachedFile).not.toHaveBeenCalled();
       expect(fileUtils.readFileFromPathAsFile).toHaveBeenCalledWith('test.jpg');
-      expect(requestMock).toHaveBeenCalled();
+      expect(requestMock).toHaveBeenCalledTimes(2);
     });
   });
 

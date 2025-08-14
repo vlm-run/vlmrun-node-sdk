@@ -128,7 +128,7 @@ export class Files {
       );
     }
 
-    let method = params.method || "auto";
+    let method = params.method || "presigned-url";
     if (method === "auto") {
       if (fileToUpload.size > 32 * 1024 * 1024) {
         method = "presigned-url";
