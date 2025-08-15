@@ -4,9 +4,9 @@
 
 import { Client, APIRequestor } from "./base_requestor";
 import { InputError, ServerError } from "./exceptions";
-import { 
-  PredictionResponse, 
-  GenerationConfig, 
+import {
+  PredictionResponse,
+  GenerationConfig,
   RequestMetadata,
   AgentGetParams,
   AgentExecuteParams,
@@ -29,7 +29,7 @@ export class Agent {
   constructor(client: Client) {
     /**
      * Initialize Agent resource with VLMRun instance.
-     * 
+     *
      * @param client - VLM Run API instance
      */
     this.client = client;
@@ -38,11 +38,15 @@ export class Agent {
 
   /**
    * Get an agent by name and version or by ID.
-   * 
+   *
    * @param params - Agent lookup parameters
    * @returns Agent information
    */
-  async get(params: { name?: string; version?: string; id?: string }): Promise<AgentInfo> {
+  async get(params: {
+    name?: string;
+    version?: string;
+    id?: string;
+  }): Promise<AgentInfo> {
     const { name, version, id } = params;
 
     if (id && name) {
@@ -53,23 +57,24 @@ export class Agent {
       throw new InputError("Either `id` or `name` must be provided");
     }
 
-    const queryParams: Record<string, any> = {};
+    const data: Record<string, any> = {};
     if (id) {
-      queryParams.id = id;
+      data.id = id;
     } else if (name) {
-      queryParams.name = name;
+      data.name = name;
       if (version) {
-        queryParams.version = version;
+        data.version = version;
       }
     }
 
     const [response] = await this.requestor.request<AgentInfo>(
       "GET",
       "agent/lookup",
-      queryParams
+      undefined,
+      data
     );
 
-    if (typeof response !== 'object') {
+    if (typeof response !== "object") {
       throw new TypeError("Expected object response");
     }
 
@@ -78,7 +83,7 @@ export class Agent {
 
   /**
    * List all agents.
-   * 
+   *
    * @returns List of agent information
    */
   async list(): Promise<AgentInfo[]> {
@@ -96,16 +101,21 @@ export class Agent {
 
   /**
    * Create an agent.
-   * 
+   *
    * @param params - Agent creation parameters
    * @returns Agent creation response
    */
   async create(params: AgentCreateParams): Promise<AgentCreationResponse> {
     const { config, name, inputs, callbackUrl } = params;
 
-    const configObj = config instanceof AgentCreationConfig ? config : new AgentCreationConfig(config);
+    const configObj =
+      config instanceof AgentCreationConfig
+        ? config
+        : new AgentCreationConfig(config);
     if (!configObj.prompt) {
-      throw new InputError("Prompt is not provided as a request parameter, please provide a prompt");
+      throw new InputError(
+        "Prompt is not provided as a request parameter, please provide a prompt"
+      );
     }
 
     const data: Record<string, any> = {
@@ -125,7 +135,7 @@ export class Agent {
       data
     );
 
-    if (typeof response !== 'object') {
+    if (typeof response !== "object") {
       throw new TypeError("Expected object response");
     }
 
@@ -134,19 +144,21 @@ export class Agent {
 
   /**
    * Execute an agent with the given arguments (new method).
-   * 
+   *
    * @param params - Agent execution parameters
    * @returns Agent execution response
    */
-  async execute(params: AgentExecuteParamsNew): Promise<AgentExecutionResponse> {
-    const { 
-      name, 
-      version, 
-      inputs, 
+  async execute(
+    params: AgentExecuteParamsNew
+  ): Promise<AgentExecutionResponse> {
+    const {
+      name,
+      version,
+      inputs,
       batch = true,
       config,
       metadata,
-      callbackUrl
+      callbackUrl,
     } = params;
 
     if (!batch) {
@@ -161,12 +173,16 @@ export class Agent {
     };
 
     if (config) {
-      const configObj = config instanceof AgentExecutionConfig ? config : new AgentExecutionConfig(config);
+      const configObj =
+        config instanceof AgentExecutionConfig
+          ? config
+          : new AgentExecutionConfig(config);
       data.config = configObj.toJSON();
     }
 
     if (metadata) {
-      data.metadata = metadata instanceof RequestMetadata ? metadata.toJSON() : metadata;
+      data.metadata =
+        metadata instanceof RequestMetadata ? metadata.toJSON() : metadata;
     }
 
     if (callbackUrl) {
@@ -180,7 +196,7 @@ export class Agent {
       data
     );
 
-    if (typeof response !== 'object') {
+    if (typeof response !== "object") {
       throw new ServerError("Expected object response");
     }
 
@@ -189,21 +205,21 @@ export class Agent {
 
   /**
    * Execute an agent with the given arguments (legacy method for backward compatibility).
-   * 
+   *
    * @param params - Agent execution parameters
    * @returns Agent execution response
    * @deprecated Use the new execute method with AgentExecuteParamsNew
    */
   async executeLegacy(params: AgentExecuteParams): Promise<PredictionResponse> {
-    const { 
-      name, 
-      version = "latest", 
-      fileIds, 
-      urls, 
+    const {
+      name,
+      version = "latest",
+      fileIds,
+      urls,
       batch = true,
       config,
       metadata,
-      callbackUrl
+      callbackUrl,
     } = params;
 
     if (!fileIds && !urls) {
@@ -229,11 +245,13 @@ export class Agent {
     }
 
     if (config) {
-      data.config = config instanceof GenerationConfig ? config.toJSON() : config;
+      data.config =
+        config instanceof GenerationConfig ? config.toJSON() : config;
     }
 
     if (metadata) {
-      data.metadata = metadata instanceof RequestMetadata ? metadata.toJSON() : metadata;
+      data.metadata =
+        metadata instanceof RequestMetadata ? metadata.toJSON() : metadata;
     }
 
     if (callbackUrl) {
@@ -247,7 +265,7 @@ export class Agent {
       data
     );
 
-    if (typeof response !== 'object') {
+    if (typeof response !== "object") {
       throw new ServerError("Expected object response");
     }
 
