@@ -14,6 +14,7 @@ import { Finetuning } from "./client/fine_tuning";
 import { Datasets } from "./client/datasets";
 import { Hub } from "./client/hub";
 import { Agent } from "./client/agent";
+import { Executions } from "./client/executions";
 import { Domains } from "./client/domains";
 
 export * from "./client/types";
@@ -25,6 +26,7 @@ export * from "./client/feedback";
 export * from "./client/fine_tuning";
 export * from "./client/exceptions";
 export * from "./client/agent";
+export * from "./client/executions";
 
 export * from "./utils";
 
@@ -50,6 +52,7 @@ export class VlmRun {
   readonly dataset: Datasets;
   readonly hub: Hub;
   readonly agent: Agent;
+  readonly executions: Executions;
   readonly domains: Domains;
 
   constructor(config: VlmRunConfig) {
@@ -73,6 +76,7 @@ export class VlmRun {
     this.dataset = new Datasets(this.client);
     this.hub = new Hub(this.client);
     this.agent = new Agent(this.client);
+    this.executions = new Executions(this.client);
     this.domains = new Domains(this.client);
   }
 }

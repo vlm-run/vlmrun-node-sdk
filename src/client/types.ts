@@ -377,3 +377,100 @@ export interface FileExecuteParams {
   metadata?: RequestMetadataInput;
   callbackUrl?: string;
 }
+
+export interface AgentExecutionResponse {
+  id: string;
+  name: string;
+  version: string;
+  created_at: string;
+  completed_at?: string;
+  response?: Record<string, any>;
+  status: JobStatus;
+  usage: CreditUsage;
+}
+
+export interface AgentInfo {
+  id: string;
+  name: string;
+  version: string;
+  description: string;
+  prompt: string;
+  json_schema?: Record<string, any>;
+  json_sample?: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+  status: JobStatus;
+}
+
+export interface AgentCreationResponse {
+  id: string;
+  name: string;
+  version: string;
+  created_at: string;
+  updated_at: string;
+  status: JobStatus;
+}
+
+export type AgentExecutionConfigParams = {
+  prompt?: string;
+  responseModel?: ZodType;
+  jsonSchema?: Record<string, any>;
+};
+
+export class AgentExecutionConfig {
+  prompt?: string;
+  jsonSchema?: Record<string, any>;
+
+  constructor(params: Partial<AgentExecutionConfig> = {}) {
+    Object.assign(this, params);
+  }
+
+  toJSON() {
+    return {
+      prompt: this.prompt,
+      json_schema: this.jsonSchema,
+    };
+  }
+}
+
+export type AgentCreationConfigParams = {
+  prompt?: string;
+  responseModel?: ZodType;
+  jsonSchema?: Record<string, any>;
+};
+
+export class AgentCreationConfig {
+  prompt?: string;
+  jsonSchema?: Record<string, any>;
+
+  constructor(params: Partial<AgentCreationConfig> = {}) {
+    Object.assign(this, params);
+  }
+
+  toJSON() {
+    return {
+      prompt: this.prompt,
+      json_schema: this.jsonSchema,
+    };
+  }
+}
+
+export type AgentExecutionConfigInput = AgentExecutionConfig | AgentExecutionConfigParams;
+export type AgentCreationConfigInput = AgentCreationConfig | AgentCreationConfigParams;
+
+export interface AgentCreateParams {
+  config: AgentCreationConfigInput;
+  name?: string;
+  inputs?: Record<string, any>;
+  callbackUrl?: string;
+}
+
+export interface AgentExecuteParamsNew {
+  name: string;
+  version?: string;
+  inputs?: Record<string, any>;
+  batch?: boolean;
+  config?: AgentExecutionConfigInput;
+  metadata?: RequestMetadataInput;
+  callbackUrl?: string;
+}
