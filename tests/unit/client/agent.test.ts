@@ -43,8 +43,8 @@ describe("Agent", () => {
       expect(agent["requestor"].request).toHaveBeenCalledWith(
         "GET",
         "agent/lookup",
-        undefined,
-        { name: "test-agent", version: "v1" }
+        { name: "test-agent", version: "v1" },
+        undefined
       );
     });
 
@@ -72,8 +72,8 @@ describe("Agent", () => {
       expect(agent["requestor"].request).toHaveBeenCalledWith(
         "GET",
         "agent/lookup",
-        undefined,
-        { name: "test-agent" }
+        { name: "test-agent" },
+        undefined
       );
     });
 
