@@ -57,21 +57,21 @@ export class Agent {
       throw new InputError("Either `id` or `name` must be provided");
     }
 
-    const data: Record<string, any> = {};
+    const queryParams: Record<string, any> = {};
     if (id) {
-      data.id = id;
+      queryParams.id = id;
     } else if (name) {
-      data.name = name;
+      queryParams.name = name;
       if (version) {
-        data.version = version;
+        queryParams.version = version;
       }
     }
 
     const [response] = await this.requestor.request<AgentInfo>(
       "GET",
       "agent/lookup",
-      undefined,
-      data
+      queryParams,
+      undefined
     );
 
     if (typeof response !== "object") {
