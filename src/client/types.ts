@@ -466,7 +466,7 @@ export interface AgentCreateParams {
 }
 
 export interface AgentExecuteParamsNew {
-  name: string;
+  name?: string;
   version?: string;
   inputs?: Record<string, any>;
   batch?: boolean;
