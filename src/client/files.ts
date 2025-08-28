@@ -148,7 +148,6 @@ export class Files {
           {
             filename: fileToUpload.name,
             purpose: params.purpose ?? "assistants",
-            expiration: params.expiration ?? 24 * 60 * 60, // 24 hours default
           }
         );
 
@@ -220,11 +219,6 @@ export class Files {
     await this.requestor.request<void>("DELETE", `files/${fileId}`);
   }
 
-  /**
-   * Generate a presigned URL for file upload
-   * @param params Request parameters containing filename and purpose
-   * @returns Presigned URL response with upload details
-   */
   async generatePresignedUrl(params: PresignedUrlRequest): Promise<PresignedUrlResponse> {
     const [response] = await this.requestor.request<PresignedUrlResponse>(
       "POST",
@@ -238,11 +232,6 @@ export class Files {
     return response;
   }
 
-  /**
-   * Generate a preview URL for an existing file
-   * @param fileId The ID of the file to generate preview URL for
-   * @returns Preview URL response
-   */
   async generateFilePreviewUrl(fileId: string): Promise<PreviewUrlResponse> {
     const [response] = await this.requestor.request<PreviewUrlResponse>(
       "GET",
