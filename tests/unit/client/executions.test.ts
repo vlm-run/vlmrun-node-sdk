@@ -23,7 +23,6 @@ describe('Executions', () => {
         {
           id: 'exec_123',
           name: 'test-agent',
-          version: 'v1',
           created_at: '2023-01-01T00:00:00Z',
           completed_at: '2023-01-01T00:00:01Z',
           response: { result: 'success' },
@@ -65,7 +64,6 @@ describe('Executions', () => {
       const mockResponse: AgentExecutionResponse = {
         id: 'exec_123',
         name: 'test-agent',
-        version: 'v1',
         created_at: '2023-01-01T00:00:00Z',
         completed_at: '2023-01-01T00:00:01Z',
         response: { result: 'success' },
@@ -96,7 +94,6 @@ describe('Executions', () => {
       const mockResponse: AgentExecutionResponse = {
         id: 'exec_123',
         name: 'test-agent',
-        version: 'v1',
         created_at: '2023-01-01T00:00:00Z',
         completed_at: '2023-01-01T00:00:01Z',
         response: { result: 'success' },
@@ -119,7 +116,6 @@ describe('Executions', () => {
       const mockResponse: AgentExecutionResponse = {
         id: 'exec_123',
         name: 'test-agent',
-        version: 'v1',
         created_at: '2023-01-01T00:00:00Z',
         status: 'running',
         usage: { credits_used: 0 },

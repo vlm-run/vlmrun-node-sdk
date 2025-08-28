@@ -37,24 +37,32 @@ export class Agent {
   }
 
   /**
-   * Get an agent by name and version or by ID.
+   * Get an agent by name, id, or prompt. Only one of `name`, `id`, or `prompt` can be provided.
    *
    * @param params - Agent lookup parameters
    * @returns Agent information
    */
   async get(params: {
     name?: string;
-    version?: string;
     id?: string;
+    prompt?: string;
   }): Promise<AgentInfo> {
-    const { name, version, id } = params;
+    const { name, id, prompt } = params;
 
-    if (id && name) {
-      throw new InputError("Only one of `id` or `name` can be provided");
-    }
-
-    if (!id && !name) {
-      throw new InputError("Either `id` or `name` must be provided");
+    if (id) {
+      if (name || prompt) {
+        throw new InputError("Only one of `id` or `name` or `prompt` can be provided");
+      }
+    } else if (name) {
+      if (id || prompt) {
+        throw new InputError("Only one of `id` or `name` or `prompt` can be provided");
+      }
+    } else if (prompt) {
+      if (id || name) {
+        throw new InputError("Only one of `id` or `name` or `prompt` can be provided");
+      }
+    } else {
+      throw new InputError("Either `id` or `name` or `prompt` must be provided");
     }
 
     const data: Record<string, any> = {};
@@ -62,9 +70,8 @@ export class Agent {
       data.id = id;
     } else if (name) {
       data.name = name;
-      if (version) {
-        data.version = version;
-      }
+    } else if (prompt) {
+      data.prompt = prompt;
     }
 
     const [response] = await this.requestor.request<AgentInfo>(
@@ -153,7 +160,6 @@ export class Agent {
   ): Promise<AgentExecutionResponse> {
     const {
       name,
-      version,
       inputs,
       batch = true,
       config,
@@ -167,7 +173,6 @@ export class Agent {
 
     const data: Record<string, any> = {
       name,
-      version,
       batch,
       inputs,
     };

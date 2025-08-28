@@ -381,7 +381,6 @@ export interface FileExecuteParams {
 export interface AgentExecutionResponse {
   id: string;
   name: string;
-  version: string;
   created_at: string;
   completed_at?: string;
   response?: Record<string, any>;
@@ -392,7 +391,6 @@ export interface AgentExecutionResponse {
 export interface AgentInfo {
   id: string;
   name: string;
-  version: string;
   description: string;
   prompt: string;
   json_schema?: Record<string, any>;
@@ -405,7 +403,6 @@ export interface AgentInfo {
 export interface AgentCreationResponse {
   id: string;
   name: string;
-  version: string;
   created_at: string;
   updated_at: string;
   status: JobStatus;
@@ -467,7 +464,6 @@ export interface AgentCreateParams {
 
 export interface AgentExecuteParamsNew {
   name?: string;
-  version?: string;
   inputs?: Record<string, any>;
   batch?: boolean;
   config?: AgentExecutionConfigInput;

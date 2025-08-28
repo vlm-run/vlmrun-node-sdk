@@ -24,21 +24,7 @@ describe("Integration: Agent", () => {
   });
 
   describe("get()", () => {
-    it("should get agent by name and version", async () => {
-      const result = await client.agent.get({
-        name: testAgentName,
-        // version: "latest",
-      });
-
-      expect(result).toBeTruthy();
-      expect(result).toHaveProperty("id");
-      expect(result).toHaveProperty("name");
-      expect(result).toHaveProperty("version");
-      expect(result).toHaveProperty("status");
-      expect(result.name).toBe(testAgentName);
-    });
-
-    it("should get agent by name only (defaults to latest version)", async () => {
+    it("should get agent by name", async () => {
       const result = await client.agent.get({
         name: testAgentName,
       });
@@ -46,7 +32,6 @@ describe("Integration: Agent", () => {
       expect(result).toBeTruthy();
       expect(result).toHaveProperty("id");
       expect(result).toHaveProperty("name");
-      expect(result).toHaveProperty("version");
       expect(result).toHaveProperty("status");
       expect(result.name).toBe(testAgentName);
     });
@@ -65,24 +50,23 @@ describe("Integration: Agent", () => {
       expect(result).toBeTruthy();
       expect(result).toHaveProperty("id");
       expect(result).toHaveProperty("name");
-      expect(result).toHaveProperty("version");
       expect(result).toHaveProperty("status");
       expect(result.id).toBe(agentByName.id);
       expect(result.name).toBe(agentByName.name);
     });
 
-    it("should throw error when both ID and name are provided", async () => {
+    it("should throw error when multiple parameters are provided", async () => {
       await expect(
         client.agent.get({
           id: "some-id",
           name: testAgentName,
         })
-      ).rejects.toThrow("Only one of `id` or `name` can be provided");
+      ).rejects.toThrow("Only one of `id` or `name` or `prompt` can be provided");
     });
 
-    it("should throw error when neither ID nor name are provided", async () => {
+    it("should throw error when no parameters are provided", async () => {
       await expect(client.agent.get({})).rejects.toThrow(
-        "Either `id` or `name` must be provided"
+        "Either `id` or `name` or `prompt` must be provided"
       );
     });
   });
@@ -105,7 +89,6 @@ describe("Integration: Agent", () => {
         const agent = result[0];
         expect(agent).toHaveProperty("id");
         expect(agent).toHaveProperty("name");
-        expect(agent).toHaveProperty("version");
         expect(agent).toHaveProperty("status");
         expect(agent).toHaveProperty("created_at");
         expect(agent).toHaveProperty("updated_at");
@@ -113,7 +96,6 @@ describe("Integration: Agent", () => {
         // Verify property types
         expect(typeof agent.id).toBe("string");
         expect(typeof agent.name).toBe("string");
-        expect(typeof agent.version).toBe("string");
         expect(typeof agent.status).toBe("string");
         expect(typeof agent.created_at).toBe("string");
         expect(typeof agent.updated_at).toBe("string");
@@ -132,7 +114,6 @@ describe("Integration: Agent", () => {
       if (testAgent) {
         expect(testAgent.name).toBe(testAgentName);
         expect(testAgent).toHaveProperty("id");
-        expect(testAgent).toHaveProperty("version");
         expect(testAgent).toHaveProperty("status");
       }
     });
@@ -155,13 +136,11 @@ describe("Integration: Agent", () => {
       expect(result).toBeTruthy();
       expect(result).toHaveProperty("id");
       expect(result).toHaveProperty("name");
-      expect(result).toHaveProperty("version");
       expect(result).toHaveProperty("status");
       expect(result).toHaveProperty("created_at");
       expect(result).toHaveProperty("updated_at");
       expect(result.name).toBe(testAgentNameForCreation);
       expect(typeof result.id).toBe("string");
-      expect(typeof result.version).toBe("string");
     });
 
     it("should create agent with AgentCreationConfig class", async () => {
@@ -180,7 +159,6 @@ describe("Integration: Agent", () => {
       expect(result).toBeTruthy();
       expect(result).toHaveProperty("id");
       expect(result).toHaveProperty("name");
-      expect(result).toHaveProperty("version");
       expect(result).toHaveProperty("status");
       expect(result.name).toBe(`${testAgentNameForCreation}-config-class`);
     });
@@ -203,7 +181,6 @@ describe("Integration: Agent", () => {
       expect(result).toBeTruthy();
       expect(result).toHaveProperty("id");
       expect(result).toHaveProperty("name");
-      expect(result).toHaveProperty("version");
       expect(result).toHaveProperty("status");
       expect(result.name).toBe(`${testAgentNameForCreation}-with-callback`);
     });
@@ -221,7 +198,6 @@ describe("Integration: Agent", () => {
       expect(result).toBeTruthy();
       expect(result).toHaveProperty("id");
       expect(result).toHaveProperty("name");
-      expect(result).toHaveProperty("version");
       expect(result).toHaveProperty("status");
       expect(typeof result.name).toBe("string");
       expect(result.name.length).toBeGreaterThan(0);
@@ -265,7 +241,6 @@ describe("Integration: Agent", () => {
       expect(getResult).toBeTruthy();
       expect(getResult.id).toBe(createResult.id);
       expect(getResult.name).toBe(createResult.name);
-      expect(getResult.version).toBe(createResult.version);
     });
   });
 });

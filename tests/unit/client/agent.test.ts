@@ -18,41 +18,10 @@ describe("Agent", () => {
   });
 
   describe("get", () => {
-    it("should get agent by name and version", async () => {
+    it("should get agent by name", async () => {
       const mockResponse: AgentInfo = {
         id: "agent_123",
         name: "test-agent",
-        version: "v1",
-        description: "Test agent for unit tests",
-        prompt: "Test prompt",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        status: "completed",
-      };
-
-      jest
-        .spyOn(agent["requestor"], "request")
-        .mockResolvedValue([mockResponse, 200, {}]);
-
-      const result = await agent.get({
-        name: "test-agent",
-        version: "v1",
-      });
-
-      expect(result).toEqual(mockResponse);
-      expect(agent["requestor"].request).toHaveBeenCalledWith(
-        "GET",
-        "agent/lookup",
-        undefined,
-        { name: "test-agent", version: "v1" }
-      );
-    });
-
-    it('should use "latest" as default version', async () => {
-      const mockResponse: AgentInfo = {
-        id: "agent_123",
-        name: "test-agent",
-        version: "latest",
         description: "Test agent for unit tests",
         prompt: "Test prompt",
         created_at: new Date().toISOString(),
@@ -74,6 +43,82 @@ describe("Agent", () => {
         "agent/lookup",
         undefined,
         { name: "test-agent" }
+      );
+    });
+
+    it("should get agent by id", async () => {
+      const mockResponse: AgentInfo = {
+        id: "agent_123",
+        name: "test-agent",
+        description: "Test agent for unit tests",
+        prompt: "Test prompt",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        status: "completed",
+      };
+
+      jest
+        .spyOn(agent["requestor"], "request")
+        .mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await agent.get({
+        id: "agent_123",
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(agent["requestor"].request).toHaveBeenCalledWith(
+        "GET",
+        "agent/lookup",
+        undefined,
+        { id: "agent_123" }
+      );
+    });
+
+    it("should get agent by prompt", async () => {
+      const mockResponse: AgentInfo = {
+        id: "agent_123",
+        name: "test-agent",
+        description: "Test agent for unit tests",
+        prompt: "Test prompt",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        status: "completed",
+      };
+
+      jest
+        .spyOn(agent["requestor"], "request")
+        .mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await agent.get({
+        prompt: "Test prompt",
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(agent["requestor"].request).toHaveBeenCalledWith(
+        "GET",
+        "agent/lookup",
+        undefined,
+        { prompt: "Test prompt" }
+      );
+    });
+
+    it("should throw error when multiple parameters are provided", async () => {
+      await expect(agent.get({ name: "test-agent", id: "agent_123" })).rejects.toThrow(
+        "Only one of `id` or `name` or `prompt` can be provided"
+      );
+
+      await expect(agent.get({ name: "test-agent", prompt: "Test prompt" })).rejects.toThrow(
+        "Only one of `id` or `name` or `prompt` can be provided"
+      );
+
+      await expect(agent.get({ id: "agent_123", prompt: "Test prompt" })).rejects.toThrow(
+        "Only one of `id` or `name` or `prompt` can be provided"
+      );
+    });
+
+    it("should throw error when no parameters are provided", async () => {
+      await expect(agent.get({})).rejects.toThrow(
+        "Either `id` or `name` or `prompt` must be provided"
       );
     });
 
@@ -206,7 +251,6 @@ describe("Agent", () => {
       const mockResponse = {
         id: "agent_123",
         name: "test-agent",
-        version: "v1",
         created_at: "2023-01-01T00:00:00Z",
         updated_at: "2023-01-01T00:00:00Z",
         status: "completed",
@@ -256,7 +300,6 @@ describe("Agent", () => {
       const mockResponse = {
         id: "execution_123",
         name: "test-agent",
-        version: "v1",
         created_at: "2023-01-01T00:00:00Z",
         completed_at: "2023-01-01T00:00:01Z",
         response: { result: "success" },
@@ -270,7 +313,6 @@ describe("Agent", () => {
 
       const result = await agent.execute({
         name: "test-agent",
-        version: "v1",
         inputs: { test: "data" },
         config: {
           prompt: "Test prompt",
@@ -284,7 +326,6 @@ describe("Agent", () => {
         undefined,
         {
           name: "test-agent",
-          version: "v1",
           batch: true,
           inputs: { test: "data" },
           config: {
@@ -311,7 +352,6 @@ describe("Agent", () => {
         {
           id: "agent_123",
           name: "test-agent",
-          version: "v1",
           description: "Test agent",
           prompt: "Test prompt",
           created_at: "2023-01-01T00:00:00Z",
