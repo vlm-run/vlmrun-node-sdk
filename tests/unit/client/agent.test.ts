@@ -39,7 +39,7 @@ describe("Agent", () => {
 
       expect(result).toEqual(mockResponse);
       expect(agent["requestor"].request).toHaveBeenCalledWith(
-        "GET",
+        "POST",
         "agent/lookup",
         undefined,
         { name: "test-agent" }
@@ -67,7 +67,7 @@ describe("Agent", () => {
 
       expect(result).toEqual(mockResponse);
       expect(agent["requestor"].request).toHaveBeenCalledWith(
-        "GET",
+        "POST",
         "agent/lookup",
         undefined,
         { id: "agent_123" }
@@ -95,7 +95,7 @@ describe("Agent", () => {
 
       expect(result).toEqual(mockResponse);
       expect(agent["requestor"].request).toHaveBeenCalledWith(
-        "GET",
+        "POST",
         "agent/lookup",
         undefined,
         { prompt: "Test prompt" }

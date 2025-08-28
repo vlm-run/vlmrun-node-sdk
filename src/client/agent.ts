@@ -75,7 +75,7 @@ export class Agent {
     }
 
     const [response] = await this.requestor.request<AgentInfo>(
-      "GET",
+      "POST",
       "agent/lookup",
       undefined,
       data
