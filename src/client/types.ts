@@ -33,7 +33,7 @@ export interface PresignedUrlRequest {
 export interface PreviewUrlResponse {
   id: string;
   filename: string;
-  content_type: string;
+  content_type?: string;
   preview_url: string;
 }
 
