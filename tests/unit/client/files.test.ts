@@ -1,6 +1,6 @@
 import { Client } from '../../../src/client/base_requestor';
 import { Files } from '../../../src/client/files';
-import { FileResponse, FilePurpose } from '../../../src/client/types';
+import { FileResponse, FilePurpose, PresignedUrlResponse, PreviewUrlResponse } from '../../../src/client/types';
 import { createHash } from 'crypto';
 import * as fs from 'fs';
 import * as fileUtils from '../../../src/utils/file';
@@ -315,6 +315,57 @@ describe('Files', () => {
       expect(requestMock).toHaveBeenCalledWith(
         'DELETE',
         'files/file_123'
+      );
+    });
+  });
+
+  describe('generatePresignedUrl', () => {
+    it('should generate presigned URL with correct parameters', async () => {
+      const mockResponse: PresignedUrlResponse = {
+        id: 'presigned_123',
+        url: 'https://example.com/upload',
+        filename: 'test.pdf',
+        content_type: 'application/pdf',
+        created_at: new Date().toISOString(),
+      };
+      
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await files.generatePresignedUrl({
+        filename: 'test.pdf',
+        purpose: 'assistants'
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(requestMock).toHaveBeenCalledWith(
+        'POST',
+        'files/presigned-url',
+        undefined,
+        {
+          filename: 'test.pdf',
+          purpose: 'assistants'
+        }
+      );
+    });
+  });
+
+  describe('generateFilePreviewUrl', () => {
+    it('should generate preview URL for file ID', async () => {
+      const mockResponse: PreviewUrlResponse = {
+        id: 'file_123',
+        filename: 'test.pdf',
+        content_type: 'application/pdf',
+        preview_url: 'https://example.com/preview/file_123'
+      };
+      
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await files.generateFilePreviewUrl('file_123');
+
+      expect(result).toEqual(mockResponse);
+      expect(requestMock).toHaveBeenCalledWith(
+        'GET',
+        'files/preview-url/file_123'
       );
     });
   });

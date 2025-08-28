@@ -25,6 +25,18 @@ export interface PresignedUrlResponse {
   created_at: string;
 }
 
+export interface PresignedUrlRequest {
+  filename: string;
+  purpose: string;
+}
+
+export interface PreviewUrlResponse {
+  id: string;
+  filename: string;
+  content_type: string;
+  preview_url: string;
+}
+
 export interface CreditUsage {
   elements_processed?: number;
   element_type?: "image" | "page" | "video" | "audio";

@@ -267,4 +267,34 @@ describe("Integration: Files", () => {
     //   await expect(client.files.get(uploadResult.id)).rejects.toThrow();
     // });
   });
+
+  describe("presigned and preview URLs", () => {
+    it("should generate presigned URL", async () => {
+      const result = await client.files.generatePresignedUrl({
+        filename: "test-upload.pdf",
+        purpose: "assistants"
+      });
+
+      expect(result.id).toBeTruthy();
+      expect(result.filename).toBe("test-upload.pdf");
+      expect(result.url).toBeTruthy();
+      expect(result.content_type).toBeTruthy();
+      expect(result.created_at).toBeTruthy();
+    });
+
+    it("should generate file preview URL", async () => {
+      const uploadResult = await client.files.upload({
+        filePath: testFilePath,
+        purpose: "assistants",
+        force: true,
+      });
+
+      const result = await client.files.generateFilePreviewUrl(uploadResult.id);
+
+      expect(result.id).toBe(uploadResult.id);
+      expect(result.filename).toBeTruthy();
+      expect(result.content_type).toBeTruthy();
+      expect(result.preview_url).toBeTruthy();
+    });
+  });
 });

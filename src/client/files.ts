@@ -6,6 +6,8 @@ import {
   ListParams,
   FileUploadParams,
   PresignedUrlResponse,
+  PresignedUrlRequest,
+  PreviewUrlResponse,
 } from "./types";
 import { readFileFromPathAsFile } from "../utils/file";
 import { DependencyError, InputError } from "./exceptions";
@@ -216,5 +218,36 @@ export class Files {
 
   async delete(fileId: string): Promise<void> {
     await this.requestor.request<void>("DELETE", `files/${fileId}`);
+  }
+
+  /**
+   * Generate a presigned URL for file upload
+   * @param params Request parameters containing filename and purpose
+   * @returns Presigned URL response with upload details
+   */
+  async generatePresignedUrl(params: PresignedUrlRequest): Promise<PresignedUrlResponse> {
+    const [response] = await this.requestor.request<PresignedUrlResponse>(
+      "POST",
+      "files/presigned-url",
+      undefined,
+      {
+        filename: params.filename,
+        purpose: params.purpose,
+      }
+    );
+    return response;
+  }
+
+  /**
+   * Generate a preview URL for an existing file
+   * @param fileId The ID of the file to generate preview URL for
+   * @returns Preview URL response
+   */
+  async generateFilePreviewUrl(fileId: string): Promise<PreviewUrlResponse> {
+    const [response] = await this.requestor.request<PreviewUrlResponse>(
+      "GET",
+      `files/preview-url/${fileId}`
+    );
+    return response;
   }
 }
