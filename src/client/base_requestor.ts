@@ -72,7 +72,8 @@ export class APIRequestor {
     url: string,
     params?: Record<string, any>,
     data?: any,
-    files?: { [key: string]: any }
+    files?: { [key: string]: any },
+    options?: { timeoutMs?: number }
   ): Promise<[T, number, Record<string, string>]> {
     try {
       let headers = new AxiosHeaders(this.axios.defaults.headers);
@@ -92,6 +93,7 @@ export class APIRequestor {
         params,
         data,
         headers,
+        timeout: options?.timeoutMs ?? this.timeout,
       });
 
       return [

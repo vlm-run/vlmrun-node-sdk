@@ -180,7 +180,9 @@ describe("Agent", () => {
             sessionId: "test-session",
           },
           callback_url: "https://webhook.example.com/callback",
-        }
+        },
+        undefined,
+        { timeoutMs: 300000 }
       );
     });
 
@@ -210,7 +212,9 @@ describe("Agent", () => {
           version: "latest",
           batch: true,
           urls: ["https://example.com/test.pdf"],
-        }
+        },
+        undefined,
+        { timeoutMs: 300000 }
       );
     });
 
@@ -279,7 +283,9 @@ describe("Agent", () => {
             prompt: "Test prompt",
             json_schema: undefined,
           },
-        }
+        },
+        undefined,
+        { timeoutMs: 300000 }
       );
     });
 
@@ -332,7 +338,9 @@ describe("Agent", () => {
             prompt: "Test prompt",
             json_schema: undefined,
           },
-        }
+        },
+        undefined,
+        { timeoutMs: 300000 }
       );
     });
 
