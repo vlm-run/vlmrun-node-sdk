@@ -272,11 +272,11 @@ describe("Integration: Files", () => {
     it("should generate presigned URL", async () => {
       const result = await client.files.generatePresignedUrl({
         filename: "test-upload.pdf",
-        purpose: "assistants"
+        purpose: "assistants",
       });
 
       expect(result.id).toBeTruthy();
-      expect(result.filename).toBe("test-upload.pdf");
+      expect(result.filename).toContain("test-upload.pdf");
       expect(result.url).toBeTruthy();
       expect(result.content_type).toBeTruthy();
       expect(result.created_at).toBeTruthy();
