@@ -17,12 +17,24 @@ export interface FileResponse {
 
 export interface PresignedUrlResponse {
   id?: string;
-  url?: string;
-  filename?: string;
-  expiration?: number;
-  method?: string;
+  filename: string;
   content_type?: string;
-  created_at: string;
+  url: string;
+  upload_method?: string;
+  preview_url?: string;
+  created_at?: string;
+}
+
+export interface PresignedUrlRequest {
+  filename: string;
+  purpose?: string;
+}
+
+export interface PreviewUrlResponse {
+  id: string;
+  filename: string;
+  content_type?: string;
+  preview_url: string;
 }
 
 export interface CreditUsage {
