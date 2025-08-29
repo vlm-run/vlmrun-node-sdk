@@ -113,7 +113,7 @@ export class Agent {
    * @returns Agent creation response
    */
   async create(params: AgentCreateParams): Promise<AgentCreationResponse> {
-    const { config, name, inputs, callbackUrl, timeoutMs } = params;
+    const { config, name, inputs, callbackUrl } = params;
 
     const configObj =
       config instanceof AgentCreationConfig
@@ -139,9 +139,7 @@ export class Agent {
       "POST",
       "agent/create",
       undefined,
-      data,
-      undefined,
-      { timeoutMs: timeoutMs ?? 300000 }
+      data
     );
 
     if (typeof response !== "object") {
@@ -167,7 +165,6 @@ export class Agent {
       config,
       metadata,
       callbackUrl,
-      timeoutMs,
     } = params;
 
     if (!batch) {
@@ -201,9 +198,7 @@ export class Agent {
       "POST",
       "agent/execute",
       undefined,
-      data,
-      undefined,
-      { timeoutMs: timeoutMs ?? 300000 }
+      data
     );
 
     if (typeof response !== "object") {
@@ -230,7 +225,6 @@ export class Agent {
       config,
       metadata,
       callbackUrl,
-      timeoutMs,
     } = params;
 
     if (!fileIds && !urls) {
@@ -273,9 +267,7 @@ export class Agent {
       "POST",
       "agent/execute",
       undefined,
-      data,
-      undefined,
-      { timeoutMs: timeoutMs ?? 300000 }
+      data
     );
 
     if (typeof response !== "object") {

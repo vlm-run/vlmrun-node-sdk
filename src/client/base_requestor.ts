@@ -11,7 +11,12 @@ import {
   NetworkError,
 } from "./exceptions";
 
-const DEFAULT_TIMEOUT = 120000; // 120 seconds in ms
+// Default timeout can be overridden via env var VLM_TIMEOUT_MS
+const DEFAULT_TIMEOUT = (() => {
+  const envVal = process.env.VLM_TIMEOUT_MS;
+  const parsed = envVal !== undefined ? Number(envVal) : NaN;
+  return Number.isFinite(parsed) ? parsed : 120000; // 120 seconds in ms
+})();
 const DEFAULT_MAX_RETRIES = 5;
 const INITIAL_RETRY_DELAY = 1000; // 1 second in ms
 const MAX_RETRY_DELAY = 10000; // 10 seconds in ms
@@ -72,8 +77,7 @@ export class APIRequestor {
     url: string,
     params?: Record<string, any>,
     data?: any,
-    files?: { [key: string]: any },
-    options?: { timeoutMs?: number }
+    files?: { [key: string]: any }
   ): Promise<[T, number, Record<string, string>]> {
     try {
       let headers = new AxiosHeaders(this.axios.defaults.headers);
@@ -93,7 +97,6 @@ export class APIRequestor {
         params,
         data,
         headers,
-        timeout: options?.timeoutMs ?? this.timeout,
       });
 
       return [

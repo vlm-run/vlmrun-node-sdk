@@ -341,8 +341,6 @@ export interface AgentExecuteParams {
   config?: GenerationConfigInput;
   metadata?: RequestMetadataInput;
   callbackUrl?: string;
-  /** Optional per-request timeout override in milliseconds */
-  timeoutMs?: number;
 }
 
 export interface FeedbackSubmitRequest {
@@ -462,8 +460,6 @@ export interface AgentCreateParams {
   name?: string;
   inputs?: Record<string, any>;
   callbackUrl?: string;
-  /** Optional per-request timeout override in milliseconds */
-  timeoutMs?: number;
 }
 
 export interface AgentExecuteParamsNew {
@@ -473,6 +469,4 @@ export interface AgentExecuteParamsNew {
   config?: AgentExecutionConfigInput;
   metadata?: RequestMetadataInput;
   callbackUrl?: string;
-  /** Optional per-request timeout override in milliseconds */
-  timeoutMs?: number;
 }
