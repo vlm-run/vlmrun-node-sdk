@@ -214,6 +214,7 @@ export class ImagePredictions extends Predictions {
           environment: metadata?.environment ?? "dev",
           session_id: metadata?.sessionId,
           allow_training: metadata?.allowTraining ?? true,
+          allow_retention: metadata?.allowRetention ?? true,
         },
         callback_url: callbackUrl,
       }
@@ -337,6 +338,7 @@ export class FilePredictions extends Predictions {
           environment: metadata?.environment ?? "dev",
           session_id: metadata?.sessionId,
           allow_training: metadata?.allowTraining ?? true,
+          allow_retention: metadata?.allowRetention ?? true,
         },
         callback_url: callbackUrl,
       }
@@ -402,6 +404,7 @@ export class FilePredictions extends Predictions {
           environment: metadata?.environment ?? "dev",
           session_id: metadata?.sessionId,
           allow_training: metadata?.allowTraining ?? true,
+          allow_retention: metadata?.allowRetention ?? true,
         },
         callback_url: callbackUrl,
       }
@@ -465,6 +468,7 @@ export class WebPredictions extends Predictions {
           environment: metadata?.environment ?? "dev",
           session_id: metadata?.sessionId,
           allow_training: metadata?.allowTraining ?? true,
+          allow_retention: metadata?.allowRetention ?? true,
         },
         callback_url: callbackUrl,
       }
