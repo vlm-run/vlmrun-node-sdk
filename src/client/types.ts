@@ -85,6 +85,7 @@ export type RequestMetadataParams = {
   environment?: "dev" | "staging" | "prod";
   sessionId?: string | null;
   allowTraining?: boolean;
+  allowRetention?: boolean;
 };
 
 export class RequestMetadata {
@@ -103,6 +104,11 @@ export class RequestMetadata {
    */
   allowTraining: boolean = true;
 
+  /**
+   * Whether the data can be retained for ZDR compliance
+   */
+  allowRetention: boolean = true;
+
   constructor(params: Partial<RequestMetadata> = {}) {
     Object.assign(this, params);
   }
@@ -115,6 +121,7 @@ export class RequestMetadata {
       environment: this.environment,
       session_id: this.sessionId,
       allow_training: this.allowTraining,
+      allow_retention: this.allowRetention,
     };
   }
 }
@@ -267,6 +274,7 @@ export interface FinetuningGenerateParams {
   environment?: string;
   sessionId?: string;
   allowTraining?: boolean;
+  allowRetention?: boolean;
   responseModel?: string;
 }
 

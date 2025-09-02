@@ -135,6 +135,7 @@ export class Finetuning {
           environment: params?.environment ?? "dev",
           session_id: params?.sessionId,
           allow_training: params?.allowTraining ?? true,
+          allow_retention: params?.allowRetention ?? true,
         },
         batch: params.batch ?? false,
         callback_url: params.callbackUrl,

@@ -54,6 +54,7 @@ describe("VideoPredictions", () => {
             environment: "dev",
             session_id: undefined,
             allow_training: true,
+            allow_retention: true,
           },
           callback_url: undefined,
         }
@@ -103,6 +104,7 @@ describe("VideoPredictions", () => {
             environment: "prod",
             session_id: "session_123",
             allow_training: false,
+            allow_retention: true,
           },
           callback_url: "https://example.com/callback",
         }
@@ -140,6 +142,7 @@ describe("VideoPredictions", () => {
             environment: "dev",
             session_id: undefined,
             allow_training: true,
+            allow_retention: true,
           },
           callback_url: undefined,
         }
@@ -189,6 +192,7 @@ describe("VideoPredictions", () => {
             environment: "staging",
             session_id: null,
             allow_training: true,
+            allow_retention: true,
           },
           callback_url: "https://webhook.site/callback",
         }
@@ -251,6 +255,7 @@ describe("VideoPredictions", () => {
             environment: "dev",
             session_id: undefined,
             allow_training: true,
+            allow_retention: true,
           },
           callback_url: undefined,
         }
