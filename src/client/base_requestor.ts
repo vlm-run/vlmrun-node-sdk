@@ -10,6 +10,7 @@ import {
   RequestTimeoutError,
   NetworkError,
 } from "./exceptions";
+import packageJson from "../../package.json";
 
 const DEFAULT_TIMEOUT = 120000; // 120 seconds in ms
 const DEFAULT_MAX_RETRIES = 5;
@@ -39,6 +40,7 @@ export class APIRequestor {
       headers: {
         Authorization: `Bearer ${client.apiKey}`,
         "Content-Type": "application/json",
+        "X-Client-Id": `node-sdk-${packageJson.version}`,
       },
       timeout: this.timeout,
     });
@@ -72,10 +74,17 @@ export class APIRequestor {
     url: string,
     params?: Record<string, any>,
     data?: any,
-    files?: { [key: string]: any }
+    files?: { [key: string]: any },
+    customHeaders?: Record<string, string>
   ): Promise<[T, number, Record<string, string>]> {
     try {
       let headers = new AxiosHeaders(this.axios.defaults.headers);
+
+      if (customHeaders) {
+        Object.entries(customHeaders).forEach(([key, value]) => {
+          headers.set(key, value);
+        });
+      }
 
       if (files) {
         const formData = new FormData();
