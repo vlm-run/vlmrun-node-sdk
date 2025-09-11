@@ -22,6 +22,7 @@ export interface Client {
   baseURL: string;
   timeout?: number;
   maxRetries?: number;
+  headers?: Record<string, string>;
 }
 
 export class APIRequestor {
@@ -35,12 +36,17 @@ export class APIRequestor {
     this.timeout = client.timeout ?? DEFAULT_TIMEOUT;
     this.maxRetries = client.maxRetries ?? DEFAULT_MAX_RETRIES;
 
+    const defaultHeaders = {
+      Authorization: `Bearer ${client.apiKey}`,
+      "Content-Type": "application/json",
+      "X-Client-Id": `node-sdk-${packageJson.version}`,
+    };
+
     this.axios = axios.create({
       baseURL: client.baseURL,
       headers: {
-        Authorization: `Bearer ${client.apiKey}`,
-        "Content-Type": "application/json",
-        "X-Client-Id": `node-sdk-${packageJson.version}`,
+        ...defaultHeaders,
+        ...client.headers,
       },
       timeout: this.timeout,
     });
@@ -74,17 +80,10 @@ export class APIRequestor {
     url: string,
     params?: Record<string, any>,
     data?: any,
-    files?: { [key: string]: any },
-    customHeaders?: Record<string, string>
+    files?: { [key: string]: any }
   ): Promise<[T, number, Record<string, string>]> {
     try {
       let headers = new AxiosHeaders(this.axios.defaults.headers);
-
-      if (customHeaders) {
-        Object.entries(customHeaders).forEach(([key, value]) => {
-          headers.set(key, value);
-        });
-      }
 
       if (files) {
         const formData = new FormData();
