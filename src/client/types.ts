@@ -13,6 +13,7 @@ export interface FileResponse {
   purpose: FilePurpose;
   created_at: string;
   object: "file";
+  public_url?: string;
 }
 
 export interface PresignedUrlResponse {
@@ -22,6 +23,7 @@ export interface PresignedUrlResponse {
   url: string;
   upload_method?: string;
   preview_url?: string;
+  public_url?: string;
   created_at?: string;
 }
 
@@ -71,6 +73,7 @@ export interface FileUploadParams {
   method?: "auto" | "direct" | "presigned-url";
   expiration?: number;
   force?: boolean;
+  generatePublicUrl?: boolean;
 }
 
 export interface PredictionGenerateParams {

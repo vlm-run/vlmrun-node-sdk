@@ -249,7 +249,89 @@ describe('Files', () => {
       expect(result).toEqual(mockResponse);
       expect(files.getCachedFile).toHaveBeenCalledWith('test.jpg');
       expect(fileUtils.readFileFromPathAsFile).toHaveBeenCalledWith('test.jpg');
-      expect(requestMock).toHaveBeenCalled();
+      expect(requestMock).toHaveBeenCalledWith(
+        'POST',
+        'files',
+        { purpose: 'vision', generate_public_url: true },
+        undefined,
+        { file: mockFile }
+      );
+    });
+
+    it('should upload file with generatePublicUrl=false', async () => {
+      const mockResponse: FileResponse = {
+        id: 'file_123',
+        filename: 'test.jpg',
+        bytes: 1000,
+        purpose: 'vision' as FilePurpose,
+        created_at: new Date().toISOString(),
+        object: 'file'
+      };
+      
+      jest.spyOn(files, 'getCachedFile').mockResolvedValue(null);
+      
+      // Mock readFileFromPathAsFile
+      const mockFile = new File([], 'test.jpg');
+      (fileUtils.readFileFromPathAsFile as jest.Mock).mockResolvedValue(mockFile);
+      
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await files.upload({
+        filePath: 'test.jpg',
+        purpose: 'vision',
+        generatePublicUrl: false,
+        checkDuplicate: true
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(files.getCachedFile).toHaveBeenCalledWith('test.jpg');
+      expect(fileUtils.readFileFromPathAsFile).toHaveBeenCalledWith('test.jpg');
+      expect(requestMock).toHaveBeenCalledWith(
+        'POST',
+        'files',
+        { purpose: 'vision', generate_public_url: false },
+        undefined,
+        { file: mockFile }
+      );
+    });
+
+    it('should upload file with generatePublicUrl=true and return public_url', async () => {
+      const mockResponse: FileResponse = {
+        id: 'file_123',
+        filename: 'test.jpg',
+        bytes: 1000,
+        purpose: 'vision' as FilePurpose,
+        created_at: new Date().toISOString(),
+        object: 'file',
+        public_url: 'https://example.com/public/file_123'
+      };
+      
+      jest.spyOn(files, 'getCachedFile').mockResolvedValue(null);
+      
+      // Mock readFileFromPathAsFile
+      const mockFile = new File([], 'test.jpg');
+      (fileUtils.readFileFromPathAsFile as jest.Mock).mockResolvedValue(mockFile);
+      
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await files.upload({
+        filePath: 'test.jpg',
+        purpose: 'vision',
+        generatePublicUrl: true,
+        checkDuplicate: true
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(result.public_url).toBe('https://example.com/public/file_123');
+      expect(files.getCachedFile).toHaveBeenCalledWith('test.jpg');
+      expect(fileUtils.readFileFromPathAsFile).toHaveBeenCalledWith('test.jpg');
+      expect(requestMock).toHaveBeenCalledWith(
+        'POST',
+        'files',
+        { purpose: 'vision', generate_public_url: true },
+        undefined,
+        { file: mockFile }
+      );
     });
 
     it('should skip duplicate check if checkDuplicate is false', async () => {
@@ -301,7 +383,53 @@ describe('Files', () => {
       expect(result).toEqual(mockResponse);
       expect(requestMock).toHaveBeenCalledWith(
         'GET',
-        'files/file_123'
+        'files/file_123',
+        undefined
+      );
+    });
+
+    it('should get a file by ID with isPublic=true', async () => {
+      const mockResponse: FileResponse = {
+        id: 'file_123',
+        filename: 'test.jpg',
+        bytes: 1000,
+        purpose: 'vision' as FilePurpose,
+        created_at: new Date().toISOString(),
+        object: 'file',
+        public_url: 'https://example.com/public/file_123'
+      };
+      
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await files.get('file_123', true);
+
+      expect(result).toEqual(mockResponse);
+      expect(requestMock).toHaveBeenCalledWith(
+        'GET',
+        'files/file_123',
+        { public: true }
+      );
+    });
+
+    it('should get a file by ID with isPublic=false', async () => {
+      const mockResponse: FileResponse = {
+        id: 'file_123',
+        filename: 'test.jpg',
+        bytes: 1000,
+        purpose: 'vision' as FilePurpose,
+        created_at: new Date().toISOString(),
+        object: 'file'
+      };
+      
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await files.get('file_123', false);
+
+      expect(result).toEqual(mockResponse);
+      expect(requestMock).toHaveBeenCalledWith(
+        'GET',
+        'files/file_123',
+        { public: false }
       );
     });
   });
