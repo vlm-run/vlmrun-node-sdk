@@ -115,7 +115,7 @@ export class APIRequestor {
             errorMessage = errorData.detail || error.message || errorMessage;
           }
 
-          errorType = error.cause?.name;
+          errorType = (error.cause as any)?.name;
           requestId = error.response?.request?.id;
         } catch (e) {
           errorMessage = error.message || errorMessage;
