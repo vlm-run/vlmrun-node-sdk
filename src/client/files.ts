@@ -7,7 +7,6 @@ import {
   FileUploadParams,
   PresignedUrlResponse,
   PresignedUrlRequest,
-  PreviewUrlResponse,
 } from "./types";
 import { readFileFromPathAsFile } from "../utils/file";
 import { DependencyError, InputError } from "./exceptions";
@@ -236,11 +235,4 @@ export class Files {
     return response;
   }
 
-  async generateFilePreviewUrl(fileId: string): Promise<PreviewUrlResponse> {
-    const [response] = await this.requestor.request<PreviewUrlResponse>(
-      "GET",
-      `files/preview-url/${fileId}`
-    );
-    return response;
-  }
 }

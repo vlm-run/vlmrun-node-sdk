@@ -268,7 +268,7 @@ describe("Integration: Files", () => {
     // });
   });
 
-  describe("presigned and preview URLs", () => {
+  describe("presigned URLs", () => {
     it("should generate presigned URL", async () => {
       const result = await client.files.generatePresignedUrl({
         filename: "test-upload.pdf",
@@ -282,20 +282,6 @@ describe("Integration: Files", () => {
       expect(result.created_at).toBeTruthy();
     });
 
-    it("should generate file preview URL", async () => {
-      const uploadResult = await client.files.upload({
-        filePath: testFilePath,
-        purpose: "assistants",
-        force: true,
-      });
-
-      const result = await client.files.generateFilePreviewUrl(uploadResult.id);
-
-      expect(result.id).toBe(uploadResult.id);
-      expect(result.filename).toBeTruthy();
-      expect(result.content_type).toBeTruthy();
-      expect(result.preview_url).toBeTruthy();
-    });
   });
 
   describe("public URL functionality", () => {

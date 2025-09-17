@@ -1,6 +1,6 @@
 import { Client } from '../../../src/client/base_requestor';
 import { Files } from '../../../src/client/files';
-import { FileResponse, FilePurpose, PresignedUrlResponse, PreviewUrlResponse } from '../../../src/client/types';
+import { FileResponse, FilePurpose, PresignedUrlResponse } from '../../../src/client/types';
 import { createHash } from 'crypto';
 import * as fs from 'fs';
 import * as fileUtils from '../../../src/utils/file';
@@ -477,24 +477,4 @@ describe('Files', () => {
     });
   });
 
-  describe('generateFilePreviewUrl', () => {
-    it('should generate preview URL for file ID', async () => {
-      const mockResponse: PreviewUrlResponse = {
-        id: 'file_123',
-        filename: 'test.pdf',
-        content_type: 'application/pdf',
-        preview_url: 'https://example.com/preview/file_123'
-      };
-      
-      requestMock.mockResolvedValue([mockResponse, 200, {}]);
-
-      const result = await files.generateFilePreviewUrl('file_123');
-
-      expect(result).toEqual(mockResponse);
-      expect(requestMock).toHaveBeenCalledWith(
-        'GET',
-        'files/preview-url/file_123'
-      );
-    });
-  });
 });
