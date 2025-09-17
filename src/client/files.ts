@@ -7,7 +7,6 @@ import {
   FileUploadParams,
   PresignedUrlResponse,
   PresignedUrlRequest,
-  PreviewUrlResponse,
 } from "./types";
 import { readFileFromPathAsFile } from "../utils/file";
 import { DependencyError, InputError } from "./exceptions";
@@ -193,7 +192,10 @@ export class Files {
       const [response] = await this.requestor.request<FileResponse>(
         "POST",
         "files",
-        { purpose: params.purpose ?? "assistants" },
+        {
+          purpose: params.purpose ?? "assistants",
+          generate_public_url: params.generatePublicUrl ?? true,
+        },
         undefined,
         { file: fileToUpload }
       );
@@ -207,10 +209,16 @@ export class Files {
     }
   }
 
-  async get(fileId: string): Promise<FileResponse> {
+  async get(
+    fileId: string,
+    generatePublicUrl?: boolean
+  ): Promise<FileResponse> {
     const [response] = await this.requestor.request<FileResponse>(
       "GET",
-      `files/${fileId}`
+      `files/${fileId}`,
+      generatePublicUrl !== undefined
+        ? { generate_public_url: generatePublicUrl }
+        : undefined
     );
     return response;
   }
@@ -219,7 +227,9 @@ export class Files {
     await this.requestor.request<void>("DELETE", `files/${fileId}`);
   }
 
-  async generatePresignedUrl(params: PresignedUrlRequest): Promise<PresignedUrlResponse> {
+  async generatePresignedUrl(
+    params: PresignedUrlRequest
+  ): Promise<PresignedUrlResponse> {
     const [response] = await this.requestor.request<PresignedUrlResponse>(
       "POST",
       "files/presigned-url",
@@ -228,14 +238,6 @@ export class Files {
         filename: params.filename,
         purpose: params.purpose,
       }
-    );
-    return response;
-  }
-
-  async generateFilePreviewUrl(fileId: string): Promise<PreviewUrlResponse> {
-    const [response] = await this.requestor.request<PreviewUrlResponse>(
-      "GET",
-      `files/preview-url/${fileId}`
     );
     return response;
   }

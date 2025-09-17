@@ -1,6 +1,6 @@
 {
   "name": "vlmrun",
-  "version": "0.5.4",
+  "version": "1.0.0",
   "description": "The official TypeScript library for the VlmRun API",
   "author": "VlmRun <support@vlmrun.com>",
   "main": "dist/index.js",
@@ -25,7 +25,7 @@
     "test:integration:all": "jest --config=jest.integration.all.config.js"
   },
   "dependencies": {
-    "axios": "~1.8.3",
+    "axios": "^1.12.2",
     "axios-retry": "^4.5.0",
     "dotenv": "^16.4.7",
     "mime-types": "^2.1.35",

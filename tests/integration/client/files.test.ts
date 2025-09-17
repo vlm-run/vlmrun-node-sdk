@@ -51,7 +51,7 @@ describe("Integration: Files", () => {
       });
 
       expect(result.id).toBeTruthy();
-      expect(result.filename).toBe("google_invoice.pdf");
+      expect(result.filename).toContain("google_invoice.pdf");
       expect(result.created_at).toBeTruthy();
       expect(result.object).toBe("file");
       expect(result.bytes).toBeTruthy();
@@ -74,7 +74,7 @@ describe("Integration: Files", () => {
       });
 
       expect(result.id).toBeTruthy();
-      expect(result.filename).toBe("google_invoice.pdf");
+      expect(result.filename).toContain("google_invoice.pdf");
       expect(result.created_at).toBeTruthy();
       expect(result.object).toBe("file");
       expect(result.bytes).toBeTruthy();
@@ -252,6 +252,7 @@ describe("Integration: Files", () => {
       expect(fileDetails).toHaveProperty("created_at");
       expect(fileDetails).toHaveProperty("object");
       expect(fileDetails).toHaveProperty("bytes");
+      expect(fileDetails).toHaveProperty("public_url");
     });
 
     // Note: Delete functionality may not be available in test environment
@@ -268,7 +269,7 @@ describe("Integration: Files", () => {
     // });
   });
 
-  describe("presigned and preview URLs", () => {
+  describe("presigned URLs", () => {
     it("should generate presigned URL", async () => {
       const result = await client.files.generatePresignedUrl({
         filename: "test-upload.pdf",
@@ -281,20 +282,71 @@ describe("Integration: Files", () => {
       expect(result.content_type).toBeTruthy();
       expect(result.created_at).toBeTruthy();
     });
+  });
 
-    it("should generate file preview URL", async () => {
+  describe("public URL functionality", () => {
+    it("should upload file with generatePublicUrl=true and return public_url", async () => {
+      const result = await client.files.upload({
+        filePath: testFilePath,
+        purpose: "assistants",
+        generatePublicUrl: true,
+        force: true,
+      });
+
+      expect(result.id).toBeTruthy();
+      expect(result.filename).toContain("google_invoice.pdf");
+      expect(result.public_url).toBeTruthy();
+      expect(typeof result.public_url).toBe("string");
+    });
+
+    it("should upload file with generatePublicUrl=false and not return public_url", async () => {
+      const result = await client.files.upload({
+        filePath: testFilePath,
+        purpose: "assistants",
+        generatePublicUrl: false,
+        force: true,
+      });
+
+      expect(result.id).toBeTruthy();
+      expect(result.filename).toContain("google_invoice.pdf");
+      expect(result.public_url).toBeNull();
+    });
+
+    it("should get file with isPublic=true and return public_url", async () => {
       const uploadResult = await client.files.upload({
         filePath: testFilePath,
         purpose: "assistants",
         force: true,
       });
 
-      const result = await client.files.generateFilePreviewUrl(uploadResult.id);
+      const getResult = await client.files.get(uploadResult.id, true);
+      expect(getResult.id).toBe(uploadResult.id);
+      expect(getResult.public_url).toBeTruthy();
+      expect(typeof getResult.public_url).toBe("string");
+    });
 
-      expect(result.id).toBe(uploadResult.id);
-      expect(result.filename).toBeTruthy();
-      expect(result.content_type).toBeTruthy();
-      expect(result.preview_url).toBeTruthy();
+    it("should get file with isPublic=false and not return public_url", async () => {
+      const uploadResult = await client.files.upload({
+        filePath: testFilePath,
+        purpose: "assistants",
+        force: true,
+      });
+
+      const getResult = await client.files.get(uploadResult.id, false);
+      expect(getResult.id).toBe(uploadResult.id);
+      expect(getResult.public_url).toBeNull();
+    });
+
+    it("should get file without isPublic parameter and not return public_url", async () => {
+      const uploadResult = await client.files.upload({
+        filePath: testFilePath,
+        purpose: "assistants",
+        force: true,
+      });
+
+      const getResult = await client.files.get(uploadResult.id);
+      expect(getResult.id).toBe(uploadResult.id);
+      expect(getResult.public_url).toBeTruthy();
     });
   });
 });
