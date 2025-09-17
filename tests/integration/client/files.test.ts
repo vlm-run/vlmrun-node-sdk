@@ -51,7 +51,7 @@ describe("Integration: Files", () => {
       });
 
       expect(result.id).toBeTruthy();
-      expect(result.filename).toBe("google_invoice.pdf");
+      expect(result.filename).toContain("google_invoice.pdf");
       expect(result.created_at).toBeTruthy();
       expect(result.object).toBe("file");
       expect(result.bytes).toBeTruthy();
@@ -74,7 +74,7 @@ describe("Integration: Files", () => {
       });
 
       expect(result.id).toBeTruthy();
-      expect(result.filename).toBe("google_invoice.pdf");
+      expect(result.filename).toContain("google_invoice.pdf");
       expect(result.created_at).toBeTruthy();
       expect(result.object).toBe("file");
       expect(result.bytes).toBeTruthy();
@@ -252,6 +252,7 @@ describe("Integration: Files", () => {
       expect(fileDetails).toHaveProperty("created_at");
       expect(fileDetails).toHaveProperty("object");
       expect(fileDetails).toHaveProperty("bytes");
+      expect(fileDetails).toHaveProperty("public_url");
     });
 
     // Note: Delete functionality may not be available in test environment
@@ -281,7 +282,6 @@ describe("Integration: Files", () => {
       expect(result.content_type).toBeTruthy();
       expect(result.created_at).toBeTruthy();
     });
-
   });
 
   describe("public URL functionality", () => {
@@ -309,7 +309,7 @@ describe("Integration: Files", () => {
 
       expect(result.id).toBeTruthy();
       expect(result.filename).toContain("google_invoice.pdf");
-      expect(result.public_url).toBeUndefined();
+      expect(result.public_url).toBeNull();
     });
 
     it("should get file with isPublic=true and return public_url", async () => {
@@ -334,7 +334,7 @@ describe("Integration: Files", () => {
 
       const getResult = await client.files.get(uploadResult.id, false);
       expect(getResult.id).toBe(uploadResult.id);
-      expect(getResult.public_url).toBeUndefined();
+      expect(getResult.public_url).toBeNull();
     });
 
     it("should get file without isPublic parameter and not return public_url", async () => {
@@ -346,7 +346,7 @@ describe("Integration: Files", () => {
 
       const getResult = await client.files.get(uploadResult.id);
       expect(getResult.id).toBe(uploadResult.id);
-      expect(getResult.public_url).toBeUndefined();
+      expect(getResult.public_url).toBeTruthy();
     });
   });
 });

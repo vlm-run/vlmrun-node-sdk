@@ -192,9 +192,9 @@ export class Files {
       const [response] = await this.requestor.request<FileResponse>(
         "POST",
         "files",
-        { 
+        {
           purpose: params.purpose ?? "assistants",
-          generate_public_url: params.generatePublicUrl ?? true
+          generate_public_url: params.generatePublicUrl ?? true,
         },
         undefined,
         { file: fileToUpload }
@@ -209,11 +209,16 @@ export class Files {
     }
   }
 
-  async get(fileId: string, isPublic?: boolean): Promise<FileResponse> {
+  async get(
+    fileId: string,
+    generatePublicUrl?: boolean
+  ): Promise<FileResponse> {
     const [response] = await this.requestor.request<FileResponse>(
       "GET",
       `files/${fileId}`,
-      isPublic !== undefined ? { public: isPublic } : undefined
+      generatePublicUrl !== undefined
+        ? { generate_public_url: generatePublicUrl }
+        : undefined
     );
     return response;
   }
@@ -222,7 +227,9 @@ export class Files {
     await this.requestor.request<void>("DELETE", `files/${fileId}`);
   }
 
-  async generatePresignedUrl(params: PresignedUrlRequest): Promise<PresignedUrlResponse> {
+  async generatePresignedUrl(
+    params: PresignedUrlRequest
+  ): Promise<PresignedUrlResponse> {
     const [response] = await this.requestor.request<PresignedUrlResponse>(
       "POST",
       "files/presigned-url",
@@ -234,5 +241,4 @@ export class Files {
     );
     return response;
   }
-
 }
