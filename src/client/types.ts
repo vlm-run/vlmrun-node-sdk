@@ -352,26 +352,35 @@ export interface AgentExecuteParams {
 }
 
 export interface FeedbackSubmitRequest {
-  request_id: string;
+  request_id?: string | null;
+  agent_execution_id?: string | null;
+  chat_id?: string | null;
   response?: Record<string, any> | null;
   notes?: string | null;
 }
 
 export interface FeedbackItem {
   id: string;
+  request_id?: string | null;
+  agent_execution_id?: string | null;
+  chat_id?: string | null;
   created_at: string;
   response: Record<string, any> | null;
   notes: string | null;
 }
 
 export interface FeedbackListResponse {
-  request_id: string;
+  request_id?: string | null;
+  agent_execution_id?: string | null;
+  chat_id?: string | null;
   items: FeedbackItem[];
 }
 
 export interface FeedbackSubmitResponse {
   id: string;
-  request_id: string;
+  request_id?: string | null;
+  agent_execution_id?: string | null;
+  chat_id?: string | null;
   created_at: string;
 }
 

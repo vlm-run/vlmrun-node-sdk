@@ -48,7 +48,7 @@ describe("Feedback", () => {
       expect(requestMock).toHaveBeenCalledWith(
         "GET",
         "feedback/pred_123",
-        { limit: 10, offset: 0 }
+        { type: "request", limit: 10, offset: 0 }
       );
     });
 
@@ -65,7 +65,7 @@ describe("Feedback", () => {
       expect(requestMock).toHaveBeenCalledWith(
         "GET",
         "feedback/pred_456",
-        { limit: 5, offset: 10 }
+        { type: "request", limit: 5, offset: 10 }
       );
     });
 
@@ -82,7 +82,7 @@ describe("Feedback", () => {
       expect(requestMock).toHaveBeenCalledWith(
         "GET",
         "feedback/pred_789",
-        { limit: 10, offset: 0 }
+        { type: "request", limit: 10, offset: 0 }
       );
     });
   });
@@ -186,4 +186,193 @@ describe("Feedback", () => {
       );
     });
   });
-});            
+
+  describe("submit - new API", () => {
+    it("should create feedback with request_id using new API", async () => {
+      const mockResponse = {
+        id: "feedback_789",
+        request_id: "pred_123",
+        created_at: "2023-01-03T00:00:00Z"
+      };
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await feedback.submit({
+        requestId: "pred_123",
+        response: { rating: 5 },
+        notes: "Great result"
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(requestMock).toHaveBeenCalledWith(
+        "POST",
+        "feedback/submit",
+        undefined,
+        {
+          request_id: "pred_123",
+          agent_execution_id: null,
+          chat_id: null,
+          response: { rating: 5 },
+          notes: "Great result"
+        }
+      );
+    });
+
+    it("should create feedback with agent_execution_id", async () => {
+      const mockResponse = {
+        id: "feedback_890",
+        agent_execution_id: "exec_456",
+        created_at: "2023-01-03T00:00:00Z"
+      };
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await feedback.submit({
+        agentExecutionId: "exec_456",
+        response: { rating: 4 },
+        notes: "Good execution"
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(requestMock).toHaveBeenCalledWith(
+        "POST",
+        "feedback/submit",
+        undefined,
+        {
+          request_id: null,
+          agent_execution_id: "exec_456",
+          chat_id: null,
+          response: { rating: 4 },
+          notes: "Good execution"
+        }
+      );
+    });
+
+    it("should create feedback with chat_id", async () => {
+      const mockResponse = {
+        id: "feedback_901",
+        chat_id: "chat_789",
+        created_at: "2023-01-03T00:00:00Z"
+      };
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await feedback.submit({
+        chatId: "chat_789",
+        response: { helpful: true },
+        notes: "Helpful chat"
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(requestMock).toHaveBeenCalledWith(
+        "POST",
+        "feedback/submit",
+        undefined,
+        {
+          request_id: null,
+          agent_execution_id: null,
+          chat_id: "chat_789",
+          response: { helpful: true },
+          notes: "Helpful chat"
+        }
+      );
+    });
+
+    it("should throw error when no ID is provided", async () => {
+      await expect(feedback.submit({
+        response: { rating: 5 },
+        notes: "Test"
+      })).rejects.toThrow("Must provide exactly one of: requestId, agentExecutionId, or chatId");
+    });
+
+    it("should throw error when multiple IDs are provided", async () => {
+      await expect(feedback.submit({
+        requestId: "pred_123",
+        agentExecutionId: "exec_456",
+        response: { rating: 5 }
+      })).rejects.toThrow("Must provide exactly one of: requestId, agentExecutionId, or chatId");
+    });
+
+    it("should throw error when both response and notes are null in new API", async () => {
+      await expect(feedback.submit({
+        requestId: "pred_123",
+        response: null,
+        notes: null
+      })).rejects.toThrow("`response` or `notes` parameter is required and cannot be null");
+    });
+  });
+
+  describe("get - new API", () => {
+    it("should get feedbacks with type parameter", async () => {
+      const mockResponse = {
+        agent_execution_id: "exec_456",
+        items: [
+          {
+            id: "feedback_123",
+            agent_execution_id: "exec_456",
+            created_at: "2023-01-01T00:00:00Z",
+            response: { rating: 5 },
+            notes: "Great result"
+          }
+        ]
+      };
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await feedback.get("exec_456", {
+        type: "agent_execution",
+        limit: 5,
+        offset: 10
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(requestMock).toHaveBeenCalledWith(
+        "GET",
+        "feedback/exec_456",
+        { type: "agent_execution", limit: 5, offset: 10 }
+      );
+    });
+
+    it("should default to request type when not specified", async () => {
+      const mockResponse = {
+        request_id: "pred_123",
+        items: []
+      };
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await feedback.get("pred_123", { limit: 5 });
+
+      expect(result).toEqual(mockResponse);
+      expect(requestMock).toHaveBeenCalledWith(
+        "GET",
+        "feedback/pred_123",
+        { type: "request", limit: 5, offset: 0 }
+      );
+    });
+
+    it("should get feedbacks for chat type", async () => {
+      const mockResponse = {
+        chat_id: "chat_789",
+        items: [
+          {
+            id: "feedback_456",
+            chat_id: "chat_789",
+            created_at: "2023-01-02T00:00:00Z",
+            response: { helpful: true },
+            notes: "Very helpful chat"
+          }
+        ]
+      };
+      requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await feedback.get("chat_789", {
+        type: "chat",
+        limit: 20,
+        offset: 5
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(requestMock).toHaveBeenCalledWith(
+        "GET",
+        "feedback/chat_789",
+        { type: "chat", limit: 20, offset: 5 }
+      );
+    });
+  });
+});                                                            
