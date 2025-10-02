@@ -273,7 +273,7 @@ describe("Feedback", () => {
           agent_execution_id: null,
           chat_id: null,
           response: { rating: 3 },
-          notes: null,
+          notes: undefined,
         }
       );
     });
@@ -301,7 +301,7 @@ describe("Feedback", () => {
           agent_execution_id: null,
           chat_id: null,
           response: { thumbs_up: true, helpful: true },
-          notes: null,
+          notes: undefined,
         }
       );
     });
