@@ -42,7 +42,7 @@ describe("AudioPredictions", () => {
           file_id: "audio1.mp3",
           model: "model1",
           domain: "audio.transcription",
-          batch: false,
+          batch: true,
           config: {
             confidence: false,
             detail: "auto",
@@ -127,7 +127,7 @@ describe("AudioPredictions", () => {
           url: "https://example.com/audio.mp3",
           model: "model1",
           domain: "audio.transcription",
-          batch: false,
+          batch: true,
           config: {
             confidence: false,
             detail: "auto",
@@ -238,7 +238,7 @@ describe("AudioPredictions", () => {
           file_id: "invalid-audio.txt",
           model: "model1",
           domain: "audio.transcription",
-          batch: false,
+          batch: true,
           config: {
             confidence: false,
             detail: "auto",

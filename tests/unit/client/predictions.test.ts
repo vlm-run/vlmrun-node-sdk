@@ -76,6 +76,38 @@ describe("Predictions", () => {
         expect(result).toEqual(mockResponse);
         expect(requestMock).toHaveBeenCalledWith("GET", "predictions/pred_123");
       });
+
+    describe("wait", () => {
+      it("should wait for prediction to complete", async () => {
+        const mockResponse = { id: "pred_123", status: "completed" };
+        requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+        const result = await predictions.wait("pred_123", 10, 1);
+
+        expect(result).toEqual(mockResponse);
+        expect(result.status).toBe("completed");
+      });
+
+      it("should return immediately when prediction fails", async () => {
+        const mockResponse = { id: "pred_123", status: "failed" };
+        requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+        const result = await predictions.wait("pred_123", 10, 1);
+
+        expect(result).toEqual(mockResponse);
+        expect(result.status).toBe("failed");
+      });
+
+      it("should throw timeout error when prediction does not complete", async () => {
+        const mockResponse = { id: "pred_123", status: "processing" };
+        requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+        await expect(
+          predictions.wait("pred_123", 0.1, 0.05)
+        ).rejects.toThrow("did not complete within 0.1 seconds");
+      });
+    });
+
     });
   });
 
@@ -115,7 +147,7 @@ describe("Predictions", () => {
             images: ["base64-encoded-image"],
             model: "model1",
             domain: "domain1",
-            batch: false,
+            batch: true,
             config: {
               confidence: false,
               detail: "auto",
@@ -307,7 +339,7 @@ describe("Predictions", () => {
             file_id: "doc1.pdf",
             model: "model1",
             domain: "domain1",
-            batch: false,
+            batch: true,
             config: {
               confidence: false,
               detail: "auto",
@@ -344,7 +376,7 @@ describe("Predictions", () => {
             url: "https://example.com/doc.pdf",
             model: "model1",
             domain: "domain1",
-            batch: false,
+            batch: true,
             config: {
               confidence: false,
               detail: "auto",
@@ -504,7 +536,7 @@ describe("Predictions", () => {
             file_id: "audio1.mp3",
             model: "model1",
             domain: "domain1",
-            batch: false,
+            batch: true,
             config: {
               confidence: false,
               detail: "auto",
@@ -541,7 +573,7 @@ describe("Predictions", () => {
             url: "https://example.com/audio.mp3",
             model: "model1",
             domain: "domain1",
-            batch: false,
+            batch: true,
             config: {
               confidence: false,
               detail: "auto",
@@ -627,7 +659,7 @@ describe("Predictions", () => {
             file_id: "video1.mp4",
             model: "model1",
             domain: "domain1",
-            batch: false,
+            batch: true,
             config: {
               confidence: false,
               detail: "auto",
@@ -664,7 +696,7 @@ describe("Predictions", () => {
             url: "https://example.com/video.mp4",
             model: "model1",
             domain: "domain1",
-            batch: false,
+            batch: true,
             config: {
               confidence: false,
               detail: "auto",
