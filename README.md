@@ -189,8 +189,8 @@ When the prediction is complete, VLM Run will send a POST request to your callba
   "status": "completed",
   "response": {
     "invoice_id": "INV-001",
-    "total": 1250.00,
-    "items": [...]
+    "total": 1250.0,
+    "items": []
   },
   "created_at": "2024-01-15T10:30:00Z",
   "completed_at": "2024-01-15T10:30:45Z"
