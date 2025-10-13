@@ -1,4 +1,5 @@
 import { config } from "dotenv";
+config({ path: ".env.test" });
 
 import { VlmRun } from "../../../src/index";
 import { z } from "zod";
@@ -7,6 +8,9 @@ jest.setTimeout(60000);
 
 describe("Integration: File Predictions", () => {
   let client: VlmRun;
+  // Test callback URL (using a mock webhook URL)
+  let callbackUrl: string =
+    process.env.TEST_CALLBACK_URL ?? "https://webhook.site/test-callback-url";
 
   beforeAll(() => {
     config({ path: ".env.test" });
@@ -408,6 +412,69 @@ describe("Integration: File Predictions", () => {
       if (result.status === "completed") {
         expect(result).toHaveProperty("response");
       }
+    });
+
+    it("should generate document predictions with callback URL", async () => {
+      const uploadedDocument = await client.files.upload({
+        filePath: testFilePath,
+        purpose: "vision",
+        checkDuplicate: true,
+      });
+
+      const result = await client.document.generate({
+        fileId: uploadedDocument.id,
+        domain: "document.invoice",
+        batch: true, // Use batch mode to ensure async processing
+        callbackUrl: callbackUrl,
+      });
+
+      expect(result).toHaveProperty("id");
+      expect(result.status).toBe("pending"); // Should be pending when using callback URL with batch
+      expect(result).toHaveProperty("created_at");
+
+      // Wait for the prediction to complete
+      const completedResult = await client.predictions.wait(result.id);
+
+      expect(completedResult.status).toBe("completed");
+      expect(completedResult.response).toHaveProperty("invoice_id");
+      expect(completedResult.response).toHaveProperty("invoice_issue_date");
+      expect(completedResult.response).toHaveProperty("total");
+    });
+
+    it("should generate document predictions with callback URL using URL input", async () => {
+      const documentUrl =
+        "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/google_invoice.pdf";
+
+      const schema = z.object({
+        invoice_id: z.string(),
+        total: z.number(),
+        sub_total: z.number(),
+        tax: z.number(),
+      });
+
+      const result = await client.document.generate({
+        url: documentUrl,
+        model: "vlm-1",
+        domain: "document.invoice",
+        batch: true, // Use batch mode to ensure async processing
+        callbackUrl: callbackUrl,
+        config: {
+          responseModel: schema,
+        },
+      });
+
+      expect(result).toHaveProperty("id");
+      expect(result.status).toBe("pending"); // Should be pending when using callback URL with batch
+      expect(result).toHaveProperty("created_at");
+
+      // Wait for the prediction to complete
+      const completedResult = await client.predictions.wait(result.id);
+
+      expect(completedResult.status).toBe("completed");
+      expect(completedResult.response).toHaveProperty("invoice_id");
+      expect(completedResult.response).toHaveProperty("total");
+      expect(completedResult.response).toHaveProperty("sub_total");
+      expect(completedResult.response).toHaveProperty("tax");
     });
   });
 });

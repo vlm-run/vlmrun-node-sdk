@@ -153,6 +153,50 @@ const response = response.response as z.infer<typeof schema>;
 console.log(response);
 ```
 
+### Using Callback URLs for Async Processing
+
+VLM Run supports callback URLs for asynchronous processing. When you provide a callback URL, the API will send a webhook notification to your endpoint when the prediction is complete.
+
+```typescript
+import { VlmRun } from "vlmrun";
+
+// Initialize the client
+const client = new VlmRun({
+  apiKey: "your-api-key",
+});
+
+// Process a document with callback URL
+const url =
+  "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/document.invoice/google_invoice.pdf";
+const response = await client.document.generate({
+  url: url,
+  domain: "document.invoice",
+  batch: true, // Enable batch processing for async execution
+  callbackUrl: "https://your-webhook-endpoint.com/vlm-callback",
+});
+
+console.log(response.status); // "pending"
+console.log(response.id); // Use this ID to track the prediction
+```
+
+#### Webhook Payload
+
+When the prediction is complete, VLM Run will send a POST request to your callback URL with the following payload:
+
+```json
+{
+  "id": "pred_abc123",
+  "status": "completed",
+  "response": {
+    "invoice_id": "INV-001",
+    "total": 1250.00,
+    "items": [...]
+  },
+  "created_at": "2024-01-15T10:30:00Z",
+  "completed_at": "2024-01-15T10:30:45Z"
+}
+```
+
 ### Document Predictions with Zod Definitions
 
 ```typescript
