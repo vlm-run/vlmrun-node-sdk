@@ -31,11 +31,11 @@ export class Files {
 
   /**
    * Calculate the MD5 hash of a file by reading it in chunks
-   * @param filePath Path to the file to hash
+   * @param fileInput Either a file path string or a File object
    * @returns MD5 hash of the file as a hex string
    * @private
    */
-  private async calculateMD5(filePath: string): Promise<string> {
+  private async calculateMD5(fileInput: string | File): Promise<string> {
     if (typeof window !== "undefined") {
       throw new DependencyError(
         "File hashing is not supported in the browser",
@@ -44,12 +44,25 @@ export class Files {
       );
     }
 
-    const fs = require("fs");
     const hash = createHash("md5");
     const chunkSize = 4 * 1024 * 1024; // 4MB chunks, same as Python implementation
 
+    if (typeof fileInput !== "string") {
+      const arrayBuffer = await fileInput.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      
+      for (let i = 0; i < buffer.length; i += chunkSize) {
+        const chunk = buffer.subarray(i, Math.min(i + chunkSize, buffer.length));
+        hash.update(chunk);
+      }
+      
+      return hash.digest("hex");
+    }
+
+    const fs = require("fs");
+
     return new Promise<string>((resolve, reject) => {
-      const stream = fs.createReadStream(filePath, {
+      const stream = fs.createReadStream(fileInput, {
         highWaterMark: chunkSize,
       });
 
@@ -70,11 +83,11 @@ export class Files {
 
   /**
    * Get a cached file from the API by calculating its MD5 hash
-   * @param filePath Path to the file to check
+   * @param fileInput Either a file path string or a File object
    * @returns FileResponse if the file exists, null otherwise
    */
-  async getCachedFile(filePath: string): Promise<FileResponse | null> {
-    const fileHash = await this.calculateMD5(filePath);
+  async getCachedFile(fileInput: string | File): Promise<FileResponse | null> {
+    const fileHash = await this.calculateMD5(fileInput);
 
     try {
       const [response] = await this.requestor.request<FileResponse>(
@@ -83,14 +96,12 @@ export class Files {
       );
       return response;
     } catch (error) {
-      // If the file doesn't exist or there's an error, return null
       return null;
     }
   }
 
-  // Keep the old method for backward compatibility
-  async checkFileExists(filePath: string): Promise<FileResponse | null> {
-    return this.getCachedFile(filePath);
+  async checkFileExists(fileInput: string | File): Promise<FileResponse | null> {
+    return this.getCachedFile(fileInput);
   }
 
   async upload(params: FileUploadParams): Promise<FileResponse> {
@@ -99,6 +110,13 @@ export class Files {
 
     if (params.file) {
       fileToUpload = params.file;
+      
+      if (params.checkDuplicate !== false && !params.force) {
+        const existingFile = await this.getCachedFile(params.file);
+        if (existingFile) {
+          return existingFile;
+        }
+      }
     } else if (params.filePath) {
       filePath = params.filePath;
 
