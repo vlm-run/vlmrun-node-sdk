@@ -197,6 +197,84 @@ When the prediction is complete, VLM Run will send a POST request to your callba
 }
 ```
 
+#### Webhook Security
+
+VLM Run signs webhook payloads with HMAC-SHA256 for security. The signature is included in the `X-VLMRUN-Signature` header. You should verify this signature to ensure the webhook is from VLM Run.
+
+```typescript
+import express from "express";
+import { verifyWebhookSignature, parseWebhookPayload } from "vlmrun";
+
+const app = express();
+
+// Important: Use express.raw() to get the raw body as Buffer
+app.post("/webhook", express.raw({ type: "application/json" }), (req, res) => {
+  const rawBody = req.body;
+  const signature = req.headers["X-VLMRUN-Signature"] as string;
+  const secret = process.env.VLM_WEBHOOK_SECRET!; // Get from VLM Run dashboard
+
+  // Verify signature
+  if (!verifyWebhookSignature(rawBody, signature, secret)) {
+    return res.status(401).json({ error: "Invalid signature" });
+  }
+
+  // Parse payload (this also verifies the signature internally)
+  const payload = parseWebhookPayload(rawBody, signature, secret);
+  if (!payload) {
+    return res.status(400).json({ error: "Invalid payload" });
+  }
+
+  // Process the webhook
+  console.log("Received webhook:", payload);
+
+  if (payload.status === "completed") {
+    console.log("Prediction completed:", payload.response);
+  } else if (payload.status === "failed") {
+    console.log("Prediction failed:", payload.error);
+  }
+
+  res.json({ status: "success" });
+});
+
+app.listen(3000, () => {
+  console.log("Webhook server listening on port 3000");
+});
+```
+
+**Alternative: Manual verification**
+
+```typescript
+import express from "express";
+import { verifyWebhookSignature } from "vlmrun";
+
+const app = express();
+
+app.post("/webhook", express.raw({ type: "application/json" }), (req, res) => {
+  const rawBody = req.body;
+  const signature = req.headers["X-VLMRUN-Signature"] as string;
+  const secret = process.env.VLM_WEBHOOK_SECRET!;
+
+  if (!verifyWebhookSignature(rawBody, signature, secret)) {
+    return res.status(401).json({ error: "Invalid signature" });
+  }
+
+  // Decode only when signature is verified
+  const data = JSON.parse(rawBody.toString("utf8"));
+
+  // Process your webhook data
+  console.log("Webhook received:", data);
+
+  res.json({ status: "success" });
+});
+```
+
+**Getting Your Webhook Secret**
+
+1. Go to your [VLM Run Dashboard](https://app.vlm.run)
+2. Navigate to Settings → Webhooks
+3. Create or view your webhook endpoint to get the secret
+4. Store the secret securely in your environment variables
+
 ### Document Predictions with Zod Definitions
 
 ```typescript
@@ -303,6 +381,7 @@ Check out the [examples](./examples) directory for more detailed usage examples:
 - [Files](./examples/files.ts) - Upload and manage files
 - [Predictions](./examples/predictions.ts) - Make predictions with different types of inputs
 - [Feedback](./examples/feedback.ts) - Submit feedback for predictions
+- [Webhooks](./examples/webhook.ts) - Secure webhook handling with signature verification
 
 ## 🔑 Authentication
 
