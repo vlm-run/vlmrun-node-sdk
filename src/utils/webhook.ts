@@ -4,11 +4,11 @@ import crypto from "crypto";
  * Verify webhook HMAC signature
  * 
  * This function verifies that a webhook request came from VLM Run by validating
- * the HMAC signature in the X-VLM-Signature header. The signature is computed
+ * the HMAC signature in the X-VLMRun-Signature header. The signature is computed
  * using SHA256 HMAC with your webhook secret.
  * 
  * @param rawBody - Raw request body as Buffer or string
- * @param signatureHeader - X-VLM-Signature header value (format: "sha256=<hex>")
+ * @param signatureHeader - X-VLMRun-Signature header value (format: "sha256=<hex>")
  * @param secret - Your webhook secret from VLM Run dashboard
  * @returns True if the signature is valid, false otherwise
  * 
@@ -21,7 +21,7 @@ import crypto from "crypto";
  *   express.raw({ type: 'application/json' }),
  *   (req, res) => {
  *     const rawBody = req.body;
- *     const signature = req.headers['x-vlm-signature'];
+ *     const signature = req.headers['x-vlmrun-signature'];
  *     const secret = process.env.WEBHOOK_SECRET;
  *     
  *     if (!verifyWebhook(rawBody, signature, secret)) {
