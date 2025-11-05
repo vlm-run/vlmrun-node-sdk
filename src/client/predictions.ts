@@ -75,7 +75,7 @@ export class Predictions {
 
     while (Date.now() - startTime < timeoutMs) {
       const response = await this.get(id);
-      if (response.status === "completed") {
+      if (response.status === "completed" || response.status === "failed") {
         return response;
       }
       await new Promise((resolve) => setTimeout(resolve, sleep * 1000));
@@ -178,7 +178,7 @@ export class ImagePredictions extends Predictions {
       urls,
       model = "vlm-1",
       domain,
-      batch = false,
+      batch = true,
       config,
       metadata,
       callbackUrl,
@@ -301,7 +301,7 @@ export class FilePredictions extends Predictions {
       url,
       model,
       domain,
-      batch = false,
+      batch = true,
       config,
       metadata,
       callbackUrl,

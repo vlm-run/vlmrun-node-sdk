@@ -42,7 +42,7 @@ describe("VideoPredictions", () => {
           file_id: "video1.mp4",
           model: "model1",
           domain: "video.transcription",
-          batch: false,
+          batch: true,
           config: {
             confidence: false,
             detail: "auto",
@@ -128,7 +128,7 @@ describe("VideoPredictions", () => {
           url: "https://example.com/video.mp4",
           model: "model1",
           domain: "video.transcription",
-          batch: false,
+          batch: true,
           config: {
             confidence: false,
             detail: "auto",
@@ -239,7 +239,7 @@ describe("VideoPredictions", () => {
           file_id: "invalid-video.txt",
           model: "model1",
           domain: "video.transcription",
-          batch: false,
+          batch: true,
           config: {
             confidence: false,
             detail: "auto",
