@@ -25,6 +25,7 @@ export class Agent {
    */
   private client: Client;
   private requestor: APIRequestor;
+  private _openai: any;
 
   constructor(client: Client) {
     /**
@@ -34,6 +35,42 @@ export class Agent {
      */
     this.client = client;
     this.requestor = new APIRequestor(client);
+  }
+
+  /**
+   * Access to OpenAI chat completions API.
+   * Requires 'openai' package to be installed.
+   */
+  public get completions(): any {
+    return this.getOpenAIClient().chat.completions;
+  }
+
+  private getOpenAIClient(): any {
+    if (this._openai) {
+      return this._openai;
+    }
+
+    let OpenAIClass;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const openaiModule = require("openai");
+      OpenAIClass = openaiModule.OpenAI || openaiModule.default || openaiModule;
+    } catch (e) {
+      throw new Error(
+        "The 'openai' package is required to use agent completions. Please install it with `npm install openai`."
+      );
+    }
+
+    const baseURL =
+      (this.client.baseURL || "https://api.vlm.run/v1").replace(/\/+$/, "") +
+      "/openai";
+
+    this._openai = new OpenAIClass({
+      apiKey: this.client.apiKey,
+      baseURL: baseURL,
+    });
+
+    return this._openai;
   }
 
   /**
@@ -51,18 +88,26 @@ export class Agent {
 
     if (id) {
       if (name || prompt) {
-        throw new InputError("Only one of `id` or `name` or `prompt` can be provided");
+        throw new InputError(
+          "Only one of `id` or `name` or `prompt` can be provided"
+        );
       }
     } else if (name) {
       if (id || prompt) {
-        throw new InputError("Only one of `id` or `name` or `prompt` can be provided");
+        throw new InputError(
+          "Only one of `id` or `name` or `prompt` can be provided"
+        );
       }
     } else if (prompt) {
       if (id || name) {
-        throw new InputError("Only one of `id` or `name` or `prompt` can be provided");
+        throw new InputError(
+          "Only one of `id` or `name` or `prompt` can be provided"
+        );
       }
     } else {
-      throw new InputError("Either `id` or `name` or `prompt` must be provided");
+      throw new InputError(
+        "Either `id` or `name` or `prompt` must be provided"
+      );
     }
 
     const data: Record<string, any> = {};
