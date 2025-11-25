@@ -74,6 +74,9 @@ npm run test:integration
 # Run just the files integration tests
 npm run test:integration -- tests/integration/client/files.test.ts
 
+# Run
+npm run test:e2e -- tests/e2e/client/chat-completions.test.ts
+
 # Run specific test patterns
 npm run test:integration -- -t "upload methods"
 npm run test:integration -- -t "should upload file using direct method"
