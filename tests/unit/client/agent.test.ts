@@ -1,8 +1,20 @@
 import { Client } from "../../../src/client/base_requestor";
 import { Agent } from "../../../src/client/agent";
 import { PredictionResponse, AgentInfo } from "../../../src/client/types";
+import { DependencyError } from "../../../src/client/exceptions";
 
 jest.mock("../../../src/client/base_requestor");
+
+// Mock the openai module
+const mockCreate = jest.fn();
+const mockChatCompletions = { create: mockCreate };
+const mockOpenAI = jest.fn().mockImplementation(() => ({
+  chat: { completions: mockChatCompletions },
+}));
+
+jest.mock("openai", () => ({
+  default: mockOpenAI,
+}));
 
 describe("Agent", () => {
   let client: jest.Mocked<Client>;
@@ -368,6 +380,93 @@ describe("Agent", () => {
 
       expect(result).toEqual(mockResponse);
       expect(agent["requestor"].request).toHaveBeenCalledWith("GET", "agent");
+    });
+  });
+
+  describe("completions", () => {
+    beforeEach(() => {
+      // Reset the mock before each test
+      mockOpenAI.mockClear();
+      mockCreate.mockClear();
+      // Reset the cached completions
+      agent["_completions"] = null;
+    });
+
+    it("should return OpenAI chat completions object", () => {
+      const completions = agent.completions;
+
+      expect(completions).toBe(mockChatCompletions);
+      expect(mockOpenAI).toHaveBeenCalledWith({
+        apiKey: "test-api-key",
+        baseURL: "https://api.example.com/openai",
+        timeout: undefined,
+        maxRetries: 1,
+      });
+    });
+
+    it("should cache the completions object", () => {
+      const completions1 = agent.completions;
+      const completions2 = agent.completions;
+
+      expect(completions1).toBe(completions2);
+      expect(mockOpenAI).toHaveBeenCalledTimes(1);
+    });
+
+    it("should use client timeout and maxRetries when provided", () => {
+      const clientWithOptions: jest.Mocked<Client> = {
+        apiKey: "test-api-key",
+        baseURL: "https://agent.vlm.run/v1",
+        timeout: 30000,
+        maxRetries: 3,
+      } as jest.Mocked<Client>;
+
+      const agentWithOptions = new Agent(clientWithOptions);
+      agentWithOptions.completions;
+
+      expect(mockOpenAI).toHaveBeenCalledWith({
+        apiKey: "test-api-key",
+        baseURL: "https://agent.vlm.run/v1/openai",
+        timeout: 30000,
+        maxRetries: 3,
+      });
+    });
+
+    it("should allow calling create on completions", async () => {
+      const mockResponse = {
+        id: "chatcmpl-123",
+        object: "chat.completion",
+        created: 1677652288,
+        model: "vlmrun-orion-1",
+        choices: [
+          {
+            index: 0,
+            message: {
+              role: "assistant",
+              content: "Hello! How can I help you today?",
+            },
+            finish_reason: "stop",
+          },
+        ],
+        usage: {
+          prompt_tokens: 9,
+          completion_tokens: 12,
+          total_tokens: 21,
+        },
+      };
+
+      mockCreate.mockResolvedValue(mockResponse);
+
+      const completions = agent.completions;
+      const result = await completions.create({
+        model: "vlmrun-orion-1",
+        messages: [{ role: "user", content: "Hello!" }],
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(mockCreate).toHaveBeenCalledWith({
+        model: "vlmrun-orion-1",
+        messages: [{ role: "user", content: "Hello!" }],
+      });
     });
   });
 });

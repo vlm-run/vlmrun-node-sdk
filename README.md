@@ -295,6 +295,50 @@ const result = await client.document.generate({
 });
 ```
 
+### OpenAI-Compatible Chat Completions
+
+The VLM Run SDK provides OpenAI-compatible chat completions through the agent endpoint. This allows you to use the familiar OpenAI API with VLM Run's powerful vision-language models.
+
+```typescript
+import { VlmRun } from "vlmrun";
+
+// Initialize the client with the agent endpoint
+const client = new VlmRun({
+  apiKey: "your-api-key",
+  baseURL: "https://agent.vlm.run/v1",
+});
+
+// Use OpenAI-compatible chat completions
+const response = await client.agent.completions.create({
+  model: "vlmrun-orion-1",
+  messages: [{ role: "user", content: "Hello! How can you help me today?" }],
+});
+
+console.log(response.choices[0].message.content);
+```
+
+#### Streaming Responses
+
+```typescript
+const stream = await client.agent.completions.create({
+  model: "vlmrun-orion-1",
+  messages: [{ role: "user", content: "Tell me a story" }],
+  stream: true,
+});
+
+for await (const chunk of stream) {
+  process.stdout.write(chunk.choices[0]?.delta?.content || "");
+}
+```
+
+**Note:** The OpenAI SDK is an optional peer dependency. Install it with:
+
+```bash
+npm install openai
+# or
+yarn add openai
+```
+
 ## 🛠️ Examples
 
 Check out the [examples](./examples) directory for more detailed usage examples:
