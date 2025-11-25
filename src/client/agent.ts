@@ -3,7 +3,7 @@
  */
 
 import { Client, APIRequestor } from "./base_requestor";
-import { InputError, ServerError } from "./exceptions";
+import { InputError, ServerError, DependencyError } from "./exceptions";
 import {
   PredictionResponse,
   GenerationConfig,
@@ -25,6 +25,7 @@ export class Agent {
    */
   private client: Client;
   private requestor: APIRequestor;
+  private _completions: any = null;
 
   constructor(client: Client) {
     /**
@@ -34,6 +35,62 @@ export class Agent {
      */
     this.client = client;
     this.requestor = new APIRequestor(client);
+  }
+
+  /**
+   * OpenAI-compatible chat completions interface.
+   *
+   * Returns an OpenAI Completions object configured to use the VLMRun
+   * agent endpoint. This allows you to use the familiar OpenAI API
+   * for chat completions.
+   *
+   * @example
+   * ```typescript
+   * import { VlmRun } from "vlmrun";
+   *
+   * const client = new VlmRun({
+   *   apiKey: "your-key",
+   *   baseURL: "https://agent.vlm.run/v1"
+   * });
+   *
+   * const response = await client.agent.completions.create({
+   *   model: "vlmrun-orion-1",
+   *   messages: [
+   *     { role: "user", content: "Hello!" }
+   *   ]
+   * });
+   * ```
+   *
+   * @throws {DependencyError} If openai package is not installed
+   * @returns OpenAI Completions object configured for VLMRun agent endpoint
+   */
+  get completions(): any {
+    if (this._completions) {
+      return this._completions;
+    }
+
+    let OpenAI: any;
+    try {
+      // Dynamic import to handle optional dependency
+      OpenAI = require("openai").default;
+    } catch (e) {
+      throw new DependencyError(
+        "OpenAI SDK is not installed",
+        "missing_dependency",
+        "Install it with `npm install openai` or `yarn add openai`"
+      );
+    }
+
+    const baseUrl = `${this.client.baseURL}/openai`;
+    const openaiClient = new OpenAI({
+      apiKey: this.client.apiKey,
+      baseURL: baseUrl,
+      timeout: this.client.timeout,
+      maxRetries: this.client.maxRetries ?? 1,
+    });
+
+    this._completions = openaiClient.chat.completions;
+    return this._completions;
   }
 
   /**
