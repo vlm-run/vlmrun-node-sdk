@@ -61,3 +61,41 @@ jobs:
           bash ./bin/publish-npm
         env:
           NPM_TOKEN: ${{ secrets.VLM_NPM_TOKEN || secrets.NPM_TOKEN }}
+
+      - name: Notify Slack on Success
+        if: success() && env.VERSION_CHANGED == 'true'
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":white_check_mark: *vlmrun-node-sdk ${{ env.RELEASE_TAG }} Published to NPM*\n\n*Version:* `${{ env.RELEASE_TAG }}`\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+                  }
+                }
+              ]
+            }
+
+      - name: Notify Slack on Failure
+        if: failure() && env.VERSION_CHANGED == 'true'
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":x: *vlmrun-node-sdk Publish Failed*\n\n*Tag:* `${{ env.RELEASE_TAG }}`\n*Workflow:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+                  }
+                }
+              ]
+            }
