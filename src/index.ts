@@ -16,6 +16,7 @@ import { Hub } from "./client/hub";
 import { Agent } from "./client/agent";
 import { Executions } from "./client/executions";
 import { Domains } from "./client/domains";
+import { Artifacts } from "./client/artifacts";
 
 export * from "./client/types";
 export * from "./client/base_requestor";
@@ -27,6 +28,7 @@ export * from "./client/fine_tuning";
 export * from "./client/exceptions";
 export * from "./client/agent";
 export * from "./client/executions";
+export * from "./client/artifacts";
 
 export * from "./utils";
 
@@ -54,6 +56,7 @@ export class VlmRun {
   readonly agent: Agent;
   readonly executions: Executions;
   readonly domains: Domains;
+  readonly artifacts: Artifacts;
 
   constructor(config: VlmRunConfig) {
     this.client = {
@@ -78,5 +81,6 @@ export class VlmRun {
     this.agent = new Agent(this.client);
     this.executions = new Executions(this.client);
     this.domains = new Domains(this.client);
+    this.artifacts = new Artifacts(this.client);
   }
 }
