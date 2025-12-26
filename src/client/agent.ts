@@ -216,6 +216,7 @@ export class Agent {
     params: AgentExecuteParamsNew
   ): Promise<AgentExecutionResponse> {
     const {
+      model = "vlmrun-orion-1:auto",
       name,
       inputs,
       batch = true,
@@ -229,6 +230,7 @@ export class Agent {
     }
 
     const data: Record<string, any> = {
+      model,
       name,
       batch,
       inputs,

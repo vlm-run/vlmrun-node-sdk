@@ -337,6 +337,7 @@ describe("Agent", () => {
         "agent/execute",
         undefined,
         {
+          model: "vlmrun-orion-1:auto",
           name: "test-agent",
           batch: true,
           inputs: { test: "data" },
