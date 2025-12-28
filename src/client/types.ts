@@ -2,6 +2,95 @@ import { ZodType } from "zod";
 
 export type JobStatus = string;
 
+export type DetailLevelImage = "auto" | "low" | "high";
+
+/**
+ * Image URL with optional detail level.
+ */
+export interface ImageUrl {
+  url: string;
+  detail?: DetailLevelImage;
+}
+
+/**
+ * Base class for file URLs.
+ */
+export interface FileUrl {
+  url: string;
+}
+
+/**
+ * Video URL.
+ */
+export interface VideoUrl extends FileUrl {
+  url: string;
+}
+
+/**
+ * Audio URL.
+ */
+export interface AudioUrl extends FileUrl {
+  url: string;
+}
+
+/**
+ * Document URL.
+ */
+export interface DocumentUrl extends FileUrl {
+  url: string;
+}
+
+/**
+ * Message content type.
+ */
+export type MessageContentType =
+  | "text"
+  | "image_url"
+  | "video_url"
+  | "audio_url"
+  | "file_url"
+  | "input_file";
+
+/**
+ * Message content with various input types.
+ */
+export interface MessageContent {
+  type: MessageContentType;
+  text?: string;
+  image_url?: ImageUrl;
+  video_url?: VideoUrl;
+  audio_url?: AudioUrl;
+  file_url?: FileUrl;
+  file_id?: string;
+}
+
+/**
+ * Validates that the MessageContent has the required field for its type.
+ * @param content - The message content to validate
+ * @throws Error if validation fails
+ */
+export function validateMessageContent(content: MessageContent): void {
+  if (content.type === "input_file") {
+    if (content.file_id === undefined && content.file_url === undefined) {
+      throw new Error("Must have either file_id or file_url");
+    }
+    return;
+  }
+
+  const typeToField: Record<string, keyof MessageContent> = {
+    text: "text",
+    image_url: "image_url",
+    video_url: "video_url",
+    audio_url: "audio_url",
+    file_url: "file_url",
+  };
+
+  const requiredField = typeToField[content.type];
+  if (requiredField && content[requiredField] === undefined) {
+    throw new Error(`Must have ${content.type}`);
+  }
+}
+
 export type FilePurpose = string;
 
 export type DetailLevel = string;

@@ -4,30 +4,34 @@ import * as os from "os";
 import axios from "axios";
 import { Client } from "./base_requestor";
 
-const VLMRUN_CACHE_DIR = path.join(os.homedir(), ".vlmrun", "cache");
+const VLMRUN_ARTIFACTS_DIR = path.join(os.homedir(), ".vlmrun", "artifacts");
 
-function ensureCacheDir(): void {
-  if (!fs.existsSync(VLMRUN_CACHE_DIR)) {
-    fs.mkdirSync(VLMRUN_CACHE_DIR, { recursive: true });
-  }
-}
+/**
+ * Extension mappings for file-based artifacts.
+ */
+const EXT_MAPPING: Record<string, string> = {
+  vid: "mp4",
+  aud: "mp3",
+  doc: "pdf",
+  recon: "spz",
+};
 
-function getDispositionParams(disposition: string): Record<string, string> {
-  const params: Record<string, string> = {};
-  const parts = disposition.split(";");
-  for (let i = 1; i < parts.length; i++) {
-    const part = parts[i].trim();
-    const eqIndex = part.indexOf("=");
-    if (eqIndex !== -1) {
-      const key = part.substring(0, eqIndex).trim();
-      let value = part.substring(eqIndex + 1).trim();
-      if (value.startsWith('"') && value.endsWith('"')) {
-        value = value.slice(1, -1);
-      }
-      params[key] = value;
-    }
+/**
+ * Content-type mappings for file-based artifacts.
+ */
+const CONTENT_TYPE_MAPPING: Record<string, string> = {
+  vid: "video/mp4",
+  aud: "audio/mpeg",
+  doc: "application/pdf",
+  recon: "application/octet-stream",
+};
+
+function ensureArtifactsDir(sessionId: string): string {
+  const artifactsDir = path.join(VLMRUN_ARTIFACTS_DIR, sessionId);
+  if (!fs.existsSync(artifactsDir)) {
+    fs.mkdirSync(artifactsDir, { recursive: true });
   }
-  return params;
+  return artifactsDir;
 }
 
 export type ArtifactResponse = Buffer | string;
@@ -52,7 +56,8 @@ export class Artifacts {
    * @param params.sessionId - Session ID for the artifact
    * @param params.objectId - Object ID for the artifact
    * @param params.rawResponse - Whether to return the raw response as Buffer (default: false)
-   * @returns The artifact content - Buffer for raw/image/unknown types, string URL for url_ types, string path for vid_ types
+   * @returns The artifact content - Buffer for raw/image/unknown types, string URL for url_ types,
+   *          string path for vid_, aud_, doc_, recon_ types (stored in ~/.vlmrun/artifacts/{sessionId}/)
    */
   async get(params: ArtifactGetParams): Promise<ArtifactResponse> {
     const { sessionId, objectId, rawResponse = false } = params;
@@ -97,39 +102,28 @@ export class Artifacts {
       return data;
     } else if (objType === "url") {
       return data.toString("utf-8");
-    } else if (objType === "vid") {
-      const contentType = headers["content-type"];
-      if (contentType && !contentType.startsWith("video/")) {
-        throw new Error(`Expected video content type, got ${contentType}`);
+    } else if (objType in EXT_MAPPING) {
+      // Handle vid, aud, doc, recon artifact types
+      const expectedContentType = CONTENT_TYPE_MAPPING[objType];
+      const actualContentType = headers["content-type"];
+      if (actualContentType && actualContentType !== expectedContentType) {
+        throw new Error(
+          `Expected ${expectedContentType}, got ${actualContentType}`
+        );
       }
 
-      let ext = "mp4";
-      const disposition =
-        headers["content-disposition"] || headers["Content-Disposition"];
-      if (disposition) {
-        const dispositionParams = getDispositionParams(disposition);
-        const filename = dispositionParams["filename"];
-        if (filename) {
-          const extMatch = filename.match(/\.([^.]+)$/);
-          if (extMatch) {
-            ext = extMatch[1];
-          }
-        }
+      const ext = EXT_MAPPING[objType];
+      const artifactsDir = ensureArtifactsDir(sessionId);
+      const artifactPath = path.join(artifactsDir, `${objectId}.${ext}`);
+
+      // Return cached version if it exists
+      if (fs.existsSync(artifactPath)) {
+        return artifactPath;
       }
 
-      const safeSessionId = sessionId.replace(/-/g, "");
-      const cachePath = path.join(
-        VLMRUN_CACHE_DIR,
-        `${safeSessionId}_${objectId}.${ext}`
-      );
-
-      if (fs.existsSync(cachePath)) {
-        return cachePath;
-      }
-
-      ensureCacheDir();
-      fs.writeFileSync(cachePath, data);
-      return cachePath;
+      // Write the binary response to file
+      fs.writeFileSync(artifactPath, data);
+      return artifactPath;
     } else {
       return data;
     }

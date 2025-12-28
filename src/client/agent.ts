@@ -38,6 +38,25 @@ export class Agent {
   }
 
   /**
+   * Process inputs, converting objects with toJSON method to plain objects if needed.
+   *
+   * @param inputs - Input data as object or undefined
+   * @returns Processed inputs as object or undefined
+   */
+  private _processInputs(
+    inputs: Record<string, any> | undefined
+  ): Record<string, any> | undefined {
+    if (inputs === undefined) {
+      return undefined;
+    }
+    // If the input has a toJSON method (like a class instance), use it
+    if (typeof inputs === "object" && inputs !== null && typeof inputs.toJSON === "function") {
+      return inputs.toJSON();
+    }
+    return inputs;
+  }
+
+  /**
    * OpenAI-compatible chat completions interface.
    *
    * Returns an OpenAI Completions object configured to use the VLMRun
@@ -184,7 +203,7 @@ export class Agent {
 
     const data: Record<string, any> = {
       name,
-      inputs,
+      inputs: this._processInputs(inputs),
       config: configObj.toJSON(),
     };
 
@@ -231,7 +250,7 @@ export class Agent {
     const data: Record<string, any> = {
       name,
       batch,
-      inputs,
+      inputs: this._processInputs(inputs),
     };
 
     if (config) {
