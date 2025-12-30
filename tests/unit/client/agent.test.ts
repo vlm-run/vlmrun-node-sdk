@@ -469,4 +469,122 @@ describe("Agent", () => {
       });
     });
   });
+
+  describe("_processInputs", () => {
+    it("should return undefined for null input", () => {
+      const result = (agent as any)._processInputs(null);
+      expect(result).toBeUndefined();
+    });
+
+    it("should return undefined for undefined input", () => {
+      const result = (agent as any)._processInputs(undefined);
+      expect(result).toBeUndefined();
+    });
+
+    it("should call toJSON for objects with toJSON method", () => {
+      const inputWithToJSON = {
+        value: "test",
+        toJSON: jest.fn().mockReturnValue({ converted: true }),
+      };
+      const result = (agent as any)._processInputs(inputWithToJSON);
+      expect(inputWithToJSON.toJSON).toHaveBeenCalled();
+      expect(result).toEqual({ converted: true });
+    });
+
+    it("should issue deprecation warning for plain objects", () => {
+      const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
+      const plainObject = { key: "value" };
+      const result = (agent as any)._processInputs(plainObject);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Deprecation Warning")
+      );
+      expect(result).toEqual(plainObject);
+      consoleSpy.mockRestore();
+    });
+
+    it("should return the input as-is for non-plain objects without toJSON", () => {
+      class CustomClass {
+        value: string;
+        constructor() {
+          this.value = "test";
+        }
+      }
+      const customObj = new CustomClass();
+      const result = (agent as any)._processInputs(customObj);
+      expect(result).toBe(customObj);
+    });
+  });
+
+  describe("create with _processInputs", () => {
+    it("should process inputs through _processInputs", async () => {
+      const mockResponse = {
+        id: "agent_123",
+        name: "test-agent",
+        created_at: "2023-01-01T00:00:00Z",
+        updated_at: "2023-01-01T00:00:00Z",
+        status: "completed",
+      };
+
+      jest
+        .spyOn(agent["requestor"], "request")
+        .mockResolvedValue([mockResponse, 200, {}]);
+
+      const inputWithToJSON = {
+        image_url: "https://example.com/image.jpg",
+        toJSON: () => ({ image_url: "https://example.com/image.jpg" }),
+      };
+
+      await agent.create({
+        config: { prompt: "Test prompt" },
+        name: "test-agent",
+        inputs: inputWithToJSON,
+      });
+
+      expect(agent["requestor"].request).toHaveBeenCalledWith(
+        "POST",
+        "agent/create",
+        undefined,
+        expect.objectContaining({
+          inputs: { image_url: "https://example.com/image.jpg" },
+        })
+      );
+    });
+  });
+
+  describe("execute with _processInputs", () => {
+    it("should process inputs through _processInputs", async () => {
+      const mockResponse = {
+        id: "execution_123",
+        name: "test-agent",
+        created_at: "2023-01-01T00:00:00Z",
+        completed_at: "2023-01-01T00:00:01Z",
+        response: { result: "success" },
+        status: "completed",
+        usage: { credits_used: 10 },
+      };
+
+      jest
+        .spyOn(agent["requestor"], "request")
+        .mockResolvedValue([mockResponse, 200, {}]);
+
+      const inputWithToJSON = {
+        image_url: "https://example.com/image.jpg",
+        toJSON: () => ({ image_url: "https://example.com/image.jpg" }),
+      };
+
+      await agent.execute({
+        name: "test-agent",
+        inputs: inputWithToJSON,
+      });
+
+      expect(agent["requestor"].request).toHaveBeenCalledWith(
+        "POST",
+        "agent/execute",
+        undefined,
+        expect.objectContaining({
+          inputs: { image_url: "https://example.com/image.jpg" },
+        })
+      );
+    });
+  });
 });

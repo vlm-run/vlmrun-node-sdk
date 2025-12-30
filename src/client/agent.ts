@@ -38,6 +38,36 @@ export class Agent {
   }
 
   /**
+   * Process inputs, converting objects to plain objects if needed.
+   * Issues a deprecation warning when passing inputs as a plain object.
+   *
+   * @param inputs - Input data as object or null/undefined
+   * @returns Processed inputs as plain object or undefined
+   */
+  private _processInputs(
+    inputs: Record<string, any> | null | undefined
+  ): Record<string, any> | undefined {
+    if (inputs === null || inputs === undefined) {
+      return undefined;
+    }
+
+    // Check if inputs is a class instance with a toJSON method
+    if (typeof inputs === "object" && typeof inputs.toJSON === "function") {
+      return inputs.toJSON();
+    }
+
+    // Plain object - issue deprecation warning
+    if (typeof inputs === "object" && inputs.constructor === Object) {
+      console.warn(
+        "Deprecation Warning: Passing inputs as a plain object will be deprecated in the future. " +
+          "Please use a class with a toJSON() method instead for better type safety and validation."
+      );
+    }
+
+    return inputs;
+  }
+
+  /**
    * OpenAI-compatible chat completions interface.
    *
    * Returns an OpenAI Completions object configured to use the VLMRun
@@ -184,7 +214,7 @@ export class Agent {
 
     const data: Record<string, any> = {
       name,
-      inputs,
+      inputs: this._processInputs(inputs),
       config: configObj.toJSON(),
     };
 
@@ -231,7 +261,7 @@ export class Agent {
     const data: Record<string, any> = {
       name,
       batch,
-      inputs,
+      inputs: this._processInputs(inputs),
     };
 
     if (config) {

@@ -6,6 +6,178 @@ export type FilePurpose = string;
 
 export type DetailLevel = string;
 
+// URL pattern for http/https URLs
+const URL_PATTERN = /^https?:\/\/.+/;
+
+/**
+ * Validate that the string is a valid HTTP/HTTPS URL.
+ */
+export function validateHttpUrl(url: string): boolean {
+  return URL_PATTERN.test(url);
+}
+
+/**
+ * Image URL with optional detail level.
+ */
+export interface ImageUrl {
+  url: string;
+  detail?: "auto" | "low" | "high";
+}
+
+/**
+ * Base interface for file URLs.
+ */
+export interface FileUrl {
+  url: string;
+}
+
+/**
+ * Video URL.
+ */
+export interface VideoUrl extends FileUrl {
+  url: string;
+}
+
+/**
+ * Audio URL.
+ */
+export interface AudioUrl extends FileUrl {
+  url: string;
+}
+
+/**
+ * Document URL.
+ */
+export interface DocumentUrl extends FileUrl {
+  url: string;
+}
+
+/**
+ * Message content type.
+ */
+export type MessageContentType =
+  | "text"
+  | "image_url"
+  | "video_url"
+  | "audio_url"
+  | "file_url"
+  | "input_file";
+
+/**
+ * Message content with various input types.
+ */
+export interface MessageContent {
+  type: MessageContentType;
+  text?: string;
+  image_url?: ImageUrl;
+  video_url?: VideoUrl;
+  audio_url?: AudioUrl;
+  file_url?: FileUrl;
+  file_id?: string;
+}
+
+/**
+ * Validate MessageContent - ensures the content matches the type.
+ */
+export function validateMessageContent(content: MessageContent): void {
+  if (content.type === "input_file") {
+    if (!content.file_id && !content.file_url) {
+      throw new Error("Must have either file_id or file_url");
+    }
+    return;
+  }
+
+  const typeFieldMap: Record<string, keyof MessageContent> = {
+    text: "text",
+    image_url: "image_url",
+    video_url: "video_url",
+    audio_url: "audio_url",
+    file_url: "file_url",
+  };
+
+  const field = typeFieldMap[content.type];
+  if (field && !content[field]) {
+    throw new Error(`Must have ${content.type}`);
+  }
+}
+
+// Artifact reference types with pattern validation
+const IMAGE_REF_PATTERN = /^img_\w{6}$/;
+const AUDIO_REF_PATTERN = /^aud_\w{6}$/;
+const VIDEO_REF_PATTERN = /^vid_\w{6}$/;
+const DOCUMENT_REF_PATTERN = /^doc_\w{6}$/;
+const RECON_REF_PATTERN = /^recon_\w{6}$/;
+const ARRAY_REF_PATTERN = /^arr_\w{6}$/;
+const URL_REF_PATTERN = /^url_\w{6}$/;
+
+/**
+ * Image reference with pattern validation.
+ */
+export interface ImageRef {
+  id: string;
+}
+
+/**
+ * Audio reference with pattern validation.
+ */
+export interface AudioRef {
+  id: string;
+}
+
+/**
+ * Video reference with pattern validation.
+ */
+export interface VideoRef {
+  id: string;
+}
+
+/**
+ * Document reference with pattern validation.
+ */
+export interface DocumentRef {
+  id: string;
+}
+
+/**
+ * Reconstruction reference with pattern validation.
+ */
+export interface ReconRef {
+  id: string;
+}
+
+/**
+ * Array reference with pattern validation.
+ */
+export interface ArrayRef {
+  id: string;
+}
+
+/**
+ * URL reference with pattern validation.
+ */
+export interface UrlRef {
+  id: string;
+}
+
+/**
+ * Validate an artifact reference ID against its expected pattern.
+ */
+export function validateRefId(
+  id: string,
+  type: "img" | "aud" | "vid" | "doc" | "recon" | "arr" | "url"
+): boolean {
+  const patterns: Record<string, RegExp> = {
+    img: IMAGE_REF_PATTERN,
+    aud: AUDIO_REF_PATTERN,
+    vid: VIDEO_REF_PATTERN,
+    doc: DOCUMENT_REF_PATTERN,
+    recon: RECON_REF_PATTERN,
+    arr: ARRAY_REF_PATTERN,
+    url: URL_REF_PATTERN,
+  };
+  return patterns[type]?.test(id) ?? false;
+}
+
 export interface FileResponse {
   id: string;
   filename: string;
