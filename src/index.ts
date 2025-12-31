@@ -37,6 +37,7 @@ export interface VlmRunConfig {
   baseURL?: string;
   timeout?: number;
   maxRetries?: number;
+  headers?: Record<string, string>;
 }
 
 export class VlmRun {
@@ -64,6 +65,7 @@ export class VlmRun {
       baseURL: config.baseURL ?? "https://api.vlm.run/v1",
       timeout: config.timeout,
       maxRetries: config.maxRetries,
+      headers: config.headers,
     };
 
     this.models = new Models(this.client);
