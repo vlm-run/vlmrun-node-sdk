@@ -1,6 +1,6 @@
 import { Models } from "./client/models";
 import { Files } from "./client/files";
-import { Client } from "./client/base_requestor";
+import { Client, APIRequestor } from "./client/base_requestor";
 import {
   Predictions,
   ImagePredictions,
@@ -41,6 +41,7 @@ export interface VlmRunConfig {
 
 export class VlmRun {
   private client: Client;
+  private requestor: APIRequestor;
   readonly models: Models;
   readonly files: Files;
   readonly predictions: Predictions;
@@ -65,6 +66,7 @@ export class VlmRun {
       timeout: config.timeout,
       maxRetries: config.maxRetries,
     };
+    this.requestor = new APIRequestor(this.client);
 
     this.models = new Models(this.client);
     this.files = new Files({ ...this.client, timeout: 0 });
@@ -82,5 +84,21 @@ export class VlmRun {
     this.executions = new Executions(this.client);
     this.domains = new Domains(this.client);
     this.artifacts = new Artifacts(this.client);
+  }
+
+  /**
+   * Check the health of the API.
+   * @returns Promise<boolean> - true if the API is healthy, false otherwise
+   */
+  async healthcheck(): Promise<boolean> {
+    try {
+      const [, statusCode] = await this.requestor.request<unknown>(
+        "GET",
+        "/health"
+      );
+      return statusCode === 200;
+    } catch {
+      return false;
+    }
   }
 }

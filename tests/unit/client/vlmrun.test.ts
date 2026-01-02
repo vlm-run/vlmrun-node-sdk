@@ -5,6 +5,50 @@ import {
   GenerationConfig,
 } from "../../../src/client/types";
 
+describe("VlmRun healthcheck", () => {
+  let client: VlmRun;
+
+  beforeEach(() => {
+    client = new VlmRun({
+      apiKey: "test-api-key",
+      baseURL: "https://api.example.com",
+    });
+  });
+
+  describe("healthcheck", () => {
+    it("should return true when API returns 200", async () => {
+      jest
+        .spyOn(client["requestor"], "request")
+        .mockResolvedValueOnce([{}, 200, {}]);
+
+      const result = await client.healthcheck();
+      expect(result).toBe(true);
+      expect(client["requestor"].request).toHaveBeenCalledWith(
+        "GET",
+        "/health"
+      );
+    });
+
+    it("should return false when API returns non-200 status", async () => {
+      jest
+        .spyOn(client["requestor"], "request")
+        .mockResolvedValueOnce([{}, 500, {}]);
+
+      const result = await client.healthcheck();
+      expect(result).toBe(false);
+    });
+
+    it("should return false when API request throws an error", async () => {
+      jest
+        .spyOn(client["requestor"], "request")
+        .mockRejectedValueOnce(new Error("Network error"));
+
+      const result = await client.healthcheck();
+      expect(result).toBe(false);
+    });
+  });
+});
+
 describe("Domains class methods", () => {
   let client: VlmRun;
 
