@@ -35,6 +35,7 @@ export * from "./utils";
 export interface VlmRunConfig {
   apiKey: string;
   baseURL?: string;
+  baseUrl?: string;
   timeout?: number;
   maxRetries?: number;
 }
@@ -61,7 +62,7 @@ export class VlmRun {
   constructor(config: VlmRunConfig) {
     this.client = {
       apiKey: config.apiKey,
-      baseURL: config.baseURL ?? "https://api.vlm.run/v1",
+      baseURL: config.baseURL ?? config.baseUrl ?? "https://api.vlm.run/v1",
       timeout: config.timeout,
       maxRetries: config.maxRetries,
     };

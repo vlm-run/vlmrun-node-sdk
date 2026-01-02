@@ -5,6 +5,40 @@ import {
   GenerationConfig,
 } from "../../../src/client/types";
 
+describe("VlmRun client configuration", () => {
+  it("should accept baseURL (uppercase) configuration", () => {
+    const client = new VlmRun({
+      apiKey: "test-api-key",
+      baseURL: "https://api.example.com",
+    });
+    expect(client["client"].baseURL).toBe("https://api.example.com");
+  });
+
+  it("should accept baseUrl (camelCase) configuration", () => {
+    const client = new VlmRun({
+      apiKey: "test-api-key",
+      baseUrl: "https://agent.vlm.run/v1",
+    });
+    expect(client["client"].baseURL).toBe("https://agent.vlm.run/v1");
+  });
+
+  it("should prefer baseURL over baseUrl when both are provided", () => {
+    const client = new VlmRun({
+      apiKey: "test-api-key",
+      baseURL: "https://api.vlm.run/v1",
+      baseUrl: "https://agent.vlm.run/v1",
+    });
+    expect(client["client"].baseURL).toBe("https://api.vlm.run/v1");
+  });
+
+  it("should use default baseURL when neither is provided", () => {
+    const client = new VlmRun({
+      apiKey: "test-api-key",
+    });
+    expect(client["client"].baseURL).toBe("https://api.vlm.run/v1");
+  });
+});
+
 describe("Domains class methods", () => {
   let client: VlmRun;
 
