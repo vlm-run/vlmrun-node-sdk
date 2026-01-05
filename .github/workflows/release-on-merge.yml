@@ -75,7 +75,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": ":white_check_mark: *vlmrun-node-sdk :nodejs: ${{ env.RELEASE_TAG }} Published to NPM*\n\n*Version:* `${{ env.RELEASE_TAG }}`\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+                    "text": "🟢 📦 *vlmrun-node-sdk ${{ env.RELEASE_TAG }} Published to NPM*\n\n*Version:* `${{ env.RELEASE_TAG }}`\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
                   }
                 }
               ]
@@ -94,7 +94,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": ":x: *vlmrun-node-sdk :nodejs: Publish Failed*\n\n*Tag:* `${{ env.RELEASE_TAG }}`\n*Workflow:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+                    "text": "🔴 📦 *vlmrun-node-sdk Publish Failed*\n\n*Tag:* `${{ env.RELEASE_TAG }}`\n*Workflow:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
                   }
                 }
               ]
