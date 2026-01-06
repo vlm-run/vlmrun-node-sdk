@@ -652,6 +652,7 @@ export interface AgentCreateParams {
 }
 
 export interface AgentExecuteParamsNew {
+  model?: string;
   name?: string;
   inputs?: Record<string, any>;
   batch?: boolean;
