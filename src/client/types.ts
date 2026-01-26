@@ -6,6 +6,22 @@ export type FilePurpose = string;
 
 export type DetailLevel = string;
 
+/**
+ * AgentToolset type - tool categories available for agent execution.
+ * Available categories: core, image_analysis, image_generation, 3d_reconstruction,
+ * visualization, document, video, web, skills.
+ */
+export type AgentToolset =
+  | "core"
+  | "image_analysis"
+  | "image_generation"
+  | "3d_reconstruction"
+  | "visualization"
+  | "document"
+  | "video"
+  | "web"
+  | "skills";
+
 // URL pattern for http/https URLs
 const URL_PATTERN = /^https?:\/\/.+/;
 
@@ -658,4 +674,12 @@ export interface AgentExecuteParamsNew {
   config?: AgentExecutionConfigInput;
   metadata?: RequestMetadataInput;
   callbackUrl?: string;
+  /**
+   * List of tool categories to enable for this execution.
+   * Available categories: core, image_analysis, image_generation, 3d_reconstruction,
+   * visualization, document, video, web, skills.
+   * When specified, only tools from these categories will be available.
+   * If not specified, defaults to 'core' tools only.
+   */
+  toolset?: AgentToolset[];
 }

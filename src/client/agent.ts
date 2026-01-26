@@ -237,9 +237,20 @@ export class Agent {
   }
 
   /**
-   * Execute an agent with the given arguments (new method).
+   * Execute an agent with the given arguments.
    *
    * @param params - Agent execution parameters
+   * @param params.name - Name of the agent to execute
+   * @param params.inputs - Optional inputs to the agent
+   * @param params.batch - Whether to process in batch mode (default: true)
+   * @param params.config - Optional agent execution configuration
+   * @param params.metadata - Optional request metadata
+   * @param params.callbackUrl - Optional URL to call when execution is complete
+   * @param params.toolset - Optional list of tool categories to enable.
+   *   Available categories: core, image_analysis, image_generation, 3d_reconstruction,
+   *   visualization, document, video, web, skills.
+   *   When specified, only tools from these categories will be available.
+   *   If not specified, defaults to 'core' tools only.
    * @returns Agent execution response
    */
   async execute(
@@ -252,6 +263,7 @@ export class Agent {
       config,
       metadata,
       callbackUrl,
+      toolset,
     } = params;
 
     if (!batch) {
@@ -279,6 +291,10 @@ export class Agent {
 
     if (callbackUrl) {
       data.callback_url = callbackUrl;
+    }
+
+    if (toolset !== undefined) {
+      data.toolset = toolset;
     }
 
     const [response] = await this.requestor.request<AgentExecutionResponse>(
