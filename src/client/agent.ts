@@ -246,9 +246,9 @@ export class Agent {
    * @param params.config - Optional agent execution configuration
    * @param params.metadata - Optional request metadata
    * @param params.callbackUrl - Optional URL to call when execution is complete
-   * @param params.toolset - Optional list of tool categories to enable.
-   *   Available categories: core, image_analysis, image_generation, 3d_reconstruction,
-   *   visualization, document, video, web, skills.
+   * @param params.toolsets - Optional list of tool categories to enable.
+   *   Available categories: core, image, image-gen, 3d_reconstruction,
+   *   viz, document, video, web.
    *   When specified, only tools from these categories will be available.
    *   If not specified, defaults to 'core' tools only.
    * @returns Agent execution response
@@ -263,7 +263,7 @@ export class Agent {
       config,
       metadata,
       callbackUrl,
-      toolset,
+      toolsets,
     } = params;
 
     if (!batch) {
@@ -293,8 +293,8 @@ export class Agent {
       data.callback_url = callbackUrl;
     }
 
-    if (toolset !== undefined) {
-      data.toolset = toolset;
+    if (toolsets !== undefined) {
+      data.toolsets = toolsets;
     }
 
     const [response] = await this.requestor.request<AgentExecutionResponse>(

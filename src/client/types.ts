@@ -8,19 +8,18 @@ export type DetailLevel = string;
 
 /**
  * AgentToolset type - tool categories available for agent execution.
- * Available categories: core, image_analysis, image_generation, 3d_reconstruction,
- * visualization, document, video, web, skills.
+ * Available categories: core, image, image-gen, 3d_reconstruction,
+ * viz, document, video, web.
  */
 export type AgentToolset =
   | "core"
-  | "image_analysis"
-  | "image_generation"
+  | "image"
+  | "image-gen"
   | "3d_reconstruction"
-  | "visualization"
+  | "viz"
   | "document"
   | "video"
-  | "web"
-  | "skills";
+  | "web";
 
 // URL pattern for http/https URLs
 const URL_PATTERN = /^https?:\/\/.+/;
@@ -676,10 +675,10 @@ export interface AgentExecuteParamsNew {
   callbackUrl?: string;
   /**
    * List of tool categories to enable for this execution.
-   * Available categories: core, image_analysis, image_generation, 3d_reconstruction,
-   * visualization, document, video, web, skills.
+   * Available categories: core, image, image-gen, 3d_reconstruction,
+   * viz, document, video, web.
    * When specified, only tools from these categories will be available.
    * If not specified, defaults to 'core' tools only.
    */
-  toolset?: AgentToolset[];
+  toolsets?: AgentToolset[];
 }
