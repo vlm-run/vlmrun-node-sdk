@@ -8,14 +8,14 @@ export type DetailLevel = string;
 
 /**
  * AgentToolset type - tool categories available for agent execution.
- * Available categories: core, image, image-gen, 3d_reconstruction,
+ * Available categories: core, image, image-gen, world_gen,
  * viz, document, video, web.
  */
 export type AgentToolset =
   | "core"
   | "image"
   | "image-gen"
-  | "3d_reconstruction"
+  | "world_gen"
   | "viz"
   | "document"
   | "video"

@@ -247,7 +247,7 @@ export class Agent {
    * @param params.metadata - Optional request metadata
    * @param params.callbackUrl - Optional URL to call when execution is complete
    * @param params.toolsets - Optional list of tool categories to enable.
-   *   Available categories: core, image, image-gen, 3d_reconstruction,
+   *   Available categories: core, image, image-gen, world_gen,
    *   viz, document, video, web.
    *   When specified, only tools from these categories will be available.
    *   If not specified, defaults to 'core' tools only.
