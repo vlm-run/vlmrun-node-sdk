@@ -20,6 +20,7 @@ describe("Integration: Files", () => {
   describe("list", () => {
     it("should list files with default pagination", async () => {
       const result = await client.files.list({});
+
       expect(Array.isArray(result)).toBe(true);
 
       if (result.length > 0) {
