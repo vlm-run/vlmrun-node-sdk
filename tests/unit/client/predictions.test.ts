@@ -731,7 +731,7 @@ describe("Predictions", () => {
     });
 
     describe("execute", () => {
-      it("should execute with fileId parameter", async () => {
+      it("should delegate to generate() with converted domain name", async () => {
         const mockResponse = {
           id: "pred_123",
           status: "completed",
@@ -739,6 +739,8 @@ describe("Predictions", () => {
           created_at: "2023-01-01T00:00:00Z",
         };
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+        const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
 
         const result = await documentPredictions.execute({
           name: "test-agent",
@@ -751,33 +753,23 @@ describe("Predictions", () => {
         });
 
         expect(result).toEqual(mockResponse);
+        expect(consoleSpy).toHaveBeenCalledWith(
+          expect.stringContaining("deprecated")
+        );
         expect(requestMock).toHaveBeenCalledWith(
           "POST",
-          "/document/execute",
+          "/document/generate",
           undefined,
-          {
-            name: "test-agent",
-            version: "v1.0",
+          expect.objectContaining({
+            domain: "test-agent",
             file_id: "file_123",
-            batch: false,
-            config: {
-              detail: "hi",
-              json_schema: undefined,
-              confidence: false,
-              grounding: false,
-              gql_stmt: null,
-            },
-            metadata: {
-              environment: "prod",
-              session_id: undefined,
-              allow_training: true,
-            },
-            callback_url: "https://callback.example.com",
-          }
+          })
         );
+
+        consoleSpy.mockRestore();
       });
 
-      it("should execute with url parameter", async () => {
+      it("should convert slash domain names to dot notation", async () => {
         const mockResponse = {
           id: "pred_456",
           status: "completed",
@@ -786,47 +778,39 @@ describe("Predictions", () => {
         };
         requestMock.mockResolvedValue([mockResponse, 200, {}]);
 
+        const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
+
         const result = await documentPredictions.execute({
-          name: "test-agent",
+          name: "healthcare/phi-redaction",
           url: "https://example.com/document.pdf",
         });
 
         expect(result).toEqual(mockResponse);
         expect(requestMock).toHaveBeenCalledWith(
           "POST",
-          "/document/execute",
+          "/document/generate",
           undefined,
-          {
-            name: "test-agent",
-            version: "latest",
+          expect.objectContaining({
+            domain: "healthcare.phi-redaction",
             url: "https://example.com/document.pdf",
-            batch: true,
-            config: {
-              detail: "auto",
-              json_schema: undefined,
-              confidence: false,
-              grounding: false,
-              gql_stmt: null,
-            },
-            metadata: {
-              environment: "dev",
-              session_id: undefined,
-              allow_training: true,
-            },
-            callback_url: undefined,
-          }
+          })
         );
+
+        consoleSpy.mockRestore();
       });
 
       it("should throw error when neither fileId nor url provided", async () => {
+        const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
         await expect(
           documentPredictions.execute({
             name: "test-agent",
           })
         ).rejects.toThrow("Either `fileId` or `url` must be provided");
+        consoleSpy.mockRestore();
       });
 
       it("should throw error when both fileId and url provided", async () => {
+        const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
         await expect(
           documentPredictions.execute({
             name: "test-agent",
@@ -834,46 +818,7 @@ describe("Predictions", () => {
             url: "https://example.com/document.pdf",
           })
         ).rejects.toThrow("Only one of `fileId` or `url` can be provided");
-      });
-
-      it("should handle responseModel config", async () => {
-        const mockResponse = {
-          id: "pred_789",
-          status: "completed",
-          response: { result: "test" },
-          created_at: "2023-01-01T00:00:00Z",
-        };
-        requestMock.mockResolvedValue([mockResponse, 200, {}]);
-
-        const mockSchema = { type: "object", properties: {} };
-        const mockConvertToJsonSchema = jest.fn().mockReturnValue(mockSchema);
-        jest.doMock("../../../src/utils/utils", () => ({
-          convertToJsonSchema: mockConvertToJsonSchema,
-        }));
-
-        const { convertToJsonSchema } = require("../../../src/utils/utils");
-        const mockZodSchema = {} as any;
-
-        const result = await documentPredictions.execute({
-          name: "test-agent",
-          fileId: "file_123",
-          config: {
-            responseModel: mockZodSchema,
-            zodToJsonParams: { definitions: true },
-          },
-        });
-
-        expect(result).toEqual(mockResponse);
-        expect(requestMock).toHaveBeenCalledWith(
-          "POST",
-          "/document/execute",
-          undefined,
-          expect.objectContaining({
-            config: expect.objectContaining({
-              json_schema: {},
-            }),
-          })
-        );
+        consoleSpy.mockRestore();
       });
     });
   });
