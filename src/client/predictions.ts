@@ -8,6 +8,7 @@ import {
   WebPredictionParams,
   SchemaResponse,
   GenerationConfigParams,
+  AgentSkill,
 } from "./types";
 import { processImage } from "../utils/image";
 import { convertToJsonSchema } from "../utils/utils";
@@ -184,6 +185,15 @@ export class ImagePredictions extends Predictions {
       callbackUrl,
     } = params;
 
+    const hasSkills = config?.skills && config.skills.length > 0;
+    if (!domain && !hasSkills) {
+      throw new InputError(
+        "Either `domain` or `config.skills` must be provided",
+        "missing_parameter",
+        "Provide either a domain or skills in the config"
+      );
+    }
+
     const imagesData = this._handleImagesOrUrls(images, urls);
 
     let jsonSchema = config?.jsonSchema;
@@ -194,32 +204,43 @@ export class ImagePredictions extends Predictions {
       );
     }
 
+    const serializedSkills = config?.skills?.map((s) =>
+      s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
+    );
+
+    const data: Record<string, any> = {
+      images: imagesData,
+      model,
+      batch,
+      config: {
+        detail: config?.detail ?? "auto",
+        json_schema: jsonSchema,
+        skills: serializedSkills,
+        confidence: config?.confidence ?? false,
+        grounding: config?.grounding ?? false,
+        gql_stmt: config?.gqlStmt ?? null,
+      },
+      metadata: {
+        environment: metadata?.environment ?? "dev",
+        session_id: metadata?.sessionId,
+        allow_training: metadata?.allowTraining ?? true,
+      },
+      callback_url: callbackUrl,
+    };
+    if (domain !== undefined) {
+      data.domain = domain;
+    }
+
     const [response] = await this.requestor.request<PredictionResponse>(
       "POST",
       "image/generate",
       undefined,
-      {
-        images: imagesData,
-        model,
-        domain,
-        batch,
-        config: {
-          detail: config?.detail ?? "auto",
-          json_schema: jsonSchema,
-          confidence: config?.confidence ?? false,
-          grounding: config?.grounding ?? false,
-          gql_stmt: config?.gqlStmt ?? null,
-        },
-        metadata: {
-          environment: metadata?.environment ?? "dev",
-          session_id: metadata?.sessionId,
-          allow_training: metadata?.allowTraining ?? true,
-        },
-        callback_url: callbackUrl,
-      }
+      data
     );
 
-    this._castResponseToSchema(response, domain, config);
+    if (domain) {
+      this._castResponseToSchema(response, domain, config);
+    }
 
     return response;
   }
@@ -307,6 +328,15 @@ export class FilePredictions extends Predictions {
       callbackUrl,
     } = params;
 
+    const hasSkills = config?.skills && config.skills.length > 0;
+    if (!domain && !hasSkills) {
+      throw new InputError(
+        "Either `domain` or `config.skills` must be provided",
+        "missing_parameter",
+        "Provide either a domain or skills in the config"
+      );
+    }
+
     const fileOrUrl = this._handleFileOrUrl(fileId, url);
 
     let jsonSchema = config?.jsonSchema;
@@ -317,33 +347,43 @@ export class FilePredictions extends Predictions {
       );
     }
 
+    const serializedSkills = config?.skills?.map((s) =>
+      s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
+    );
+
+    const data: Record<string, any> = {
+      ...fileOrUrl,
+      model,
+      batch,
+      config: {
+        detail: config?.detail ?? "auto",
+        json_schema: jsonSchema,
+        skills: serializedSkills,
+        confidence: config?.confidence ?? false,
+        grounding: config?.grounding ?? false,
+        gql_stmt: config?.gqlStmt ?? null,
+      },
+      metadata: {
+        environment: metadata?.environment ?? "dev",
+        session_id: metadata?.sessionId,
+        allow_training: metadata?.allowTraining ?? true,
+      },
+      callback_url: callbackUrl,
+    };
+    if (domain !== undefined) {
+      data.domain = domain;
+    }
+
     const [response] = await this.requestor.request<PredictionResponse>(
       "POST",
       `/${this.route}/generate`,
       undefined,
-      {
-        ...fileOrUrl,
-        model,
-        domain,
-        batch,
-        config: {
-          detail: config?.detail ?? "auto",
-          json_schema: jsonSchema,
-          confidence: config?.confidence ?? false,
-          grounding: config?.grounding ?? false,
-          gql_stmt: config?.gqlStmt ?? null,
-        },
-        metadata: {
-          environment: metadata?.environment ?? "dev",
-          session_id: metadata?.sessionId,
-          allow_training: metadata?.allowTraining ?? true,
-        },
-        callback_url: callbackUrl,
-      }
+      data
     );
 
-    // Cast response to schema if needed
-    this._castResponseToSchema(response, domain!, config);
+    if (domain) {
+      this._castResponseToSchema(response, domain, config);
+    }
 
     return response;
   }

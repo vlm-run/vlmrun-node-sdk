@@ -241,9 +241,41 @@ export interface FileUploadParams {
   generatePublicUrl?: boolean;
 }
 
+export interface AgentSkillParams {
+  type?: string;
+  skillId?: string;
+  skillName?: string;
+  version?: string;
+}
+
+export class AgentSkill {
+  type: string = "vlm-run";
+  skillId?: string;
+  skillName?: string;
+  version: string = "latest";
+
+  constructor(params: AgentSkillParams = {}) {
+    if (!params.skillId && !params.skillName) {
+      throw new Error("Either 'skillId' or 'skillName' must be provided");
+    }
+    Object.assign(this, params);
+  }
+
+  toJSON() {
+    return {
+      type: this.type,
+      skill_id: this.skillId,
+      skill_name: this.skillName,
+      version: this.version,
+    };
+  }
+}
+
+export type AgentSkillInput = AgentSkill | AgentSkillParams;
+
 export interface PredictionGenerateParams {
   model?: string;
-  domain: string;
+  domain?: string;
   config?: GenerationConfigParams;
   metadata?: RequestMetadataParams;
   callbackUrl?: string;
@@ -294,6 +326,7 @@ export type GenerationConfigParams = {
   responseModel?: ZodType;
   zodToJsonParams?: any;
   jsonSchema?: Record<string, any> | null;
+  skills?: AgentSkillInput[];
   confidence?: boolean;
   grounding?: boolean;
   gqlStmt?: string | null;
@@ -309,6 +342,11 @@ export class GenerationConfig {
    * The JSON schema to use for the model.
    */
   jsonSchema: Record<string, any> | null = null;
+
+  /**
+   * List of skills to enable for this request.
+   */
+  skills?: AgentSkillInput[];
 
   /**
    * Include confidence scores in the response (included in the `_metadata` field).
@@ -336,6 +374,9 @@ export class GenerationConfig {
     return {
       detail: this.detail,
       json_schema: this.jsonSchema,
+      skills: this.skills?.map((s) =>
+        s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
+      ),
       confidence: this.confidence,
       grounding: this.grounding,
       gql_stmt: this.gqlStmt,
@@ -601,11 +642,13 @@ export type AgentExecutionConfigParams = {
   prompt?: string;
   responseModel?: ZodType;
   jsonSchema?: Record<string, any>;
+  skills?: AgentSkillInput[];
 };
 
 export class AgentExecutionConfig {
   prompt?: string;
   jsonSchema?: Record<string, any>;
+  skills?: AgentSkillInput[];
 
   constructor(params: Partial<AgentExecutionConfig> = {}) {
     Object.assign(this, params);
@@ -615,6 +658,9 @@ export class AgentExecutionConfig {
     return {
       prompt: this.prompt,
       json_schema: this.jsonSchema,
+      skills: this.skills?.map((s) =>
+        s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
+      ),
     };
   }
 }
@@ -623,11 +669,13 @@ export type AgentCreationConfigParams = {
   prompt?: string;
   responseModel?: ZodType;
   jsonSchema?: Record<string, any>;
+  skills?: AgentSkillInput[];
 };
 
 export class AgentCreationConfig {
   prompt?: string;
   jsonSchema?: Record<string, any>;
+  skills?: AgentSkillInput[];
 
   constructor(params: Partial<AgentCreationConfig> = {}) {
     Object.assign(this, params);
@@ -637,6 +685,9 @@ export class AgentCreationConfig {
     return {
       prompt: this.prompt,
       json_schema: this.jsonSchema,
+      skills: this.skills?.map((s) =>
+        s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
+      ),
     };
   }
 }
