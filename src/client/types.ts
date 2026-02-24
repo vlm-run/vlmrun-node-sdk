@@ -659,3 +659,48 @@ export interface AgentExecuteParamsNew {
   metadata?: RequestMetadataInput;
   callbackUrl?: string;
 }
+
+// --- Skills types ---
+
+export interface SkillInfo {
+  id: string;
+  name: string;
+  description?: string;
+  version?: string;
+  created_at?: string;
+  updated_at?: string;
+  status?: JobStatus;
+}
+
+export interface SkillDownloadResponse {
+  download_url: string;
+  expires_in?: number;
+}
+
+export interface SkillGetParams {
+  name?: string;
+  id?: string;
+  version?: string;
+}
+
+export interface SkillCreateParams {
+  prompt?: string;
+  jsonSchema?: Record<string, any>;
+  sessionId?: string;
+  fileId?: string;
+  name?: string;
+  description?: string;
+}
+
+export interface SkillUpdateParams {
+  skillId: string;
+  fileId?: string;
+  description?: string;
+}
+
+export interface AgentSkill {
+  skillName?: string;
+  skillId?: string;
+  version?: string;
+  type?: string;
+}
