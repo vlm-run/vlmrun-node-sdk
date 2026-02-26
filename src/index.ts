@@ -14,6 +14,7 @@ import { Finetuning } from "./client/fine_tuning";
 import { Datasets } from "./client/datasets";
 import { Hub } from "./client/hub";
 import { Agent } from "./client/agent";
+import { Skills } from "./client/skills";
 import { Executions } from "./client/executions";
 import { Domains } from "./client/domains";
 import { Artifacts } from "./client/artifacts";
@@ -27,6 +28,7 @@ export * from "./client/feedback";
 export * from "./client/fine_tuning";
 export * from "./client/exceptions";
 export * from "./client/agent";
+export * from "./client/skills";
 export * from "./client/executions";
 export * from "./client/artifacts";
 
@@ -55,6 +57,7 @@ export class VlmRun {
   readonly dataset: Datasets;
   readonly hub: Hub;
   readonly agent: Agent;
+  readonly skills: Skills;
   readonly executions: Executions;
   readonly domains: Domains;
   readonly artifacts: Artifacts;
@@ -81,6 +84,7 @@ export class VlmRun {
     this.dataset = new Datasets(this.client);
     this.hub = new Hub(this.client);
     this.agent = new Agent(this.client);
+    this.skills = new Skills(this.client);
     this.executions = new Executions(this.client);
     this.domains = new Domains(this.client);
     this.artifacts = new Artifacts(this.client);
