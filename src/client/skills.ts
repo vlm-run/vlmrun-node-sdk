@@ -2,6 +2,7 @@
  * VLM Run API Skills resource.
  */
 
+import { json } from "stream/consumers";
 import { Client, APIRequestor } from "./base_requestor";
 import {
   SkillInfo,
@@ -38,7 +39,7 @@ export class Skills {
   async list(): Promise<SkillInfo[]> {
     const [response] = await this.requestor.request<SkillInfo[]>(
       "GET",
-      "skills"
+      "skills",
     );
 
     if (!Array.isArray(response)) {
@@ -63,7 +64,7 @@ export class Skills {
     if (id && !name) {
       const [response] = await this.requestor.request<SkillInfo>(
         "GET",
-        `skills/${id}`
+        `skills/${id}`,
       );
 
       if (typeof response !== "object") {
@@ -81,7 +82,7 @@ export class Skills {
         "POST",
         "skills/lookup",
         undefined,
-        data
+        data,
       );
 
       if (typeof response !== "object") {
@@ -117,7 +118,7 @@ export class Skills {
       "POST",
       "skills/create",
       undefined,
-      data
+      data,
     );
 
     if (typeof response !== "object") {
@@ -144,7 +145,7 @@ export class Skills {
       "POST",
       `skills/${skillId}/update`,
       undefined,
-      data
+      data,
     );
 
     if (typeof response !== "object") {
@@ -163,7 +164,7 @@ export class Skills {
   async download(params: { skillId: string }): Promise<SkillDownloadResponse> {
     const [response] = await this.requestor.request<SkillDownloadResponse>(
       "GET",
-      `skills/${params.skillId}/download`
+      `skills/${params.skillId}/download`,
     );
 
     if (typeof response !== "object") {
