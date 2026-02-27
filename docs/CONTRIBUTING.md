@@ -73,6 +73,7 @@ npm run test:integration
 ```bash
 # Run just the files integration tests
 npm run test:integration -- tests/integration/client/files.test.ts
+npm run test:integration -- --testPathPatterns="skills" -t "skill-driven extraction"
 
 # Run
 npm run test:e2e -- tests/e2e/client/chat-completions.test.ts
