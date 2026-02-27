@@ -2,7 +2,7 @@ import { config } from "dotenv";
 config({ path: ".env.test" });
 
 import { VlmRun } from "../../../src/index";
-import { SkillInfo } from "../../../src/client/types";
+import { SkillInfo, PredictionResponse } from "../../../src/client/types";
 
 jest.setTimeout(60000);
 
@@ -377,6 +377,67 @@ describe("Integration: Skills", () => {
       expect(result).toHaveProperty("download_url");
       expect(typeof result.download_url).toBe("string");
       expect(result.download_url.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("create() and document.generate() — skill-driven extraction", () => {
+    const testFilePath = "tests/integration/assets/google_invoice.pdf";
+
+    it("should create a skill and use it for batch document generation via file_id", async () => {
+      const skill = await client.skills.create({
+        prompt: INVOICE_SKILL_PROMPT,
+        jsonSchema: INVOICE_SCHEMA,
+        name: `invoice-doc-generate-${Date.now()}`,
+        description:
+          "Invoice skill for document generation integration test.",
+      });
+
+      expect(skill).toBeTruthy();
+      expect(skill.id).toBeDefined();
+      expect(skill.name).toBeDefined();
+
+      const uploadedFile = await client.files.upload({
+        filePath: testFilePath,
+        purpose: "vision",
+        checkDuplicate: true,
+      });
+
+      expect(uploadedFile).toHaveProperty("id");
+
+      const result: PredictionResponse = await client.document.generate({
+        fileId: uploadedFile.id,
+        model: "vlm-1",
+        domain: "document.invoice",
+        batch: true,
+        config: {
+          skills: [
+            {
+              skill_name: skill.name,
+              version: skill.version,
+            },
+          ],
+        } as any,
+        metadata: {
+          environment: "dev",
+          allowTraining: false,
+        },
+      });
+
+      expect(result).toHaveProperty("id");
+      expect(typeof result.id).toBe("string");
+      expect(result).toHaveProperty("created_at");
+      expect(typeof result.created_at).toBe("string");
+      expect(result).toHaveProperty("status");
+      expect(result.status).toBe("pending");
+
+      const completed: PredictionResponse = await client.predictions.wait(
+        result.id,
+      );
+
+      expect(completed.status).toBe("completed");
+      expect(completed).toHaveProperty("response");
+      expect(completed.response).toBeTruthy();
+      expect(completed).toHaveProperty("completed_at");
     });
   });
 });
