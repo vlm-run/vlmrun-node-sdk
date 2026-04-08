@@ -704,3 +704,118 @@ export interface AgentSkill {
   version?: string;
   type?: string;
 }
+
+// --- Evaluation types ---
+
+export type EvaluationSourceType = "agent" | "request_domain" | "skill";
+
+export interface EvaluationRunResponse {
+  id: string;
+  source_type: EvaluationSourceType;
+  source_id: string | null;
+  source_label: string;
+  source_version: string | null;
+  status: string;
+  accuracy: number | null;
+  api_completion_rate: number | null;
+  total_items: number | null;
+  total_with_feedback: number | null;
+  data_from: string | null;
+  data_to: string | null;
+  results: Record<string, any>;
+  created_at: string | null;
+}
+
+export interface EvaluationRunListResponse {
+  data: EvaluationRunResponse[];
+  count: number;
+}
+
+export interface EvaluationPreviewResponse {
+  total_items: number;
+  total_with_feedback: number;
+  feedback_with_corrections: number;
+  latest_item_at: string | null;
+}
+
+export interface AccuracyTrendPoint {
+  run_id: string;
+  accuracy: number;
+  api_completion_rate: number | null;
+  fuzzy_match_rate: number | null;
+  exact_match_rate: number | null;
+  source_type: string | null;
+  source_label: string | null;
+  created_at: string;
+}
+
+export interface FieldAccuracyAggregate {
+  field: string;
+  avg_accuracy: number;
+  total_correct: number;
+  total_count: number;
+}
+
+export interface LatencyTrendPoint {
+  run_id: string;
+  created_at: string;
+  p50_ms: number | null;
+  p90_ms: number | null;
+  p95_ms: number | null;
+}
+
+export interface EvaluationMetricsResponse {
+  accuracy_trend: AccuracyTrendPoint[];
+  avg_accuracy: number | null;
+  accuracy_delta: number | null;
+  avg_api_completion_rate: number | null;
+  avg_fuzzy_match_rate: number | null;
+  avg_exact_match_rate: number | null;
+  field_accuracies: FieldAccuracyAggregate[];
+  latency_trend: LatencyTrendPoint[];
+  p50_ms: number | null;
+  p90_ms: number | null;
+  p95_ms: number | null;
+}
+
+export interface SourceTypeCount {
+  type: string;
+  label: string;
+  count: number;
+}
+
+export interface EvaluationSummaryStatsResponse {
+  total_runs: number;
+  source_type_counts: SourceTypeCount[];
+}
+
+export interface UniqueSource {
+  type: string;
+  label: string;
+}
+
+export interface EvaluationUniqueSourcesResponse {
+  sources: UniqueSource[];
+}
+
+export interface EvaluationListOptions {
+  limit?: number;
+  offset?: number;
+  orderBy?: string;
+  descending?: boolean;
+  createdAtGte?: string;
+  createdAtLte?: string;
+}
+
+export interface EvaluationPreviewOptions {
+  sourceType: EvaluationSourceType;
+  sourceId: string;
+  dataFrom?: string;
+  dataTo?: string;
+}
+
+export interface EvaluationMetricsOptions {
+  limit?: number;
+  sourceType?: string;
+  sourceLabel?: string;
+}
