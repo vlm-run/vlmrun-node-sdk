@@ -797,3 +797,25 @@ export interface UniqueSource {
 export interface EvaluationUniqueSourcesResponse {
   sources: UniqueSource[];
 }
+
+export interface EvaluationListOptions {
+  limit?: number;
+  offset?: number;
+  orderBy?: string;
+  descending?: boolean;
+  createdAtGte?: string;
+  createdAtLte?: string;
+}
+
+export interface EvaluationPreviewOptions {
+  sourceType: EvaluationSourceType;
+  sourceId: string;
+  dataFrom?: string;
+  dataTo?: string;
+}
+
+export interface EvaluationMetricsOptions {
+  limit?: number;
+  sourceType?: string;
+  sourceLabel?: string;
+}

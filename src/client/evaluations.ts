@@ -10,7 +10,9 @@ import {
   EvaluationMetricsResponse,
   EvaluationSummaryStatsResponse,
   EvaluationUniqueSourcesResponse,
-  EvaluationSourceType,
+  EvaluationListOptions,
+  EvaluationPreviewOptions,
+  EvaluationMetricsOptions,
 } from "./types";
 
 export class Evaluations {
@@ -28,14 +30,7 @@ export class Evaluations {
    * @param options - Query options for listing evaluation runs
    * @returns Paginated list of evaluation runs
    */
-  async list(options?: {
-    limit?: number;
-    offset?: number;
-    orderBy?: string;
-    descending?: boolean;
-    createdAtGte?: string;
-    createdAtLte?: string;
-  }): Promise<EvaluationRunListResponse> {
+  async list(options?: EvaluationListOptions): Promise<EvaluationRunListResponse> {
     const params: Record<string, any> = {
       limit: options?.limit ?? 30,
       offset: options?.offset ?? 0,
@@ -74,12 +69,7 @@ export class Evaluations {
    * @param options - Preview query parameters
    * @returns Preview of available evaluation data
    */
-  async preview(options: {
-    sourceType: EvaluationSourceType;
-    sourceId: string;
-    dataFrom?: string;
-    dataTo?: string;
-  }): Promise<EvaluationPreviewResponse> {
+  async preview(options: EvaluationPreviewOptions): Promise<EvaluationPreviewResponse> {
     const params: Record<string, string> = {
       source_type: options.sourceType,
       source_id: options.sourceId,
@@ -102,11 +92,7 @@ export class Evaluations {
    * @param options - Metrics query parameters
    * @returns Aggregated evaluation metrics
    */
-  async metrics(options?: {
-    limit?: number;
-    sourceType?: string;
-    sourceLabel?: string;
-  }): Promise<EvaluationMetricsResponse> {
+  async metrics(options?: EvaluationMetricsOptions): Promise<EvaluationMetricsResponse> {
     const params: Record<string, any> = { limit: options?.limit ?? 20 };
     if (options?.sourceType) params.source_type = options.sourceType;
     if (options?.sourceLabel) params.source_label = options.sourceLabel;
