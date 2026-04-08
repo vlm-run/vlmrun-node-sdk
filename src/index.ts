@@ -18,6 +18,7 @@ import { Skills } from "./client/skills";
 import { Executions } from "./client/executions";
 import { Domains } from "./client/domains";
 import { Artifacts } from "./client/artifacts";
+import { Evaluations } from "./client/evaluations";
 
 export * from "./client/types";
 export * from "./client/base_requestor";
@@ -31,6 +32,7 @@ export * from "./client/agent";
 export * from "./client/skills";
 export * from "./client/executions";
 export * from "./client/artifacts";
+export * from "./client/evaluations";
 
 export * from "./utils";
 
@@ -61,6 +63,7 @@ export class VlmRun {
   readonly executions: Executions;
   readonly domains: Domains;
   readonly artifacts: Artifacts;
+  readonly evaluations: Evaluations;
 
   constructor(config: VlmRunConfig) {
     this.client = {
@@ -88,6 +91,7 @@ export class VlmRun {
     this.executions = new Executions(this.client);
     this.domains = new Domains(this.client);
     this.artifacts = new Artifacts(this.client);
+    this.evaluations = new Evaluations(this.client);
   }
 
   /**
