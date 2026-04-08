@@ -10,11 +10,6 @@ import {
   EvaluationMetricsResponse,
   EvaluationSummaryStatsResponse,
   EvaluationUniqueSourcesResponse,
-  RunEvaluationRequest,
-  OptimizeSkillRequest,
-  OptimizeSkillResponse,
-  RerunSkillRequest,
-  RerunSkillResponse,
   EvaluationSourceType,
 } from "./types";
 
@@ -69,22 +64,6 @@ export class Evaluations {
     const [response] = await this.requestor.request<EvaluationRunResponse>(
       "GET",
       `evaluations/${runId}`
-    );
-    return response;
-  }
-
-  /**
-   * Trigger a new evaluation run.
-   *
-   * @param body - The evaluation run request body
-   * @returns The created evaluation run
-   */
-  async run(body: RunEvaluationRequest): Promise<EvaluationRunResponse> {
-    const [response] = await this.requestor.request<EvaluationRunResponse>(
-      "POST",
-      "evaluations/run",
-      undefined,
-      body
     );
     return response;
   }
@@ -178,37 +157,4 @@ export class Evaluations {
     await this.requestor.request("DELETE", `evaluations/${runId}`);
   }
 
-  /**
-   * Optimize a skill based on evaluation data.
-   *
-   * @param body - The optimization request body
-   * @returns The optimization result
-   */
-  async optimizeSkill(
-    body: OptimizeSkillRequest
-  ): Promise<OptimizeSkillResponse> {
-    const [response] = await this.requestor.request<OptimizeSkillResponse>(
-      "POST",
-      "evaluations/optimize",
-      undefined,
-      body
-    );
-    return response;
-  }
-
-  /**
-   * Re-run an evaluation with different parameters.
-   *
-   * @param body - The rerun request body
-   * @returns The rerun result
-   */
-  async rerunSkill(body: RerunSkillRequest): Promise<RerunSkillResponse> {
-    const [response] = await this.requestor.request<RerunSkillResponse>(
-      "POST",
-      "evaluations/rerun",
-      undefined,
-      body
-    );
-    return response;
-  }
 }

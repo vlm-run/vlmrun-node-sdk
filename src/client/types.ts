@@ -708,24 +708,6 @@ export interface AgentSkill {
 // --- Evaluation types ---
 
 export type EvaluationSourceType = "agent" | "request_domain" | "skill";
-export type EvaluatorType =
-  | "field_accuracy"
-  | "fuzzy_field_match"
-  | "llm_judge"
-  | "equals_expected";
-
-export interface RunEvaluationRequest {
-  source_type: EvaluationSourceType;
-  source_id: string;
-  source_label: string;
-  execution_ids?: string[] | null;
-  request_ids?: string[] | null;
-  skill_ids?: string[] | null;
-  data_from?: string | null;
-  data_to?: string | null;
-  evaluators?: EvaluatorType[] | null;
-  infer_corrections?: boolean | null;
-}
 
 export interface EvaluationRunResponse {
   id: string;
@@ -814,37 +796,4 @@ export interface UniqueSource {
 
 export interface EvaluationUniqueSourcesResponse {
   sources: UniqueSource[];
-}
-
-export interface OptimizeSkillRequest {
-  skill_id: string;
-  skill_ids?: string[] | null;
-  data_from?: string | null;
-  data_to?: string | null;
-  infer_corrections?: boolean;
-  n_samples?: number;
-}
-
-export interface OptimizeSkillResponse {
-  skill_id: string;
-  name: string;
-  version: string;
-  original_skill_id: string;
-  total_pairs: number;
-  sampled_pairs: number;
-  created_at: string;
-}
-
-export interface RerunSkillRequest {
-  evaluation_id: string;
-  skill_id?: string | null;
-  evaluators?: EvaluatorType[];
-  infer_corrections?: boolean;
-  n_samples?: number;
-}
-
-export interface RerunSkillResponse {
-  evaluation_id: string;
-  skill_id: string;
-  status: string;
 }
