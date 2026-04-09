@@ -209,6 +209,9 @@ export class ImagePredictions extends Predictions {
           confidence: config?.confidence ?? false,
           grounding: config?.grounding ?? false,
           gql_stmt: config?.gqlStmt ?? null,
+          video_segment_duration: config?.videoSegmentDuration ?? null,
+          video_frames_per_segment: config?.videoFramesPerSegment ?? null,
+          page_indices: config?.pageIndices ?? null,
         },
         metadata: {
           environment: metadata?.environment ?? "dev",
@@ -332,6 +335,9 @@ export class FilePredictions extends Predictions {
           confidence: config?.confidence ?? false,
           grounding: config?.grounding ?? false,
           gql_stmt: config?.gqlStmt ?? null,
+          video_segment_duration: config?.videoSegmentDuration ?? null,
+          video_frames_per_segment: config?.videoFramesPerSegment ?? null,
+          page_indices: config?.pageIndices ?? null,
         },
         metadata: {
           environment: metadata?.environment ?? "dev",
@@ -397,6 +403,9 @@ export class FilePredictions extends Predictions {
           confidence: config?.confidence ?? false,
           grounding: config?.grounding ?? false,
           gql_stmt: config?.gqlStmt ?? null,
+          video_segment_duration: config?.videoSegmentDuration ?? null,
+          video_frames_per_segment: config?.videoFramesPerSegment ?? null,
+          page_indices: config?.pageIndices ?? null,
         },
         metadata: {
           environment: metadata?.environment ?? "dev",
@@ -460,6 +469,9 @@ export class WebPredictions extends Predictions {
           confidence: config?.confidence ?? false,
           grounding: config?.grounding ?? false,
           gql_stmt: config?.gqlStmt ?? null,
+          video_segment_duration: config?.videoSegmentDuration ?? null,
+          video_frames_per_segment: config?.videoFramesPerSegment ?? null,
+          page_indices: config?.pageIndices ?? null,
         },
         metadata: {
           environment: metadata?.environment ?? "dev",

@@ -297,6 +297,9 @@ export type GenerationConfigParams = {
   confidence?: boolean;
   grounding?: boolean;
   gqlStmt?: string | null;
+  videoSegmentDuration?: number | null;
+  videoFramesPerSegment?: number | null;
+  pageIndices?: number[] | null;
 };
 
 export class GenerationConfig {
@@ -325,6 +328,21 @@ export class GenerationConfig {
    */
   gqlStmt: string | null = null;
 
+  /**
+   * Duration in seconds for each video segment when chunking a video for transcription.
+   */
+  videoSegmentDuration: number | null = null;
+
+  /**
+   * Number of frames to sample per video segment for captioning.
+   */
+  videoFramesPerSegment: number | null = null;
+
+  /**
+   * 0-indexed page indices to process for document files. If null, all pages are processed.
+   */
+  pageIndices: number[] | null = null;
+
   constructor(params: Partial<GenerationConfig> = {}) {
     Object.assign(this, params);
   }
@@ -339,6 +357,9 @@ export class GenerationConfig {
       confidence: this.confidence,
       grounding: this.grounding,
       gql_stmt: this.gqlStmt,
+      video_segment_duration: this.videoSegmentDuration,
+      video_frames_per_segment: this.videoFramesPerSegment,
+      page_indices: this.pageIndices,
     };
   }
 }
