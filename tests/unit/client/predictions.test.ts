@@ -120,6 +120,7 @@ describe("Predictions", () => {
               confidence: false,
               detail: "auto",
               gql_stmt: null,
+              service_tier: null,
               grounding: false,
               json_schema: undefined,
             },
@@ -166,6 +167,7 @@ describe("Predictions", () => {
               confidence: false,
               detail: "auto",
               gql_stmt: null,
+              service_tier: null,
               grounding: false,
               json_schema: { type: "object" },
             },
@@ -313,6 +315,7 @@ describe("Predictions", () => {
               detail: "auto",
               grounding: false,
               gql_stmt: null,
+              service_tier: null,
               json_schema: undefined,
             },
             metadata: {
@@ -350,6 +353,7 @@ describe("Predictions", () => {
               detail: "auto",
               grounding: false,
               gql_stmt: null,
+              service_tier: null,
               json_schema: undefined,
             },
             metadata: {
@@ -510,6 +514,7 @@ describe("Predictions", () => {
               detail: "auto",
               grounding: false,
               gql_stmt: null,
+              service_tier: null,
               json_schema: undefined,
             },
             metadata: {
@@ -547,6 +552,7 @@ describe("Predictions", () => {
               detail: "auto",
               grounding: false,
               gql_stmt: null,
+              service_tier: null,
               json_schema: undefined,
             },
             metadata: {
@@ -633,6 +639,7 @@ describe("Predictions", () => {
               detail: "auto",
               grounding: false,
               gql_stmt: null,
+              service_tier: null,
               json_schema: undefined,
             },
             metadata: {
@@ -670,6 +677,7 @@ describe("Predictions", () => {
               detail: "auto",
               grounding: false,
               gql_stmt: null,
+              service_tier: null,
               json_schema: undefined,
             },
             metadata: {
@@ -766,6 +774,7 @@ describe("Predictions", () => {
               confidence: false,
               grounding: false,
               gql_stmt: null,
+              service_tier: null,
             },
             metadata: {
               environment: "prod",
@@ -807,6 +816,7 @@ describe("Predictions", () => {
               confidence: false,
               grounding: false,
               gql_stmt: null,
+              service_tier: null,
             },
             metadata: {
               environment: "dev",
@@ -914,6 +924,7 @@ describe("Predictions", () => {
               json_schema: null,
               confidence: false,
               gql_stmt: null,
+              service_tier: null,
               grounding: false,
             },
             metadata: {
@@ -966,6 +977,7 @@ describe("Predictions", () => {
               json_schema: { type: "object" },
               confidence: true,
               gql_stmt: null,
+              service_tier: null,
               grounding: true,
             },
             metadata: {

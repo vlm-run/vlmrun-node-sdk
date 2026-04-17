@@ -289,6 +289,13 @@ export class RequestMetadata {
 
 export type RequestMetadataInput = RequestMetadata | RequestMetadataParams;
 
+export type ServiceTier =
+  | "auto"
+  | "default"
+  | "standard"
+  | "flex"
+  | "priority";
+
 export type GenerationConfigParams = {
   detail?: "auto" | "hi" | "lo";
   responseModel?: ZodType;
@@ -297,6 +304,7 @@ export type GenerationConfigParams = {
   confidence?: boolean;
   grounding?: boolean;
   gqlStmt?: string | null;
+  serviceTier?: ServiceTier | null;
 };
 
 export class GenerationConfig {
@@ -325,6 +333,20 @@ export class GenerationConfig {
    */
   gqlStmt: string | null = null;
 
+  /**
+   * Delivery tier for the request, mirroring OpenAI's `service_tier` semantics
+   * and Vertex AI's Gemini Flex/Priority offering.
+   *
+   * - `"standard"` / `"default"`: baseline rates (1.0x).
+   * - `"flex"`: 50% discount with higher latency (0.5x).
+   * - `"priority"`: 1.8x premium for highest reliability.
+   * - `"auto"` / `null`: fall back to the server-side default
+   *   (currently `"standard"`).
+   *
+   * The chosen tier drives BOTH billing AND the underlying request routing.
+   */
+  serviceTier: ServiceTier | null = null;
+
   constructor(params: Partial<GenerationConfig> = {}) {
     Object.assign(this, params);
   }
@@ -339,6 +361,7 @@ export class GenerationConfig {
       confidence: this.confidence,
       grounding: this.grounding,
       gql_stmt: this.gqlStmt,
+      service_tier: this.serviceTier,
     };
   }
 }
