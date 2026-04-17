@@ -114,9 +114,41 @@ describe("Domains class methods", () => {
             confidence: true,
             grounding: false,
             gql_stmt: null,
+            service_tier: null,
           }
         }
       );
+    });
+  });
+
+  describe("GenerationConfig service_tier", () => {
+    it.each(["auto", "default", "standard", "flex", "priority"] as const)(
+      "accepts %s and serialises it as service_tier",
+      (tier) => {
+        const config = new GenerationConfig({ serviceTier: tier });
+        expect(config.serviceTier).toBe(tier);
+        expect(config.toJSON()).toEqual({
+          detail: "auto",
+          json_schema: null,
+          confidence: false,
+          grounding: false,
+          gql_stmt: null,
+          service_tier: tier,
+        });
+      }
+    );
+
+    it("defaults to null and serialises service_tier as null", () => {
+      const config = new GenerationConfig();
+      expect(config.serviceTier).toBeNull();
+      expect(config.toJSON()).toEqual({
+        detail: "auto",
+        json_schema: null,
+        confidence: false,
+        grounding: false,
+        gql_stmt: null,
+        service_tier: null,
+      });
     });
   });
 
