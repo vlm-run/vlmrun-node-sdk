@@ -48,6 +48,7 @@ describe("AudioPredictions", () => {
             detail: "auto",
             grounding: false,
             gql_stmt: null,
+            service_tier: null,
             json_schema: undefined,
           },
           metadata: {
@@ -97,6 +98,7 @@ describe("AudioPredictions", () => {
             detail: "hi",
             grounding: true,
             gql_stmt: null,
+            service_tier: null,
           },
           metadata: {
             environment: "prod",
@@ -133,6 +135,7 @@ describe("AudioPredictions", () => {
             detail: "auto",
             grounding: false,
             gql_stmt: null,
+            service_tier: null,
             json_schema: undefined,
           },
           metadata: {
@@ -182,6 +185,7 @@ describe("AudioPredictions", () => {
             detail: "lo",
             grounding: false,
             gql_stmt: null,
+            service_tier: null,
             json_schema: undefined,
           },
           metadata: {
@@ -244,6 +248,7 @@ describe("AudioPredictions", () => {
             detail: "auto",
             grounding: false,
             gql_stmt: null,
+            service_tier: null,
             json_schema: undefined,
           },
           metadata: {

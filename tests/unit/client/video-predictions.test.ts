@@ -48,6 +48,7 @@ describe("VideoPredictions", () => {
             detail: "auto",
             grounding: false,
             gql_stmt: null,
+            service_tier: null,
             json_schema: undefined,
           },
           metadata: {
@@ -97,6 +98,7 @@ describe("VideoPredictions", () => {
             detail: "hi",
             grounding: true,
             gql_stmt: null,
+            service_tier: null,
             json_schema: undefined,
           },
           metadata: {
@@ -134,6 +136,7 @@ describe("VideoPredictions", () => {
             detail: "auto",
             grounding: false,
             gql_stmt: null,
+            service_tier: null,
             json_schema: undefined,
           },
           metadata: {
@@ -183,6 +186,7 @@ describe("VideoPredictions", () => {
             detail: "lo",
             grounding: false,
             gql_stmt: null,
+            service_tier: null,
             json_schema: undefined,
           },
           metadata: {
@@ -245,6 +249,7 @@ describe("VideoPredictions", () => {
             detail: "auto",
             grounding: false,
             gql_stmt: null,
+            service_tier: null,
             json_schema: undefined,
           },
           metadata: {

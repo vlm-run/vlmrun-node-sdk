@@ -209,6 +209,7 @@ export class ImagePredictions extends Predictions {
           confidence: config?.confidence ?? false,
           grounding: config?.grounding ?? false,
           gql_stmt: config?.gqlStmt ?? null,
+          service_tier: config?.serviceTier ?? null,
         },
         metadata: {
           environment: metadata?.environment ?? "dev",
@@ -332,6 +333,7 @@ export class FilePredictions extends Predictions {
           confidence: config?.confidence ?? false,
           grounding: config?.grounding ?? false,
           gql_stmt: config?.gqlStmt ?? null,
+          service_tier: config?.serviceTier ?? null,
         },
         metadata: {
           environment: metadata?.environment ?? "dev",
@@ -397,6 +399,7 @@ export class FilePredictions extends Predictions {
           confidence: config?.confidence ?? false,
           grounding: config?.grounding ?? false,
           gql_stmt: config?.gqlStmt ?? null,
+          service_tier: config?.serviceTier ?? null,
         },
         metadata: {
           environment: metadata?.environment ?? "dev",
@@ -460,6 +463,7 @@ export class WebPredictions extends Predictions {
           confidence: config?.confidence ?? false,
           grounding: config?.grounding ?? false,
           gql_stmt: config?.gqlStmt ?? null,
+          service_tier: config?.serviceTier ?? null,
         },
         metadata: {
           environment: metadata?.environment ?? "dev",
