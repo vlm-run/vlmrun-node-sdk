@@ -2,7 +2,6 @@
  * VLM Run API Skills resource.
  */
 
-import { json } from "stream/consumers";
 import { Client, APIRequestor } from "./base_requestor";
 import {
   SkillInfo,
@@ -10,6 +9,7 @@ import {
   SkillCreateParams,
   SkillUpdateParams,
   SkillGetParams,
+  SkillListParams,
 } from "./types";
 
 export class Skills {
@@ -32,14 +32,28 @@ export class Skills {
   }
 
   /**
-   * List all available skills.
+   * List available skills.
    *
+   * @param params - Optional listing parameters
+   * @param params.limit - Max items to return (1-1000, default 25)
+   * @param params.offset - Number of items to skip
+   * @param params.orderBy - Sort field (created_at, updated_at, name)
+   * @param params.descending - Sort direction (default true)
+   * @param params.grouped - If true, return only the latest version per skill name
    * @returns List of SkillInfo objects
    */
-  async list(): Promise<SkillInfo[]> {
+  async list(params: SkillListParams = {}): Promise<SkillInfo[]> {
+    const queryParams: Record<string, any> = {};
+    if (params.limit !== undefined) queryParams.limit = params.limit;
+    if (params.offset !== undefined) queryParams.offset = params.offset;
+    if (params.orderBy !== undefined) queryParams.order_by = params.orderBy;
+    if (params.descending !== undefined) queryParams.descending = params.descending;
+    if (params.grouped !== undefined) queryParams.grouped = params.grouped;
+
     const [response] = await this.requestor.request<SkillInfo[]>(
       "GET",
       "skills",
+      Object.keys(queryParams).length > 0 ? queryParams : undefined,
     );
 
     if (!Array.isArray(response)) {
@@ -59,7 +73,8 @@ export class Skills {
    * @returns Skill information
    */
   async get(params: SkillGetParams): Promise<SkillInfo> {
-    const { name, id, version } = params;
+    const { name, id, skillVersion, version } = params;
+    const effectiveVersion = skillVersion || version;
 
     if (id && !name) {
       const [response] = await this.requestor.request<SkillInfo>(
@@ -74,8 +89,8 @@ export class Skills {
       return response;
     } else if (name) {
       const data: Record<string, any> = { name };
-      if (version) {
-        data.version = version;
+      if (effectiveVersion) {
+        data.skill_version = effectiveVersion;
       }
 
       const [response] = await this.requestor.request<SkillInfo>(

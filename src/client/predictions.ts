@@ -208,18 +208,24 @@ export class ImagePredictions extends Predictions {
       s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
     );
 
+    const configPayload: Record<string, any> = {
+      detail: config?.detail ?? "auto",
+      json_schema: jsonSchema,
+      skills: serializedSkills,
+      confidence: config?.confidence ?? false,
+      grounding: config?.grounding ?? false,
+      gql_stmt: config?.gqlStmt ?? null,
+    };
+    if (config?.serviceTier !== undefined) configPayload.service_tier = config.serviceTier;
+    if (config?.videoSegmentDuration !== undefined) configPayload.video_segment_duration = config.videoSegmentDuration;
+    if (config?.videoFramesPerSegment !== undefined) configPayload.video_frames_per_segment = config.videoFramesPerSegment;
+    if (config?.pageIndices !== undefined) configPayload.page_indices = config.pageIndices;
+
     const data: Record<string, any> = {
       images: imagesData,
       model,
       batch,
-      config: {
-        detail: config?.detail ?? "auto",
-        json_schema: jsonSchema,
-        skills: serializedSkills,
-        confidence: config?.confidence ?? false,
-        grounding: config?.grounding ?? false,
-        gql_stmt: config?.gqlStmt ?? null,
-      },
+      config: configPayload,
       metadata: {
         environment: metadata?.environment ?? "dev",
         session_id: metadata?.sessionId,
@@ -351,18 +357,24 @@ export class FilePredictions extends Predictions {
       s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
     );
 
+    const configPayload: Record<string, any> = {
+      detail: config?.detail ?? "auto",
+      json_schema: jsonSchema,
+      skills: serializedSkills,
+      confidence: config?.confidence ?? false,
+      grounding: config?.grounding ?? false,
+      gql_stmt: config?.gqlStmt ?? null,
+    };
+    if (config?.serviceTier !== undefined) configPayload.service_tier = config.serviceTier;
+    if (config?.videoSegmentDuration !== undefined) configPayload.video_segment_duration = config.videoSegmentDuration;
+    if (config?.videoFramesPerSegment !== undefined) configPayload.video_frames_per_segment = config.videoFramesPerSegment;
+    if (config?.pageIndices !== undefined) configPayload.page_indices = config.pageIndices;
+
     const data: Record<string, any> = {
       ...fileOrUrl,
       model,
       batch,
-      config: {
-        detail: config?.detail ?? "auto",
-        json_schema: jsonSchema,
-        skills: serializedSkills,
-        confidence: config?.confidence ?? false,
-        grounding: config?.grounding ?? false,
-        gql_stmt: config?.gqlStmt ?? null,
-      },
+      config: configPayload,
       metadata: {
         environment: metadata?.environment ?? "dev",
         session_id: metadata?.sessionId,
