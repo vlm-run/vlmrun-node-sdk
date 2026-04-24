@@ -485,6 +485,7 @@ export interface FilePredictionSchemaParams {
 
 export interface WebPredictionParams extends PredictionGenerateParams {
   url: string;
+  domain: string;
   mode: "fast" | "accurate";
 }
 
