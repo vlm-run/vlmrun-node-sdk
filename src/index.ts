@@ -7,7 +7,6 @@ import {
   DocumentPredictions,
   AudioPredictions,
   VideoPredictions,
-  WebPredictions,
 } from "./client/predictions";
 import { Feedback } from "./client/feedback";
 import { Finetuning } from "./client/fine_tuning";
@@ -51,7 +50,6 @@ export class VlmRun {
   readonly document: ReturnType<typeof DocumentPredictions>;
   readonly audio: ReturnType<typeof AudioPredictions>;
   readonly video: ReturnType<typeof VideoPredictions>;
-  readonly web: WebPredictions;
   readonly feedback: Feedback;
   readonly finetuning: Finetuning;
   readonly dataset: Datasets;
@@ -78,7 +76,6 @@ export class VlmRun {
     this.document = DocumentPredictions(this.client);
     this.audio = AudioPredictions(this.client);
     this.video = VideoPredictions(this.client);
-    this.web = new WebPredictions(this.client);
     this.feedback = new Feedback(this.client);
     this.finetuning = new Finetuning(this.client);
     this.dataset = new Datasets(this.client);

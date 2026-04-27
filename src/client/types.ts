@@ -483,12 +483,6 @@ export interface FilePredictionSchemaParams {
   url?: string;
 }
 
-export interface WebPredictionParams extends PredictionGenerateParams {
-  url: string;
-  domain: string;
-  mode: "fast" | "accurate";
-}
-
 export interface FinetuningResponse {
   id: string;
   created_at: string;

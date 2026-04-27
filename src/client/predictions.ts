@@ -5,7 +5,6 @@ import {
   ImagePredictionParams,
   FilePredictionParams,
   FileExecuteParams,
-  WebPredictionParams,
   SchemaResponse,
   GenerationConfigParams,
   AgentSkill,
@@ -490,37 +489,6 @@ export class FilePredictions extends Predictions {
       response.response = response.response as SchemaResponse;
     }
 
-    return response;
-  }
-}
-
-export class WebPredictions extends Predictions {
-  async generate(params: WebPredictionParams): Promise<PredictionResponse> {
-    const { url, model, domain, mode, metadata, callbackUrl, config } = params;
-    const [response] = await this.requestor.request<PredictionResponse>(
-      "POST",
-      `/web/generate`,
-      undefined,
-      {
-        url,
-        model,
-        domain,
-        mode,
-        config: {
-          detail: config?.detail ?? "auto",
-          json_schema: config?.jsonSchema ?? null,
-          confidence: config?.confidence ?? false,
-          grounding: config?.grounding ?? false,
-          gql_stmt: config?.gqlStmt ?? null,
-        },
-        metadata: {
-          environment: metadata?.environment ?? "dev",
-          session_id: metadata?.sessionId,
-          allow_training: metadata?.allowTraining ?? true,
-        },
-        callback_url: callbackUrl,
-      }
-    );
     return response;
   }
 }
