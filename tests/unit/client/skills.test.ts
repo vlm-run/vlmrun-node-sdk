@@ -47,7 +47,8 @@ describe("Skills", () => {
       expect(result).toEqual(mockResponse);
       expect(skills["requestor"].request).toHaveBeenCalledWith(
         "GET",
-        "skills"
+        "skills",
+        undefined
       );
     });
 
@@ -126,7 +127,7 @@ describe("Skills", () => {
         "POST",
         "skills/lookup",
         undefined,
-        { name: "invoice-parser", version: "1.0" }
+        { name: "invoice-parser", skill_version: "1.0" }
       );
     });
 

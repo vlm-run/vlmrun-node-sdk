@@ -241,9 +241,83 @@ export interface FileUploadParams {
   generatePublicUrl?: boolean;
 }
 
+/**
+ * Source payload for an inline skill bundle.
+ */
+export interface InlineSkillSource {
+  type?: string;
+  mediaType?: string;
+  data: string;
+}
+
+export interface AgentSkillParams {
+  type?: string;
+  skillId?: string;
+  skillName?: string;
+  skillVersion?: string;
+  /** @deprecated Use skillVersion instead */
+  version?: string;
+  name?: string;
+  description?: string;
+  source?: InlineSkillSource;
+  /** @deprecated Use source.data instead */
+  bundle?: string;
+}
+
+export class AgentSkill {
+  type: string = "skill_reference";
+  skillId?: string;
+  skillName?: string;
+  skillVersion: string = "latest";
+  name?: string;
+  description?: string;
+  source?: InlineSkillSource;
+  /** @deprecated Use source.data instead */
+  bundle?: string;
+
+  constructor(params: AgentSkillParams = {}) {
+    const isInline = params.type === "inline";
+    if (!isInline && !params.skillId && !params.skillName) {
+      throw new Error("Either 'skillId' or 'skillName' must be provided for referenced skills");
+    }
+    // Handle version -> skillVersion backward compatibility
+    if (params.version && !params.skillVersion) {
+      params.skillVersion = params.version;
+    }
+    Object.assign(this, params);
+  }
+
+  toJSON(): Record<string, any> {
+    const json: Record<string, any> = {
+      type: this.type,
+    };
+
+    if (this.type === "inline") {
+      if (this.name !== undefined) json.name = this.name;
+      if (this.description !== undefined) json.description = this.description;
+      if (this.source) {
+        json.source = {
+          type: this.source.type ?? "base64",
+          media_type: this.source.mediaType ?? "application/zip",
+          data: this.source.data,
+        };
+      }
+      if (this.bundle !== undefined) json.bundle = this.bundle;
+    } else {
+      if (this.skillId !== undefined) json.skill_id = this.skillId;
+      if (this.skillName !== undefined) json.skill_name = this.skillName;
+      json.skill_version = this.skillVersion;
+    }
+
+    return json;
+  }
+}
+
+export type AgentSkillInput = AgentSkill | AgentSkillParams;
+
 export interface PredictionGenerateParams {
   model?: string;
-  domain: string;
+  domain?: string;
   config?: GenerationConfigParams;
   metadata?: RequestMetadataParams;
   callbackUrl?: string;
@@ -294,9 +368,14 @@ export type GenerationConfigParams = {
   responseModel?: ZodType;
   zodToJsonParams?: any;
   jsonSchema?: Record<string, any> | null;
+  skills?: AgentSkillInput[];
   confidence?: boolean;
   grounding?: boolean;
   gqlStmt?: string | null;
+  serviceTier?: "auto" | "default" | "standard" | "flex" | "priority" | null;
+  videoSegmentDuration?: number | null;
+  videoFramesPerSegment?: number | null;
+  pageIndices?: number[] | null;
 };
 
 export class GenerationConfig {
@@ -309,6 +388,11 @@ export class GenerationConfig {
    * The JSON schema to use for the model.
    */
   jsonSchema: Record<string, any> | null = null;
+
+  /**
+   * List of skills to enable for this request.
+   */
+  skills?: AgentSkillInput[];
 
   /**
    * Include confidence scores in the response (included in the `_metadata` field).
@@ -325,6 +409,26 @@ export class GenerationConfig {
    */
   gqlStmt: string | null = null;
 
+  /**
+   * Delivery tier for billing and request routing.
+   */
+  serviceTier?: "auto" | "default" | "standard" | "flex" | "priority" | null;
+
+  /**
+   * Duration in seconds for each video segment when chunking a video.
+   */
+  videoSegmentDuration?: number | null;
+
+  /**
+   * Number of frames to sample per video segment.
+   */
+  videoFramesPerSegment?: number | null;
+
+  /**
+   * 0-indexed page indices to process for document files. If null, all pages are processed.
+   */
+  pageIndices?: number[] | null;
+
   constructor(params: Partial<GenerationConfig> = {}) {
     Object.assign(this, params);
   }
@@ -333,13 +437,21 @@ export class GenerationConfig {
    * Creates the config object in the format expected by the API
    */
   toJSON() {
-    return {
+    const json: Record<string, any> = {
       detail: this.detail,
       json_schema: this.jsonSchema,
+      skills: this.skills?.map((s) =>
+        s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
+      ),
       confidence: this.confidence,
       grounding: this.grounding,
       gql_stmt: this.gqlStmt,
     };
+    if (this.serviceTier !== undefined) json.service_tier = this.serviceTier;
+    if (this.videoSegmentDuration !== undefined) json.video_segment_duration = this.videoSegmentDuration;
+    if (this.videoFramesPerSegment !== undefined) json.video_frames_per_segment = this.videoFramesPerSegment;
+    if (this.pageIndices !== undefined) json.page_indices = this.pageIndices;
+    return json;
   }
 }
 
@@ -369,11 +481,6 @@ export interface FilePredictionParams extends PredictionGenerateParams {
 export interface FilePredictionSchemaParams {
   fileId?: string;
   url?: string;
-}
-
-export interface WebPredictionParams extends PredictionGenerateParams {
-  url: string;
-  mode: "fast" | "accurate";
 }
 
 export interface FinetuningResponse {
@@ -601,11 +708,13 @@ export type AgentExecutionConfigParams = {
   prompt?: string;
   responseModel?: ZodType;
   jsonSchema?: Record<string, any>;
+  skills?: AgentSkillInput[];
 };
 
 export class AgentExecutionConfig {
   prompt?: string;
   jsonSchema?: Record<string, any>;
+  skills?: AgentSkillInput[];
 
   constructor(params: Partial<AgentExecutionConfig> = {}) {
     Object.assign(this, params);
@@ -615,6 +724,9 @@ export class AgentExecutionConfig {
     return {
       prompt: this.prompt,
       json_schema: this.jsonSchema,
+      skills: this.skills?.map((s) =>
+        s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
+      ),
     };
   }
 }
@@ -623,11 +735,13 @@ export type AgentCreationConfigParams = {
   prompt?: string;
   responseModel?: ZodType;
   jsonSchema?: Record<string, any>;
+  skills?: AgentSkillInput[];
 };
 
 export class AgentCreationConfig {
   prompt?: string;
   jsonSchema?: Record<string, any>;
+  skills?: AgentSkillInput[];
 
   constructor(params: Partial<AgentCreationConfig> = {}) {
     Object.assign(this, params);
@@ -637,6 +751,9 @@ export class AgentCreationConfig {
     return {
       prompt: this.prompt,
       json_schema: this.jsonSchema,
+      skills: this.skills?.map((s) =>
+        s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
+      ),
     };
   }
 }
@@ -666,10 +783,13 @@ export interface SkillInfo {
   id: string;
   name: string;
   description?: string;
+  skill_version?: string;
+  /** @deprecated Use skill_version instead */
   version?: string;
   created_at?: string;
   updated_at?: string;
   status?: JobStatus;
+  is_public?: boolean;
 }
 
 export interface SkillDownloadResponse {
@@ -677,9 +797,19 @@ export interface SkillDownloadResponse {
   expires_in?: number;
 }
 
+export interface SkillListParams {
+  limit?: number;
+  offset?: number;
+  orderBy?: string;
+  descending?: boolean;
+  grouped?: boolean;
+}
+
 export interface SkillGetParams {
   name?: string;
   id?: string;
+  skillVersion?: string;
+  /** @deprecated Use skillVersion instead */
   version?: string;
 }
 
@@ -698,9 +828,4 @@ export interface SkillUpdateParams {
   description?: string;
 }
 
-export interface AgentSkill {
-  skillName?: string;
-  skillId?: string;
-  version?: string;
-  type?: string;
-}
+
