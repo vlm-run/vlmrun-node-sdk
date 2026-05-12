@@ -607,7 +607,7 @@ describe("Agent", () => {
       status: "completed",
     };
 
-    it.each(["auto", "default", "standard", "flex", "priority"] as const)(
+    it.each(["auto", "default", "standard", "flex", "priority", null] as const)(
       "forwards service_tier=%s to /agent/execute as snake_case",
       async (tier) => {
         jest
