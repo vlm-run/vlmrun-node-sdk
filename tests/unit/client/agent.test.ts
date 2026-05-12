@@ -587,4 +587,81 @@ describe("Agent", () => {
       );
     });
   });
+
+  describe("service_tier", () => {
+    const mockExecuteResponse = {
+      id: "execution_123",
+      name: "test-agent",
+      created_at: "2023-01-01T00:00:00Z",
+      completed_at: "2023-01-01T00:00:01Z",
+      response: { result: "success" },
+      status: "completed",
+      usage: { credits_used: 10 },
+    };
+
+    const mockCreateResponse = {
+      id: "agent_123",
+      name: "test-agent",
+      created_at: "2023-01-01T00:00:00Z",
+      updated_at: "2023-01-01T00:00:00Z",
+      status: "completed",
+    };
+
+    it.each(["auto", "default", "standard", "flex", "priority"] as const)(
+      "forwards service_tier=%s to /agent/execute as snake_case",
+      async (tier) => {
+        jest
+          .spyOn(agent["requestor"], "request")
+          .mockResolvedValue([mockExecuteResponse, 200, {}]);
+
+        await agent.execute({
+          name: "test-agent",
+          config: { prompt: "hi", serviceTier: tier },
+        });
+
+        expect(agent["requestor"].request).toHaveBeenCalledWith(
+          "POST",
+          "agent/execute",
+          undefined,
+          expect.objectContaining({
+            config: expect.objectContaining({ service_tier: tier }),
+          })
+        );
+      }
+    );
+
+    it("omits service_tier from /agent/execute payload when not set", async () => {
+      jest
+        .spyOn(agent["requestor"], "request")
+        .mockResolvedValue([mockExecuteResponse, 200, {}]);
+
+      await agent.execute({
+        name: "test-agent",
+        config: { prompt: "hi" },
+      });
+
+      const call = (agent["requestor"].request as jest.Mock).mock.calls[0];
+      expect(call[3].config).not.toHaveProperty("service_tier");
+    });
+
+    it("forwards service_tier through /agent/create", async () => {
+      jest
+        .spyOn(agent["requestor"], "request")
+        .mockResolvedValue([mockCreateResponse, 200, {}]);
+
+      await agent.create({
+        name: "test-agent",
+        config: { prompt: "Test prompt", serviceTier: "flex" },
+      });
+
+      expect(agent["requestor"].request).toHaveBeenCalledWith(
+        "POST",
+        "agent/create",
+        undefined,
+        expect.objectContaining({
+          config: expect.objectContaining({ service_tier: "flex" }),
+        })
+      );
+    });
+  });
 });

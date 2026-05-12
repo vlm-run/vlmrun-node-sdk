@@ -709,25 +709,36 @@ export type AgentExecutionConfigParams = {
   responseModel?: ZodType;
   jsonSchema?: Record<string, any>;
   skills?: AgentSkillInput[];
+  serviceTier?: "auto" | "default" | "standard" | "flex" | "priority" | null;
 };
 
 export class AgentExecutionConfig {
   prompt?: string;
   jsonSchema?: Record<string, any>;
   skills?: AgentSkillInput[];
+  /**
+   * Delivery tier for billing and request routing. Mirrors OpenAI's
+   * `service_tier` and Vertex AI's Gemini Flex/Priority offering.
+   * `standard`/`default` uses baseline rates, `flex` applies a 50% discount
+   * with higher latency, `priority` applies a 1.8x premium. When omitted
+   * (or `auto`), the server default applies.
+   */
+  serviceTier?: "auto" | "default" | "standard" | "flex" | "priority" | null;
 
   constructor(params: Partial<AgentExecutionConfig> = {}) {
     Object.assign(this, params);
   }
 
   toJSON() {
-    return {
+    const json: Record<string, any> = {
       prompt: this.prompt,
       json_schema: this.jsonSchema,
       skills: this.skills?.map((s) =>
         s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
       ),
     };
+    if (this.serviceTier !== undefined) json.service_tier = this.serviceTier;
+    return json;
   }
 }
 
@@ -736,25 +747,36 @@ export type AgentCreationConfigParams = {
   responseModel?: ZodType;
   jsonSchema?: Record<string, any>;
   skills?: AgentSkillInput[];
+  serviceTier?: "auto" | "default" | "standard" | "flex" | "priority" | null;
 };
 
 export class AgentCreationConfig {
   prompt?: string;
   jsonSchema?: Record<string, any>;
   skills?: AgentSkillInput[];
+  /**
+   * Delivery tier for billing and request routing. Mirrors OpenAI's
+   * `service_tier` and Vertex AI's Gemini Flex/Priority offering.
+   * `standard`/`default` uses baseline rates, `flex` applies a 50% discount
+   * with higher latency, `priority` applies a 1.8x premium. When omitted
+   * (or `auto`), the server default applies.
+   */
+  serviceTier?: "auto" | "default" | "standard" | "flex" | "priority" | null;
 
   constructor(params: Partial<AgentCreationConfig> = {}) {
     Object.assign(this, params);
   }
 
   toJSON() {
-    return {
+    const json: Record<string, any> = {
       prompt: this.prompt,
       json_schema: this.jsonSchema,
       skills: this.skills?.map((s) =>
         s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
       ),
     };
+    if (this.serviceTier !== undefined) json.service_tier = this.serviceTier;
+    return json;
   }
 }
 
