@@ -6,6 +6,15 @@ import { SkillInfo, PredictionResponse } from "../../../src/client/types";
 
 jest.setTimeout(60000);
 
+const testVideoUrl =
+  "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/video.transcription/nvidia_demo.mp4";
+
+const testLongVideoUrl =
+  "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/video.transcription/how_to_build_an_mvp.mp4";
+
+const testVideoExtractionSkillName =
+  process.env.TEST_VIDEO_EXTRACTION_SKILL_NAME ?? "";
+
 const INVOICE_SKILL_PROMPT =
   "Extract key information from invoices provided as documents or images, " +
   "including invoice number, date, vendor name, customer name, line items " +
@@ -388,8 +397,7 @@ describe("Integration: Skills", () => {
         prompt: INVOICE_SKILL_PROMPT,
         jsonSchema: INVOICE_SCHEMA,
         name: `invoice-doc-generate-${Date.now()}`,
-        description:
-          "Invoice skill for document generation integration test.",
+        description: "Invoice skill for document generation integration test.",
       });
 
       expect(skill).toBeTruthy();
@@ -438,6 +446,32 @@ describe("Integration: Skills", () => {
       expect(completed).toHaveProperty("response");
       expect(completed.response).toBeTruthy();
       expect(completed).toHaveProperty("completed_at");
+    });
+  });
+
+  describe("execute()", () => {
+    it("should execute agent with serviceTier=flex", async () => {
+      const result = await client.agent.execute({
+        inputs: {
+          video: {
+            type: "video_url",
+            video_url: { url: testLongVideoUrl },
+          },
+        },
+        config: {
+          serviceTier: "flex",
+          skills: [
+            {
+              skillName: testVideoExtractionSkillName,
+              skillVersion: "latest",
+            },
+          ],
+        },
+      });
+
+      expect(result).toBeTruthy();
+      expect(result).toHaveProperty("id");
+      expect(result).toHaveProperty("status");
     });
   });
 });
