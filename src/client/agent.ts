@@ -45,7 +45,7 @@ export class Agent {
    * @returns Processed inputs as plain object or undefined
    */
   private _processInputs(
-    inputs: Record<string, any> | null | undefined
+    inputs: Record<string, any> | null | undefined,
   ): Record<string, any> | undefined {
     if (inputs === null || inputs === undefined) {
       return undefined;
@@ -60,7 +60,7 @@ export class Agent {
     if (typeof inputs === "object" && inputs.constructor === Object) {
       console.warn(
         "Deprecation Warning: Passing inputs as a plain object will be deprecated in the future. " +
-          "Please use a class with a toJSON() method instead for better type safety and validation."
+          "Please use a class with a toJSON() method instead for better type safety and validation.",
       );
     }
 
@@ -107,7 +107,7 @@ export class Agent {
       throw new DependencyError(
         "OpenAI SDK is not installed",
         "missing_dependency",
-        "Install it with `npm install openai` or `yarn add openai`"
+        "Install it with `npm install openai` or `yarn add openai`",
       );
     }
 
@@ -138,18 +138,26 @@ export class Agent {
 
     if (id) {
       if (name || prompt) {
-        throw new InputError("Only one of `id` or `name` or `prompt` can be provided");
+        throw new InputError(
+          "Only one of `id` or `name` or `prompt` can be provided",
+        );
       }
     } else if (name) {
       if (id || prompt) {
-        throw new InputError("Only one of `id` or `name` or `prompt` can be provided");
+        throw new InputError(
+          "Only one of `id` or `name` or `prompt` can be provided",
+        );
       }
     } else if (prompt) {
       if (id || name) {
-        throw new InputError("Only one of `id` or `name` or `prompt` can be provided");
+        throw new InputError(
+          "Only one of `id` or `name` or `prompt` can be provided",
+        );
       }
     } else {
-      throw new InputError("Either `id` or `name` or `prompt` must be provided");
+      throw new InputError(
+        "Either `id` or `name` or `prompt` must be provided",
+      );
     }
 
     const data: Record<string, any> = {};
@@ -165,7 +173,7 @@ export class Agent {
       "POST",
       "agent/lookup",
       undefined,
-      data
+      data,
     );
 
     if (typeof response !== "object") {
@@ -183,7 +191,7 @@ export class Agent {
   async list(): Promise<AgentInfo[]> {
     const [response] = await this.requestor.request<AgentInfo[]>(
       "GET",
-      "agent"
+      "agent",
     );
 
     if (!Array.isArray(response)) {
@@ -208,7 +216,7 @@ export class Agent {
         : new AgentCreationConfig(config);
     if (!configObj.prompt) {
       throw new InputError(
-        "Prompt is not provided as a request parameter, please provide a prompt"
+        "Prompt is not provided as a request parameter, please provide a prompt",
       );
     }
 
@@ -226,7 +234,7 @@ export class Agent {
       "POST",
       "agent/create",
       undefined,
-      data
+      data,
     );
 
     if (typeof response !== "object") {
@@ -243,7 +251,7 @@ export class Agent {
    * @returns Agent execution response
    */
   async execute(
-    params: AgentExecuteParamsNew
+    params: AgentExecuteParamsNew,
   ): Promise<AgentExecutionResponse> {
     const {
       name,
@@ -280,12 +288,11 @@ export class Agent {
     if (callbackUrl) {
       data.callback_url = callbackUrl;
     }
-
     const [response] = await this.requestor.request<AgentExecutionResponse>(
       "POST",
       "agent/execute",
       undefined,
-      data
+      data,
     );
 
     if (typeof response !== "object") {
@@ -354,7 +361,7 @@ export class Agent {
       "POST",
       "agent/execute",
       undefined,
-      data
+      data,
     );
 
     if (typeof response !== "object") {

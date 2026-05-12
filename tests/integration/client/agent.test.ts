@@ -60,13 +60,15 @@ describe("Integration: Agent", () => {
         client.agent.get({
           id: "some-id",
           name: testAgentName,
-        })
-      ).rejects.toThrow("Only one of `id` or `name` or `prompt` can be provided");
+        }),
+      ).rejects.toThrow(
+        "Only one of `id` or `name` or `prompt` can be provided",
+      );
     });
 
     it("should throw error when no parameters are provided", async () => {
       await expect(client.agent.get({})).rejects.toThrow(
-        "Either `id` or `name` or `prompt` must be provided"
+        "Either `id` or `name` or `prompt` must be provided",
       );
     });
   });
@@ -213,9 +215,9 @@ describe("Integration: Agent", () => {
           config: {
             // No prompt provided
           },
-        })
+        }),
       ).rejects.toThrow(
-        "Prompt is not provided as a request parameter, please provide a prompt"
+        "Prompt is not provided as a request parameter, please provide a prompt",
       );
     });
 
