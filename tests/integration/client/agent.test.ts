@@ -242,5 +242,24 @@ describe("Integration: Agent", () => {
       expect(getResult.id).toBe(createResult.id);
       expect(getResult.name).toBe(createResult.name);
     });
+
+    it("should create agent with serviceTier=flex", async () => {
+      const result = await client.agent.create({
+        name: `${testAgentNameForCreation}-flex`,
+        inputs: {
+          image: testImageUrl,
+        },
+        config: {
+          prompt: faceRedactionPrompt,
+          serviceTier: "flex",
+        },
+      });
+
+      expect(result).toBeTruthy();
+      expect(result).toHaveProperty("id");
+      expect(result).toHaveProperty("name");
+      expect(result).toHaveProperty("status");
+      expect(result.name).toBe(`${testAgentNameForCreation}-flex`);
+    });
   });
 });
