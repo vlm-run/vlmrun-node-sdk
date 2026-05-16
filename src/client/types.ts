@@ -221,6 +221,7 @@ export interface PredictionResponse {
   completed_at?: string;
   response?: any;
   status: JobStatus;
+  domain?: string;
   message?: string;
   usage?: CreditUsage;
 }
