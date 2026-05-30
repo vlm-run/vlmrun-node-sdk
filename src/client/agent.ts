@@ -17,6 +17,7 @@ import {
   AgentExecuteParamsNew,
   AgentExecutionConfig,
   AgentCreationConfig,
+  AgentToolset,
 } from "./types";
 
 export class Agent {
@@ -250,6 +251,33 @@ export class Agent {
    * @param params - Agent execution parameters
    * @returns Agent execution response
    */
+  /**
+   * Get agent information by ID.
+   *
+   * @param agentId - The ID of the agent to retrieve
+   * @returns Agent information
+   */
+  async getById(agentId: string): Promise<AgentInfo> {
+    const [response] = await this.requestor.request<AgentInfo>(
+      "GET",
+      `agents/${agentId}`,
+    );
+
+    if (typeof response !== "object") {
+      throw new TypeError("Expected object response");
+    }
+
+    return response;
+  }
+
+  /**
+   * Execute an agent with the given arguments (new method).
+   *
+   * @param params - Agent execution parameters
+   * @param params.model - VLM Run Agent model to use (default: "vlmrun-orion-1:auto")
+   * @param params.toolsets - Optional list of tool categories to enable
+   * @returns Agent execution response
+   */
   async execute(
     params: AgentExecuteParamsNew,
   ): Promise<AgentExecutionResponse> {
@@ -260,6 +288,8 @@ export class Agent {
       config,
       metadata,
       callbackUrl,
+      model = "vlmrun-orion-1:auto",
+      toolsets,
     } = params;
 
     if (!batch) {
@@ -267,6 +297,7 @@ export class Agent {
     }
 
     const data: Record<string, any> = {
+      model,
       name,
       batch,
       inputs: this._processInputs(inputs),
@@ -288,6 +319,11 @@ export class Agent {
     if (callbackUrl) {
       data.callback_url = callbackUrl;
     }
+
+    if (toolsets !== undefined) {
+      data.toolsets = toolsets;
+    }
+
     const [response] = await this.requestor.request<AgentExecutionResponse>(
       "POST",
       "agent/execute",

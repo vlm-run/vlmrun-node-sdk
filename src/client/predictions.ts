@@ -60,15 +60,15 @@ export class Predictions {
   /**
    * Wait for prediction to complete
    * @param params.id - ID of prediction to wait for
-   * @param params.timeout - Timeout in seconds (default: 60)
-   * @param params.sleep - Sleep time in seconds (default: 1)
+   * @param params.timeout - Timeout in seconds (default: 300)
+   * @param params.sleep - Sleep time in seconds (default: 5)
    * @returns Promise containing the prediction response
    * @throws TimeoutError if prediction doesn't complete within timeout
    */
   async wait(
     id: string,
-    timeout: number = 60,
-    sleep: number = 1
+    timeout: number = 300,
+    sleep: number = 5
   ): Promise<PredictionResponse> {
     const startTime = Date.now();
     const timeoutMs = timeout * 1000;
@@ -433,6 +433,23 @@ export class FilePredictions extends Predictions {
       );
     }
 
+    const serializedSkills = config?.skills?.map((s) =>
+      s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
+    );
+
+    const configPayload: Record<string, any> = {
+      detail: config?.detail ?? "auto",
+      json_schema: jsonSchema,
+      skills: serializedSkills,
+      confidence: config?.confidence ?? false,
+      grounding: config?.grounding ?? false,
+      gql_stmt: config?.gqlStmt ?? null,
+    };
+    if (config?.serviceTier !== undefined) configPayload.service_tier = config.serviceTier;
+    if (config?.videoSegmentDuration !== undefined) configPayload.video_segment_duration = config.videoSegmentDuration;
+    if (config?.videoFramesPerSegment !== undefined) configPayload.video_frames_per_segment = config.videoFramesPerSegment;
+    if (config?.pageIndices !== undefined) configPayload.page_indices = config.pageIndices;
+
     const [response] = await this.requestor.request<PredictionResponse>(
       "POST",
       `/${this.route}/execute`,
@@ -442,13 +459,7 @@ export class FilePredictions extends Predictions {
         version,
         ...fileOrUrl,
         batch,
-        config: {
-          detail: config?.detail ?? "auto",
-          json_schema: jsonSchema,
-          confidence: config?.confidence ?? false,
-          grounding: config?.grounding ?? false,
-          gql_stmt: config?.gqlStmt ?? null,
-        },
+        config: configPayload,
         metadata: {
           environment: metadata?.environment ?? "dev",
           session_id: metadata?.sessionId,
