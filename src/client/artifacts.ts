@@ -122,8 +122,14 @@ export class Artifacts {
 
     if (objType === "img") {
       const contentType = headers["content-type"];
-      if (contentType && contentType !== "image/jpeg") {
-        throw new Error(`Expected image/jpeg, got ${contentType}`);
+      if (
+        contentType &&
+        contentType !== "image/jpeg" &&
+        contentType !== "image/png"
+      ) {
+        throw new Error(
+          `Expected image/jpeg or image/png, got ${contentType}`,
+        );
       }
       return data;
     } else if (objType === "url") {
