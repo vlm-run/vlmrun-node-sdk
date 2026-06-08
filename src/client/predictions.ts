@@ -193,6 +193,20 @@ export class ImagePredictions extends Predictions {
       );
     }
 
+    if (batch) {
+      console.warn(
+        "Warning: `batch=true` is not supported for image predictions. " +
+          "Image predictions are processed synchronously; the `batch` flag will be ignored by the server."
+      );
+    }
+
+    if (callbackUrl) {
+      console.warn(
+        "Warning: `callbackUrl` is not supported for image predictions. " +
+          "Image predictions are synchronous and return the result directly; the callback URL will be ignored."
+      );
+    }
+
     const imagesData = this._handleImagesOrUrls(images, urls);
 
     let jsonSchema = config?.jsonSchema;
@@ -342,6 +356,14 @@ export class FilePredictions extends Predictions {
       );
     }
 
+    if (callbackUrl && !batch) {
+      console.warn(
+        "Warning: `callbackUrl` will be ignored because `batch=false`. " +
+          "Webhook callbacks are only delivered for batched (async) predictions. " +
+          "Set `batch: true` to receive callbacks."
+      );
+    }
+
     const fileOrUrl = this._handleFileOrUrl(fileId, url);
 
     let jsonSchema = config?.jsonSchema;
@@ -422,6 +444,14 @@ export class FilePredictions extends Predictions {
       metadata,
       callbackUrl,
     } = params;
+
+    if (callbackUrl && !batch) {
+      console.warn(
+        "Warning: `callbackUrl` will be ignored because `batch=false`. " +
+          "Webhook callbacks are only delivered for batched (async) predictions. " +
+          "Set `batch: true` to receive callbacks."
+      );
+    }
 
     const fileOrUrl = this._handleFileOrUrl(fileId, url);
 
