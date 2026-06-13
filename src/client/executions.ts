@@ -56,7 +56,7 @@ export class Executions {
    */
   async wait(
     id: string,
-    timeout: number = 300,
+    timeout: number = 600,
     sleep: number = 5
   ): Promise<AgentExecutionResponse> {
     const startTime = Date.now();
