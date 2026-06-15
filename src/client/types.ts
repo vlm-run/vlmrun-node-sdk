@@ -6,6 +6,19 @@ export type FilePurpose = string;
 
 export type DetailLevel = string;
 
+/**
+ * Tool categories available for agent execution.
+ */
+export type AgentToolset =
+  | "core"
+  | "image"
+  | "image-gen"
+  | "world-gen"
+  | "viz"
+  | "document"
+  | "video"
+  | "web";
+
 // URL pattern for http/https URLs
 const URL_PATTERN = /^https?:\/\/.+/;
 
@@ -208,6 +221,9 @@ export interface CreditUsage {
   elements_processed?: number;
   element_type?: "image" | "page" | "video" | "audio";
   credits_used?: number;
+  steps?: number;
+  message?: string;
+  duration_seconds?: number;
 }
 
 export interface ModelInfoResponse {
@@ -223,6 +239,7 @@ export interface PredictionResponse {
   status: JobStatus;
   message?: string;
   usage?: CreditUsage;
+  domain?: string;
 }
 
 export interface ListParams {
@@ -797,6 +814,8 @@ export interface AgentExecuteParamsNew {
   config?: AgentExecutionConfigInput;
   metadata?: RequestMetadataInput;
   callbackUrl?: string;
+  model?: string;
+  toolsets?: AgentToolset[];
 }
 
 // --- Skills types ---
