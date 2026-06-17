@@ -116,7 +116,7 @@ export class Agent {
     const openaiClient = new OpenAI({
       apiKey: this.client.apiKey,
       baseURL: baseUrl,
-      timeout: this.client.timeout,
+      timeout: Math.max(this.client.timeout ?? 600000, 600000),
       maxRetries: this.client.maxRetries ?? 1,
     });
 
