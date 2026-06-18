@@ -8,6 +8,10 @@
   "types": "dist/index.d.ts",
   "type": "commonjs",
   "repository": "github:vlm-run/vlmrun-node-sdk",
+  "homepage": "https://docs.vlm.run",
+  "bugs": {
+    "url": "https://github.com/vlm-run/vlmrun-node-sdk/issues"
+  },
   "license": "Apache-2.0",
   "keywords": [],
   "packageManager": "yarn@1.22.22",
