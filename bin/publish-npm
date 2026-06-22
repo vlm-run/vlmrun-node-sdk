@@ -4,30 +4,19 @@ set -eux
 
 npm config set '//registry.npmjs.org/:_authToken' "$NPM_TOKEN"
 
-# Build the project
-yarn build
+cd "$(dirname "$0")/.."
 
-# Generate dist/package.json with entrypoints relative to the publish root
-node scripts/utils/make-dist-package-json.cjs > dist/package.json
-if [ -e README.md ]; then cp README.md dist/; fi
-if [ -e LICENSE ]; then cp LICENSE dist/; fi
+# Build, generate publish metadata, validate tarball layout, and smoke-test Vitest 3.x resolution
+./scripts/validate-publish-package
 
-# Navigate to the dist directory
 cd dist
 
-# Verify entrypoint files exist before publishing
-node -e "const p=require('./package.json'); const fs=require('fs'); for (const k of ['main','module','types']) { const file=p[k].replace(/^\.\//,''); if (!fs.existsSync(file)) { console.error('Missing', k, p[k]); process.exit(1); } }"
-
-# Get the version from package.json
 VERSION="$(node -p "require('./package.json').version")"
 
-# Extract the pre-release tag if it exists
 if [[ "$VERSION" =~ -([a-zA-Z]+) ]]; then
-  # Extract the part before any dot in the pre-release identifier
   TAG="${BASH_REMATCH[1]}"
 else
   TAG="latest"
 fi
 
-# Publish with the appropriate tag
 npm publish --access public --tag "$TAG"

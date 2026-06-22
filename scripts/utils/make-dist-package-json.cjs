@@ -7,15 +7,17 @@ function processExportMap(m) {
     else processExportMap(value);
   }
 }
-processExportMap(pkgJson.exports);
+if (pkgJson.exports) {
+  processExportMap(pkgJson.exports);
+}
 
 for (const key of ['types', 'main', 'module']) {
   if (typeof pkgJson[key] === 'string') pkgJson[key] = pkgJson[key].replace(/^(\.\/)?dist\//, './');
 }
 
 delete pkgJson.devDependencies;
-delete pkgJson.scripts.prepack;
-delete pkgJson.scripts.prepublishOnly;
-delete pkgJson.scripts.prepare;
+delete pkgJson.scripts;
+delete pkgJson.packageManager;
+delete pkgJson.overrides;
 
 console.log(JSON.stringify(pkgJson, null, 2));

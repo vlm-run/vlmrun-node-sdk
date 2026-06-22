@@ -23,7 +23,8 @@
     "test:coverage": "jest --coverage",
     "test:integration": "jest --config=jest.integration.config.js",
     "test:integration:all": "jest --config=jest.integration.all.config.js",
-    "test:e2e": "jest --config=jest.e2e.config.js"
+    "test:e2e": "jest --config=jest.e2e.config.js",
+    "validate:publish": "./scripts/validate-publish-package"
   },
   "dependencies": {
     "axios": "^1.12.2",
