@@ -46,6 +46,13 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Validate publish tarball entrypoints
+        run: |
+          node scripts/utils/make-dist-package-json.cjs > dist/package.json
+          cd dist
+          node -e "const p=require('./package.json'); const fs=require('fs'); for (const k of ['main','module','types']) { const file=p[k].replace(/^\.\//,''); if (!fs.existsSync(file)) { console.error('Missing', k, p[k]); process.exit(1); } }"
+          npm pack --dry-run
+
   test:
     name: test
     runs-on: ubuntu-latest

@@ -7,13 +7,16 @@ npm config set '//registry.npmjs.org/:_authToken' "$NPM_TOKEN"
 # Build the project
 yarn build
 
-# Copy package.json and README into dist so npm publish has package metadata
-cp package.json dist/
+# Generate dist/package.json with entrypoints relative to the publish root
+node scripts/utils/make-dist-package-json.cjs > dist/package.json
 if [ -e README.md ]; then cp README.md dist/; fi
 if [ -e LICENSE ]; then cp LICENSE dist/; fi
 
 # Navigate to the dist directory
 cd dist
+
+# Verify entrypoint files exist before publishing
+node -e "const p=require('./package.json'); const fs=require('fs'); for (const k of ['main','module','types']) { const file=p[k].replace(/^\.\//,''); if (!fs.existsSync(file)) { console.error('Missing', k, p[k]); process.exit(1); } }"
 
 # Get the version from package.json
 VERSION="$(node -p "require('./package.json').version")"
