@@ -1,0 +1,7 @@
+{
+  "name": "vlmrun-fixture",
+  "version": "0.0.0",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts"
+}

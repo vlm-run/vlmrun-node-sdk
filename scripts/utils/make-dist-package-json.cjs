@@ -1,23 +1,35 @@
-const pkgJson = require(process.env['PKG_JSON_PATH'] || '../../package.json');
+function prepareDistPackageJson(pkgJson) {
+  const result = JSON.parse(JSON.stringify(pkgJson));
 
-function processExportMap(m) {
-  for (const key in m) {
-    const value = m[key];
-    if (typeof value === 'string') m[key] = value.replace(/^\.\/dist\//, './');
-    else processExportMap(value);
+  function processExportMap(m) {
+    for (const key in m) {
+      const value = m[key];
+      if (typeof value === 'string') m[key] = value.replace(/^\.\/dist\//, './');
+      else processExportMap(value);
+    }
   }
-}
-if (pkgJson.exports) {
-  processExportMap(pkgJson.exports);
+
+  if (result.exports) {
+    processExportMap(result.exports);
+  }
+
+  for (const key of ['types', 'main', 'module']) {
+    if (typeof result[key] === 'string') {
+      result[key] = result[key].replace(/^(\.\/)?dist\//, './');
+    }
+  }
+
+  delete result.devDependencies;
+  delete result.scripts;
+  delete result.packageManager;
+  delete result.overrides;
+
+  return result;
 }
 
-for (const key of ['types', 'main', 'module']) {
-  if (typeof pkgJson[key] === 'string') pkgJson[key] = pkgJson[key].replace(/^(\.\/)?dist\//, './');
+if (require.main === module) {
+  const pkgJson = require(process.env.PKG_JSON_PATH || '../../package.json');
+  console.log(JSON.stringify(prepareDistPackageJson(pkgJson), null, 2));
 }
 
-delete pkgJson.devDependencies;
-delete pkgJson.scripts;
-delete pkgJson.packageManager;
-delete pkgJson.overrides;
-
-console.log(JSON.stringify(pkgJson, null, 2));
+module.exports = { prepareDistPackageJson };

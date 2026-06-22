@@ -2,17 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { pathToFileURL } = require('url');
 
-const distDir = path.resolve(process.argv[2] || process.env.DIST_DIR || 'dist');
-const pkgPath = path.join(distDir, 'package.json');
-
-if (!fs.existsSync(pkgPath)) {
-  console.error(`validate-dist-package: missing ${pkgPath}`);
-  process.exit(1);
-}
-
-const pkg = require(pkgPath);
-
-function resolveEntry(field) {
+function resolveEntry(pkg, distDir, field) {
   const value = pkg[field];
   if (typeof value !== 'string' || !value.trim()) {
     throw new Error(`package.json ${field} must be a non-empty string`);
@@ -28,10 +18,18 @@ function resolveEntry(field) {
   return abs;
 }
 
-async function main() {
-  const mainPath = resolveEntry('main');
-  const modulePath = resolveEntry('module');
-  resolveEntry('types');
+async function validateDistPackage(distDir) {
+  const resolvedDistDir = path.resolve(distDir);
+  const pkgPath = path.join(resolvedDistDir, 'package.json');
+
+  if (!fs.existsSync(pkgPath)) {
+    throw new Error(`missing ${pkgPath}`);
+  }
+
+  const pkg = require(pkgPath);
+  const mainPath = resolveEntry(pkg, resolvedDistDir, 'main');
+  const modulePath = resolveEntry(pkg, resolvedDistDir, 'module');
+  resolveEntry(pkg, resolvedDistDir, 'types');
 
   const cjs = require(mainPath);
   const VlmRun = cjs.VlmRun || cjs.default?.VlmRun || cjs.default;
@@ -44,11 +42,19 @@ async function main() {
   if (typeof EsmVlmRun !== 'function') {
     throw new Error('ESM entry missing VlmRun export');
   }
-
-  console.log('validate-dist-package: OK');
 }
 
-main().catch((err) => {
-  console.error(`validate-dist-package: ${err.message}`);
-  process.exit(1);
-});
+if (require.main === module) {
+  const distDir = process.argv[2] || process.env.DIST_DIR || 'dist';
+
+  validateDistPackage(distDir)
+    .then(() => {
+      console.log('validate-dist-package: OK');
+    })
+    .catch((err) => {
+      console.error(`validate-dist-package: ${err.message}`);
+      process.exit(1);
+    });
+}
+
+module.exports = { resolveEntry, validateDistPackage };
