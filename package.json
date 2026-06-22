@@ -18,13 +18,14 @@
   "scripts": {
     "build": "tsup",
     "clean": "rm -rf dist",
-    "test": "jest",
+    "prepare:dist": "node scripts/publish/prepare-dist.cjs",
+    "validate:publish": "node scripts/publish/index.cjs",
+    "test": "jest --testPathIgnorePatterns=tests/unit/publish && jest tests/unit/publish --runInBand",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:integration": "jest --config=jest.integration.config.js",
     "test:integration:all": "jest --config=jest.integration.all.config.js",
-    "test:e2e": "jest --config=jest.e2e.config.js",
-    "validate:publish": "./scripts/validate-publish-package"
+    "test:e2e": "jest --config=jest.e2e.config.js"
   },
   "dependencies": {
     "axios": "^1.12.2",

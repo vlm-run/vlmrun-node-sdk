@@ -4,9 +4,10 @@ import path from "path";
 import { execFileSync } from "child_process";
 
 const repoRoot = path.join(__dirname, "../../..");
+const { prepareDist } = require("../../../scripts/publish/prepare-dist.cjs");
 
 function runValidatePublish(skipBuild = true) {
-  return execFileSync(path.join(repoRoot, "scripts/validate-publish-package"), {
+  return execFileSync("node", [path.join(repoRoot, "scripts/publish/index.cjs")], {
     cwd: repoRoot,
     env: {
       ...process.env,
@@ -16,28 +17,29 @@ function runValidatePublish(skipBuild = true) {
   });
 }
 
-describe("validate-publish-package", () => {
+describe("publish validation pipeline", () => {
   const tmpDist = path.join(os.tmpdir(), `vlmrun-publish-test-${process.pid}`);
 
   beforeAll(() => {
     execFileSync("npm", ["run", "build"], { cwd: repoRoot, stdio: "pipe" });
-    const packageJson = execFileSync(
-      "node",
-      [path.join(repoRoot, "scripts/utils/make-dist-package-json.cjs")],
-      { cwd: repoRoot, encoding: "utf8" }
-    );
-    fs.writeFileSync(path.join(repoRoot, "dist/package.json"), packageJson);
+    execFileSync("node", [path.join(repoRoot, "scripts/publish/prepare-dist.cjs")], {
+      cwd: repoRoot,
+      stdio: "pipe",
+    });
   });
 
   it("passes against the real built dist output", () => {
     const output = runValidatePublish(true);
 
-    expect(output).toContain("validate-dist-package: OK");
-    expect(output).toContain("validate-publish-package: tarball metadata OK");
-    expect(output).toContain("validate-publish-package: consumer Vitest smoke OK");
+    expect(output).toContain("publish: dist package prepared");
+    expect(output).toContain("publish: dist layout OK");
+    expect(output).toContain("publish: tarball metadata OK");
+    expect(output).toContain("publish: consumer Vitest smoke OK");
+    expect(output).toContain("publish: all checks passed");
   });
 
   it("fails when dist package.json has stale dist/ entrypoints", () => {
+    prepareDist(repoRoot);
     fs.rmSync(tmpDist, { recursive: true, force: true });
     fs.cpSync(path.join(repoRoot, "dist"), tmpDist, { recursive: true });
 
@@ -53,7 +55,7 @@ describe("validate-publish-package", () => {
     );
 
     expect(() => {
-      execFileSync("node", [path.join(repoRoot, "scripts/utils/validate-dist-package.cjs"), tmpDist], {
+      execFileSync("node", [path.join(repoRoot, "scripts/publish/validate-dist.cjs"), tmpDist], {
         cwd: repoRoot,
         encoding: "utf8",
         stdio: "pipe",
@@ -62,6 +64,8 @@ describe("validate-publish-package", () => {
   });
 
   it("packed tarball metadata matches publish-root entrypoints", () => {
+    prepareDist(repoRoot);
+
     const packOutput = execFileSync("npm", ["pack", "--silent"], {
       cwd: path.join(repoRoot, "dist"),
       encoding: "utf8",

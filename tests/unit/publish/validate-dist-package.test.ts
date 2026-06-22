@@ -1,7 +1,7 @@
 import path from "path";
 import { execFileSync } from "child_process";
 
-const { validateDistPackage } = require("../../../scripts/utils/validate-dist-package.cjs");
+const { validateDistPackage } = require("../../../scripts/publish/validate-dist.cjs");
 
 const fixturesRoot = path.join(__dirname, "../../fixtures/publish");
 const repoRoot = path.join(__dirname, "../../..");
@@ -11,13 +11,13 @@ describe("validateDistPackage", () => {
     const output = execFileSync(
       "node",
       [
-        path.join(repoRoot, "scripts/utils/validate-dist-package.cjs"),
+        path.join(repoRoot, "scripts/publish/validate-dist.cjs"),
         path.join(fixturesRoot, "valid-dist"),
       ],
       { encoding: "utf8" }
     );
 
-    expect(output.trim()).toBe("validate-dist-package: OK");
+    expect(output.trim()).toBe("publish: dist layout OK");
   });
 
   it("rejects stale dist/ entrypoints like vlmrun@1.3.2", async () => {

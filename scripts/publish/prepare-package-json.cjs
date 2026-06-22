@@ -1,3 +1,10 @@
+/**
+ * Rewrite repo-root package.json for publishing from dist/.
+ *
+ * Repo layout:  main -> dist/index.js
+ * Publish layout (dist/ is npm root): main -> ./index.js
+ */
+
 function prepareDistPackageJson(pkgJson) {
   const result = JSON.parse(JSON.stringify(pkgJson));
 

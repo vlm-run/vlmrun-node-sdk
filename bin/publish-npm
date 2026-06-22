@@ -6,8 +6,8 @@ npm config set '//registry.npmjs.org/:_authToken' "$NPM_TOKEN"
 
 cd "$(dirname "$0")/.."
 
-# Build, generate publish metadata, validate tarball layout, and smoke-test Vitest 3.x resolution
-./scripts/validate-publish-package
+# See scripts/publish/README.md for the supported release flow.
+node scripts/publish/index.cjs
 
 cd dist
 

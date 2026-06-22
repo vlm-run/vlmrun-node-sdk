@@ -4,6 +4,10 @@ set -exuo pipefail
 
 cd "$(dirname "$0")/.."
 
+# Build the project (legacy tsc-multi pipeline — not used for npm publish)
+echo "==> NOTE: npm publish uses 'npm run build' (tsup) + 'npm run validate:publish'." >&2
+echo "==> See scripts/publish/README.md for the supported release flow." >&2
+
 node scripts/utils/check-version.cjs
 
 # Build into dist and will publish the package from there,
@@ -25,7 +29,7 @@ if [ -e "bin/cli" ]; then
 fi
 # this converts the export map paths for the dist directory
 # and does a few other minor things
-node scripts/utils/make-dist-package-json.cjs > dist/package.json
+node scripts/publish/prepare-package-json.cjs > dist/package.json
 
 # build to .js/.mjs/.d.ts files
 npm exec tsc-multi

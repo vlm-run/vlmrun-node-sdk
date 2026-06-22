@@ -49,10 +49,10 @@ if (require.main === module) {
 
   validateDistPackage(distDir)
     .then(() => {
-      console.log('validate-dist-package: OK');
+      console.log('publish: dist layout OK');
     })
     .catch((err) => {
-      console.error(`validate-dist-package: ${err.message}`);
+      console.error(`publish: ${err.message}`);
       process.exit(1);
     });
 }

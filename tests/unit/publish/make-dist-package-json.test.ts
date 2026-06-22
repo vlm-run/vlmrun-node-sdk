@@ -3,7 +3,7 @@ import os from "os";
 import path from "path";
 import { execFileSync } from "child_process";
 
-const { prepareDistPackageJson } = require("../../../scripts/utils/make-dist-package-json.cjs");
+const { prepareDistPackageJson } = require("../../../scripts/publish/prepare-package-json.cjs");
 
 const fixturePath = path.join(__dirname, "../../fixtures/publish/source-package.json");
 const sourcePackage = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
@@ -61,7 +61,7 @@ describe("prepareDistPackageJson", () => {
   });
 });
 
-describe("make-dist-package-json CLI", () => {
+describe("prepare-package-json CLI", () => {
   it("prints publish-ready package.json for a fixture source package", () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "vlmrun-pkg-json-"));
     const pkgPath = path.join(tmpDir, "package.json");
@@ -69,7 +69,7 @@ describe("make-dist-package-json CLI", () => {
 
     const output = execFileSync(
       "node",
-      [path.join(__dirname, "../../../scripts/utils/make-dist-package-json.cjs")],
+      [path.join(__dirname, "../../../scripts/publish/prepare-package-json.cjs")],
       {
         cwd: path.join(__dirname, "../../.."),
         env: { ...process.env, PKG_JSON_PATH: pkgPath },

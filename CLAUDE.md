@@ -4,9 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
-### Build
-- `npm run build` or `./scripts/build` - Full production build with TypeScript compilation and package preparation
+### Build & Publish
+- `npm run build` - Compile SDK with tsup into `dist/`
+- `npm run prepare:dist` - Write publish-ready `dist/package.json` (rewrites entrypoints for npm)
+- `npm run validate:publish` - Full pre-publish pipeline (build, prepare, tarball + Vitest 3.x checks)
 - `npm run clean` - Remove dist directory
+- `./scripts/build` - **Legacy** tsc-multi pipeline; not used for npm releases (see `scripts/publish/README.md`)
 
 ### Testing
 - `npm test` or `./scripts/test` - Run unit tests with automatic mock server setup
