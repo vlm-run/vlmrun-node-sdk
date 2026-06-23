@@ -1,11 +1,18 @@
 {
   "name": "vlmrun",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "The official TypeScript library for the VlmRun API",
   "author": "VlmRun <support@vlmrun.com>",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "type": "commonjs",
   "repository": "github:vlm-run/vlmrun-node-sdk",
   "license": "Apache-2.0",
@@ -17,6 +24,7 @@
   ],
   "scripts": {
     "build": "tsup",
+    "prepublishOnly": "npm run build",
     "clean": "rm -rf dist",
     "test": "jest",
     "test:watch": "jest --watch",
