@@ -24,7 +24,6 @@
   ],
   "scripts": {
     "build": "tsup",
-    "prepublishOnly": "npm run build",
     "clean": "rm -rf dist",
     "test": "jest",
     "test:watch": "jest --watch",
