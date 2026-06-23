@@ -1,4 +1,4 @@
-name: Release on Merge
+name: Release on Version Change
 
 on:
   pull_request:
