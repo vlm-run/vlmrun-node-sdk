@@ -7,6 +7,7 @@ import {
   FileExecuteParams,
   SchemaResponse,
   GenerationConfigParams,
+  RequestMetadataParams,
   AgentSkill,
 } from "./types";
 import { processImage } from "../utils/image";
@@ -60,15 +61,15 @@ export class Predictions {
   /**
    * Wait for prediction to complete
    * @param params.id - ID of prediction to wait for
-   * @param params.timeout - Timeout in seconds (default: 60)
-   * @param params.sleep - Sleep time in seconds (default: 1)
+   * @param params.timeout - Timeout in seconds (default: 600)
+   * @param params.sleep - Sleep time in seconds (default: 5)
    * @returns Promise containing the prediction response
    * @throws TimeoutError if prediction doesn't complete within timeout
    */
   async wait(
     id: string,
-    timeout: number = 60,
-    sleep: number = 1
+    timeout: number = 600,
+    sleep: number = 5
   ): Promise<PredictionResponse> {
     const startTime = Date.now();
     const timeoutMs = timeout * 1000;
@@ -259,6 +260,93 @@ export class ImagePredictions extends Predictions {
    * @param params.urls - Array of URL strings pointing to images
    * @returns Promise containing the prediction response with schema information
    */
+  /**
+   * Generate predictions from images using a named model.
+   * @param params.name - Name of the model to use
+   * @param params.version - Version of the model (default: "latest")
+   * @param params.images - Array of image inputs (file paths or base64 encoded strings)
+   * @param params.urls - Array of URL strings pointing to images
+   * @param params.batch - Whether to process as batch (default: false)
+   * @param params.config - Configuration options for the prediction
+   * @param params.metadata - Additional metadata to include
+   * @param params.callbackUrl - URL to receive prediction completion webhook
+   * @returns Promise containing the prediction response
+   */
+  async execute(params: {
+    name: string;
+    version?: string;
+    images?: string[];
+    urls?: string[];
+    batch?: boolean;
+    config?: GenerationConfigParams;
+    metadata?: RequestMetadataParams;
+    callbackUrl?: string;
+  }): Promise<PredictionResponse> {
+    const {
+      name,
+      version = "latest",
+      images,
+      urls,
+      batch = false,
+      config,
+      metadata,
+      callbackUrl,
+    } = params;
+
+    const imagesData = this._handleImagesOrUrls(images, urls);
+
+    let jsonSchema = config?.jsonSchema;
+    if (config && "responseModel" in config && config.responseModel) {
+      jsonSchema = convertToJsonSchema(
+        config.responseModel,
+        config.zodToJsonParams
+      );
+    }
+
+    const serializedSkills = config?.skills?.map((s) =>
+      s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
+    );
+
+    const configPayload: Record<string, any> = {
+      detail: config?.detail ?? "auto",
+      json_schema: jsonSchema,
+      skills: serializedSkills,
+      confidence: config?.confidence ?? false,
+      grounding: config?.grounding ?? false,
+      gql_stmt: config?.gqlStmt ?? null,
+    };
+    if (config?.serviceTier !== undefined) configPayload.service_tier = config.serviceTier;
+    if (config?.videoSegmentDuration !== undefined) configPayload.video_segment_duration = config.videoSegmentDuration;
+    if (config?.videoFramesPerSegment !== undefined) configPayload.video_frames_per_segment = config.videoFramesPerSegment;
+    if (config?.pageIndices !== undefined) configPayload.page_indices = config.pageIndices;
+
+    const data: Record<string, any> = {
+      name,
+      version,
+      images: imagesData,
+      batch,
+      config: configPayload,
+      callback_url: callbackUrl,
+    };
+
+    if (metadata) {
+      data.metadata = {
+        environment: metadata.environment ?? "dev",
+        session_id: metadata.sessionId,
+        allow_training: metadata.allowTraining ?? true,
+      };
+    }
+
+    const [response] = await this.requestor.request<PredictionResponse>(
+      "POST",
+      "image/execute",
+      undefined,
+      data
+    );
+
+    return response;
+  }
+
   async schema(params: {
     images?: string[];
     urls?: string[];
