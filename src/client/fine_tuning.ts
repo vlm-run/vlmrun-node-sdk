@@ -49,7 +49,7 @@ export class Finetuning {
         training_file: params.trainingFile,
         validation_file: params.validationFile,
         num_epochs: params.numEpochs ?? 1,
-        batch_size: params.batchSize ?? 1,
+        batch_size: params.batchSize ?? "auto",
         learning_rate: params.learningRate ?? 2e-4,
         suffix: params.suffix,
         wandb_api_key: params.wandbApiKey,
@@ -158,6 +158,26 @@ export class Finetuning {
       }
     );
 
+    return response;
+  }
+
+  /**
+   * List all fine-tuned models
+   * @param {FinetuningListParams} params - List parameters
+   */
+  async listModels(params?: FinetuningListParams): Promise<string[]> {
+    const [response] = await this.requestor.request<string[]>(
+      "GET",
+      "models",
+      {
+        skip: params?.skip ?? 0,
+        limit: params?.limit ?? 10,
+      }
+    );
+
+    if (!Array.isArray(response)) {
+      throw new Error("Expected array response");
+    }
     return response;
   }
 
