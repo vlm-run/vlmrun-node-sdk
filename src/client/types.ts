@@ -820,6 +820,28 @@ export interface AgentExecuteParamsNew {
 
 // --- Skills types ---
 
+// --- Artifacts types ---
+
+export type ArtifactSource = "store" | "manifest" | "workspace";
+
+export interface ArtifactListItem {
+  object_id: string;
+  filename: string | null;
+  source: ArtifactSource;
+}
+
+export interface ArtifactListResponse {
+  namespace_id: string;
+  items: ArtifactListItem[];
+}
+
+export interface ArtifactListParams {
+  sessionId?: string;
+  executionId?: string;
+}
+
+// --- Skills types ---
+
 export interface SkillInfo {
   id: string;
   name: string;
