@@ -63,7 +63,8 @@ describe('APIRequestor', () => {
       baseURL: client.baseURL,
       headers: {
         Authorization: `Bearer ${client.apiKey}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-Client-Id': 'node-sdk-0.5.4'
       },
       timeout: client.timeout
     });

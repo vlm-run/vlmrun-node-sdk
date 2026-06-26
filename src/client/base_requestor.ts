@@ -10,6 +10,7 @@ import {
   RequestTimeoutError,
   NetworkError,
 } from "./exceptions";
+import packageJson from "../../package.json";
 
 const DEFAULT_TIMEOUT = 120000; // 120 seconds in ms
 const DEFAULT_MAX_RETRIES = 5;
@@ -21,6 +22,7 @@ export interface Client {
   baseURL: string;
   timeout?: number;
   maxRetries?: number;
+  headers?: Record<string, string>;
 }
 
 export class APIRequestor {
@@ -34,11 +36,17 @@ export class APIRequestor {
     this.timeout = client.timeout ?? DEFAULT_TIMEOUT;
     this.maxRetries = client.maxRetries ?? DEFAULT_MAX_RETRIES;
 
+    const defaultHeaders = {
+      Authorization: `Bearer ${client.apiKey}`,
+      "Content-Type": "application/json",
+      "X-Client-Id": `node-sdk-${packageJson.version}`,
+    };
+
     this.axios = axios.create({
       baseURL: client.baseURL,
       headers: {
-        Authorization: `Bearer ${client.apiKey}`,
-        "Content-Type": "application/json",
+        ...defaultHeaders,
+        ...client.headers,
       },
       timeout: this.timeout,
     });
