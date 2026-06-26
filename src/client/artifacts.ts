@@ -3,6 +3,7 @@ import * as path from "path";
 import * as os from "os";
 import axios from "axios";
 import { Client } from "./base_requestor";
+import { ArtifactListParams, ArtifactListResponse } from "./types";
 
 const VLMRUN_ARTIFACTS_DIR = path.join(os.homedir(), ".vlmrun", "artifacts");
 
@@ -32,9 +33,10 @@ const CONTENT_TYPE_MAPPING: Record<string, string> = {
 export type ArtifactResponse = Buffer | string;
 
 export interface ArtifactGetParams {
-  objectId: string;
+  objectId?: string;
   sessionId?: string;
   executionId?: string;
+  filename?: string;
   rawResponse?: boolean;
 }
 
@@ -65,7 +67,7 @@ export class Artifacts {
    * @throws Error if neither sessionId nor executionId is provided, or if both are provided
    */
   async get(params: ArtifactGetParams): Promise<ArtifactResponse> {
-    const { objectId, sessionId, executionId, rawResponse = false } = params;
+    const { objectId, sessionId, executionId, filename, rawResponse = false } = params;
 
     // Validate that exactly one of sessionId or executionId is provided
     if (!sessionId && !executionId) {
@@ -76,17 +78,29 @@ export class Artifacts {
         "Only one of `sessionId` or `executionId` is allowed, not both"
       );
     }
+    // Validate that exactly one of objectId or filename is provided
+    if (!objectId && !filename) {
+      throw new Error("Either `objectId` or `filename` is required");
+    }
+    if (objectId && filename) {
+      throw new Error(
+        "Only one of `objectId` or `filename` is allowed, not both"
+      );
+    }
+
+    // Build query parameters
+    const queryParams: Record<string, string> = {};
+    if (sessionId) queryParams.session_id = sessionId;
+    if (executionId) queryParams.execution_id = executionId;
+    if (objectId) queryParams.object_id = objectId;
+    if (filename) queryParams.filename = filename;
 
     // Use the new API endpoint format with data payload
     const response = await axios.get(`${this.client.baseURL}/artifacts`, {
       headers: {
         Authorization: `Bearer ${this.client.apiKey}`,
       },
-      params: {
-        session_id: sessionId,
-        execution_id: executionId,
-        object_id: objectId,
-      },
+      params: queryParams,
       responseType: "arraybuffer",
       timeout: this.client.timeout ?? 120000,
     });
@@ -95,6 +109,11 @@ export class Artifacts {
     const headers = response.headers as Record<string, string>;
 
     if (rawResponse) {
+      return data;
+    }
+
+    // If filename was used instead of objectId, return raw bytes
+    if (!objectId) {
       return data;
     }
 
@@ -182,12 +201,38 @@ export class Artifacts {
   }
 
   /**
-   * List artifacts for a session.
+   * List artifacts for a session or execution.
    *
-   * @param sessionId - Session ID to list artifacts for
-   * @throws NotImplementedError - This method is not yet implemented
+   * @param params - Parameters for listing artifacts
+   * @param params.sessionId - Session ID to list artifacts for (mutually exclusive with executionId)
+   * @param params.executionId - Execution ID to list artifacts for (mutually exclusive with sessionId)
+   * @returns ArtifactListResponse containing the namespace ID and list of artifact items
+   * @throws Error if neither sessionId nor executionId is provided, or if both are provided
    */
-  async list(sessionId: string): Promise<never> {
-    throw new Error("Artifacts.list() is not yet implemented");
+  async list(params: ArtifactListParams): Promise<ArtifactListResponse> {
+    const { sessionId, executionId } = params;
+
+    if (!sessionId && !executionId) {
+      throw new Error("Either `sessionId` or `executionId` is required");
+    }
+    if (sessionId && executionId) {
+      throw new Error(
+        "Only one of `sessionId` or `executionId` is allowed, not both"
+      );
+    }
+
+    const queryParams: Record<string, string> = {};
+    if (sessionId) queryParams.session_id = sessionId;
+    if (executionId) queryParams.execution_id = executionId;
+
+    const response = await axios.get(`${this.client.baseURL}/artifacts/list`, {
+      headers: {
+        Authorization: `Bearer ${this.client.apiKey}`,
+      },
+      params: queryParams,
+      timeout: this.client.timeout ?? 120000,
+    });
+
+    return response.data as ArtifactListResponse;
   }
 }

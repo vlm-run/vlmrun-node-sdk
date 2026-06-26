@@ -41,7 +41,6 @@ describe('Artifacts', () => {
           headers: { Authorization: 'Bearer test-api-key' },
           params: {
             session_id: '550e8400-e29b-41d4-a716-446655440000',
-            execution_id: undefined,
             object_id: 'img_abc123',
           },
           responseType: 'arraybuffer',
@@ -68,7 +67,6 @@ describe('Artifacts', () => {
         'https://api.example.com/artifacts',
         expect.objectContaining({
           params: {
-            session_id: undefined,
             execution_id: 'exec-123-456',
             object_id: 'img_abc123',
           },
@@ -230,13 +228,120 @@ describe('Artifacts', () => {
         })
       ).rejects.toThrow('Expected application/octet-stream');
     });
+
+    it('should get artifact by filename', async () => {
+      const mockData = Buffer.from('mock file content');
+      mockedAxios.get.mockResolvedValue({
+        data: mockData,
+        headers: { 'content-type': 'application/octet-stream' },
+      });
+
+      const result = await artifacts.get({
+        filename: 'report.pdf',
+        sessionId: '550e8400-e29b-41d4-a716-446655440000',
+      });
+
+      expect(result).toBeInstanceOf(Buffer);
+      expect(result.toString()).toBe('mock file content');
+      expect(mockedAxios.get).toHaveBeenCalledWith(
+        'https://api.example.com/artifacts',
+        expect.objectContaining({
+          params: {
+            session_id: '550e8400-e29b-41d4-a716-446655440000',
+            filename: 'report.pdf',
+          },
+        })
+      );
+    });
+
+    it('should throw error when neither objectId nor filename is provided', async () => {
+      await expect(
+        artifacts.get({
+          sessionId: '550e8400-e29b-41d4-a716-446655440000',
+        })
+      ).rejects.toThrow('Either `objectId` or `filename` is required');
+    });
+
+    it('should throw error when both objectId and filename are provided', async () => {
+      await expect(
+        artifacts.get({
+          objectId: 'img_abc123',
+          filename: 'report.pdf',
+          sessionId: '550e8400-e29b-41d4-a716-446655440000',
+        })
+      ).rejects.toThrow('Only one of `objectId` or `filename` is allowed, not both');
+    });
   });
 
   describe('list', () => {
-    it('should throw NotImplementedError', async () => {
+    it('should list artifacts by sessionId', async () => {
+      const mockResponse = {
+        data: {
+          namespace_id: '550e8400-e29b-41d4-a716-446655440000',
+          items: [
+            { object_id: 'img_abc123', filename: 'photo.jpg', source: 'store' },
+            { object_id: 'doc_def456', filename: null, source: 'manifest' },
+          ],
+        },
+      };
+      mockedAxios.get.mockResolvedValue(mockResponse);
+
+      const result = await artifacts.list({
+        sessionId: '550e8400-e29b-41d4-a716-446655440000',
+      });
+
+      expect(result.namespace_id).toBe('550e8400-e29b-41d4-a716-446655440000');
+      expect(result.items).toHaveLength(2);
+      expect(result.items[0].object_id).toBe('img_abc123');
+      expect(result.items[0].filename).toBe('photo.jpg');
+      expect(result.items[0].source).toBe('store');
+      expect(mockedAxios.get).toHaveBeenCalledWith(
+        'https://api.example.com/artifacts/list',
+        expect.objectContaining({
+          headers: { Authorization: 'Bearer test-api-key' },
+          params: { session_id: '550e8400-e29b-41d4-a716-446655440000' },
+        })
+      );
+    });
+
+    it('should list artifacts by executionId', async () => {
+      const mockResponse = {
+        data: {
+          namespace_id: 'exec-123-456',
+          items: [
+            { object_id: 'vid_aaa111', filename: 'clip.mp4', source: 'workspace' },
+          ],
+        },
+      };
+      mockedAxios.get.mockResolvedValue(mockResponse);
+
+      const result = await artifacts.list({
+        executionId: 'exec-123-456',
+      });
+
+      expect(result.namespace_id).toBe('exec-123-456');
+      expect(result.items).toHaveLength(1);
+      expect(mockedAxios.get).toHaveBeenCalledWith(
+        'https://api.example.com/artifacts/list',
+        expect.objectContaining({
+          params: { execution_id: 'exec-123-456' },
+        })
+      );
+    });
+
+    it('should throw error when neither sessionId nor executionId is provided', async () => {
       await expect(
-        artifacts.list('550e8400-e29b-41d4-a716-446655440000')
-      ).rejects.toThrow('Artifacts.list() is not yet implemented');
+        artifacts.list({})
+      ).rejects.toThrow('Either `sessionId` or `executionId` is required');
+    });
+
+    it('should throw error when both sessionId and executionId are provided', async () => {
+      await expect(
+        artifacts.list({
+          sessionId: '550e8400-e29b-41d4-a716-446655440000',
+          executionId: 'exec-123-456',
+        })
+      ).rejects.toThrow('Only one of `sessionId` or `executionId` is allowed, not both');
     });
   });
 });
