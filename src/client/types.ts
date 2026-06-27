@@ -203,12 +203,14 @@ export interface FileResponse {
 
 export interface PresignedUrlResponse {
   id?: string;
-  filename: string;
+  url?: string;
+  filename?: string;
   content_type?: string;
-  url: string;
   upload_method?: string;
   public_url?: string;
   created_at?: string;
+  expiration?: number;
+  method?: string;
 }
 
 export interface PresignedUrlRequest {
@@ -505,24 +507,20 @@ export interface FinetuningResponse {
   created_at: string;
   completed_at?: string;
   status: JobStatus;
+  message?: string;
   model: string;
-  training_file_id: string;
-  validation_file_id?: string;
-  num_epochs: number;
-  batch_size: number | string;
-  learning_rate: number;
   suffix?: string;
   wandb_url?: string;
-  message?: string;
+  wandb_base_url?: string;
+  wandb_project_name?: string;
+  usage?: CreditUsage;
 }
 
 export interface FinetuningProvisionResponse {
   id: string;
   created_at: string;
+  completed_at?: string;
   model: string;
-  duration: number;
-  concurrency: number;
-  status: JobStatus;
   message?: string;
 }
 
@@ -599,15 +597,18 @@ export interface HubSchemaResponse {
 
 export interface DatasetResponse {
   id: string;
+  dataset_type: string;
+  dataset_name: string;
+  domain: string;
+  file_id?: string;
+  message?: string;
+  wandb_base_url?: string;
+  wandb_project_name?: string;
+  wandb_url?: string;
   created_at: string;
   completed_at?: string;
   status: JobStatus;
-  domain: string;
-  dataset_name: string;
-  dataset_type: "images" | "videos" | "documents";
-  file_id: string;
-  wandb_url?: string;
-  message?: string;
+  usage?: CreditUsage;
 }
 
 export interface DatasetCreateParams {
