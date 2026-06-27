@@ -67,8 +67,8 @@ export class Predictions {
    */
   async wait(
     id: string,
-    timeout: number = 60,
-    sleep: number = 1
+    timeout: number = 600,
+    sleep: number = 5
   ): Promise<PredictionResponse> {
     const startTime = Date.now();
     const timeoutMs = timeout * 1000;
