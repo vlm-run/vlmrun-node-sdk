@@ -175,10 +175,6 @@ export class Finetuning {
   }
 
   /**
-   * Cancel a fine-tuning job
-   * @param {string} jobId - ID of job to cancel
-   */
-  /**
    * List all fine-tuning models
    * @param params - List parameters
    */
@@ -199,6 +195,10 @@ export class Finetuning {
     return response;
   }
 
+  /**
+   * Cancel a fine-tuning job
+   * @param {string} jobId - ID of job to cancel
+   */
   async cancel(jobId: string): Promise<Record<string, any>> {
     throw new ConfigurationError("Cancel method is not implemented yet", "not_implemented", "This feature will be available in a future release");
   }
