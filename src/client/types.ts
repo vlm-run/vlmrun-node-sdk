@@ -697,6 +697,7 @@ export interface AgentExecutionResponse {
   created_at: string;
   completed_at?: string;
   response?: Record<string, any>;
+  execution_mode?: string;
   status: JobStatus;
   usage: CreditUsage;
 }
@@ -727,6 +728,7 @@ export type AgentExecutionConfigParams = {
   jsonSchema?: Record<string, any>;
   skills?: AgentSkillInput[];
   serviceTier?: "auto" | "default" | "standard" | "flex" | "priority" | null;
+  orchestrationMode?: boolean | null;
 };
 
 export class AgentExecutionConfig {
@@ -741,6 +743,11 @@ export class AgentExecutionConfig {
    * (or `auto`), the server default applies.
    */
   serviceTier?: "auto" | "default" | "standard" | "flex" | "priority" | null;
+  /**
+   * Enables multi-step agent orchestration mode for this execution. When
+   * omitted, the server default applies.
+   */
+  orchestrationMode?: boolean | null;
 
   constructor(params: Partial<AgentExecutionConfig> = {}) {
     Object.assign(this, params);
@@ -755,6 +762,8 @@ export class AgentExecutionConfig {
       ),
     };
     if (this.serviceTier !== undefined) json.service_tier = this.serviceTier;
+    if (this.orchestrationMode !== undefined)
+      json.orchestration_mode = this.orchestrationMode;
     return json;
   }
 }
@@ -765,6 +774,7 @@ export type AgentCreationConfigParams = {
   jsonSchema?: Record<string, any>;
   skills?: AgentSkillInput[];
   serviceTier?: "auto" | "default" | "standard" | "flex" | "priority" | null;
+  orchestrationMode?: boolean | null;
 };
 
 export class AgentCreationConfig {
@@ -779,6 +789,11 @@ export class AgentCreationConfig {
    * (or `auto`), the server default applies.
    */
   serviceTier?: "auto" | "default" | "standard" | "flex" | "priority" | null;
+  /**
+   * Enables multi-step agent orchestration mode for this agent. When
+   * omitted, the server default applies.
+   */
+  orchestrationMode?: boolean | null;
 
   constructor(params: Partial<AgentCreationConfig> = {}) {
     Object.assign(this, params);
@@ -793,6 +808,8 @@ export class AgentCreationConfig {
       ),
     };
     if (this.serviceTier !== undefined) json.service_tier = this.serviceTier;
+    if (this.orchestrationMode !== undefined)
+      json.orchestration_mode = this.orchestrationMode;
     return json;
   }
 }
