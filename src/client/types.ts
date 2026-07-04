@@ -209,6 +209,8 @@ export interface PresignedUrlResponse {
   upload_method?: string;
   public_url?: string;
   created_at?: string;
+  expiration?: number;
+  method?: string;
 }
 
 export interface PresignedUrlRequest {
