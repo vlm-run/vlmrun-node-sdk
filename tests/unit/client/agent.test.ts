@@ -414,7 +414,7 @@ describe("Agent", () => {
       expect(mockOpenAI).toHaveBeenCalledTimes(1);
     });
 
-    it("should use client timeout and maxRetries when provided", () => {
+    it("should floor the client timeout to 600s and use maxRetries when provided", () => {
       const clientWithOptions: jest.Mocked<Client> = {
         apiKey: "test-api-key",
         baseURL: "https://agent.vlm.run/v1",
@@ -428,7 +428,26 @@ describe("Agent", () => {
       expect(mockOpenAI).toHaveBeenCalledWith({
         apiKey: "test-api-key",
         baseURL: "https://agent.vlm.run/v1/openai",
-        timeout: 30000,
+        timeout: 600000,
+        maxRetries: 3,
+      });
+    });
+
+    it("should preserve a client timeout larger than 600s", () => {
+      const clientWithOptions: jest.Mocked<Client> = {
+        apiKey: "test-api-key",
+        baseURL: "https://agent.vlm.run/v1",
+        timeout: 900000,
+        maxRetries: 3,
+      } as jest.Mocked<Client>;
+
+      const agentWithOptions = new Agent(clientWithOptions);
+      agentWithOptions.completions;
+
+      expect(mockOpenAI).toHaveBeenCalledWith({
+        apiKey: "test-api-key",
+        baseURL: "https://agent.vlm.run/v1/openai",
+        timeout: 900000,
         maxRetries: 3,
       });
     });
