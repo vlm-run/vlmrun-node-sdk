@@ -60,15 +60,15 @@ export class Predictions {
   /**
    * Wait for prediction to complete
    * @param params.id - ID of prediction to wait for
-   * @param params.timeout - Timeout in seconds (default: 60)
-   * @param params.sleep - Sleep time in seconds (default: 1)
+   * @param params.timeout - Timeout in seconds (default: 600)
+   * @param params.sleep - Sleep time in seconds (default: 5)
    * @returns Promise containing the prediction response
    * @throws TimeoutError if prediction doesn't complete within timeout
    */
   async wait(
     id: string,
-    timeout: number = 60,
-    sleep: number = 1
+    timeout: number = 600,
+    sleep: number = 5
   ): Promise<PredictionResponse> {
     const startTime = Date.now();
     const timeoutMs = timeout * 1000;
