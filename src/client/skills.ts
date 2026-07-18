@@ -2,7 +2,11 @@
  * VLM Run API Skills resource.
  */
 
+import * as os from "os";
+import * as path from "path";
+import * as fs from "fs";
 import { Client, APIRequestor } from "./base_requestor";
+import { Files } from "./files";
 import {
   SkillInfo,
   SkillDownloadResponse,
@@ -10,7 +14,13 @@ import {
   SkillUpdateParams,
   SkillGetParams,
   SkillListParams,
+  AgentSkill,
 } from "./types";
+import {
+  parseSkillFrontmatter,
+  hashDirectory,
+  writeZipFromDirectory,
+} from "./skill_bundle";
 
 export class Skills {
   /**
@@ -168,6 +178,61 @@ export class Skills {
     }
 
     return response;
+  }
+
+  /**
+   * Upload a local skill directory and create a server-side skill.
+   *
+   * Zips the directory, uploads the archive via the files API, and creates a
+   * new skill pointing to it. Returns a referenced {@link AgentSkill} that can
+   * be sent in a chat completion request.
+   *
+   * @param params.directory - Path to a skill folder containing at least a `SKILL.md`.
+   * @param params.name - Override skill name (defaults to SKILL.md frontmatter or directory name).
+   * @param params.description - Override skill description (defaults to SKILL.md frontmatter).
+   * @returns An `AgentSkill` with `type="skill_reference"` pointing to the created skill.
+   * @throws If `SKILL.md` is missing from the directory.
+   */
+  async createFromDirectory(params: {
+    directory: string;
+    name?: string;
+    description?: string;
+  }): Promise<AgentSkill> {
+    const { directory } = params;
+    const skillMd = path.join(directory, "SKILL.md");
+    if (!fs.existsSync(skillMd)) {
+      throw new Error(`SKILL.md not found in ${directory}`);
+    }
+
+    const [fmName, fmDescription] = parseSkillFrontmatter(skillMd);
+    const skillName =
+      params.name || fmName || path.basename(path.resolve(directory));
+    const skillDescription = params.description || fmDescription || undefined;
+
+    const archiveDir = path.join(os.homedir(), ".vlmrun", "skill_archives");
+    fs.mkdirSync(archiveDir, { recursive: true });
+
+    const shortHash = hashDirectory(directory).slice(0, 8);
+    const zipPath = path.join(archiveDir, `${skillName}_${shortHash}.zip`);
+    await writeZipFromDirectory(directory, zipPath);
+
+    const files = new Files({ ...this.client, timeout: 0 });
+    const fileResponse = await files.upload({
+      filePath: zipPath,
+      purpose: "assistants",
+    });
+
+    const skillInfo = await this.create({
+      fileId: fileResponse.id,
+      name: skillName,
+      description: skillDescription,
+    });
+
+    return new AgentSkill({
+      type: "skill_reference",
+      skillId: skillInfo.id,
+      skillName: skillInfo.name,
+    });
   }
 
   /**
