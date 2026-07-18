@@ -231,4 +231,52 @@ describe('Finetuning', () => {
       })).rejects.toThrow('Detail level is not supported for fine-tuned model predictions');
     });
   });
+
+  describe('listModels', () => {
+    it('should list fine-tuning models with default parameters', async () => {
+      const mockResponse = ['ft_model_1', 'ft_model_2'];
+      jest
+        .spyOn(finetuning['requestor'], 'request')
+        .mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await finetuning.listModels();
+
+      expect(result).toEqual(mockResponse);
+      expect(finetuning['requestor'].request).toHaveBeenCalledWith('GET', 'models', {
+        skip: 0,
+        limit: 10,
+      });
+    });
+
+    it('should pass custom skip and limit', async () => {
+      jest
+        .spyOn(finetuning['requestor'], 'request')
+        .mockResolvedValue([[], 200, {}]);
+
+      await finetuning.listModels({ skip: 5, limit: 25 });
+
+      expect(finetuning['requestor'].request).toHaveBeenCalledWith('GET', 'models', {
+        skip: 5,
+        limit: 25,
+      });
+    });
+
+    it('should coerce non-string entries to strings', async () => {
+      jest
+        .spyOn(finetuning['requestor'], 'request')
+        .mockResolvedValue([[1, 2], 200, {}]);
+
+      const result = await finetuning.listModels();
+
+      expect(result).toEqual(['1', '2']);
+    });
+
+    it('should throw TypeError for non-array response', async () => {
+      jest
+        .spyOn(finetuning['requestor'], 'request')
+        .mockResolvedValue(['not-an-array', 200, {}]);
+
+      await expect(finetuning.listModels()).rejects.toThrow('Expected array response');
+    });
+  });
 });

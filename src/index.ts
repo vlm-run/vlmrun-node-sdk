@@ -28,6 +28,7 @@ export * from "./client/fine_tuning";
 export * from "./client/exceptions";
 export * from "./client/agent";
 export * from "./client/skills";
+export * from "./client/skill_bundle";
 export * from "./client/executions";
 export * from "./client/artifacts";
 
