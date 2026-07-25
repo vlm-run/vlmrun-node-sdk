@@ -179,6 +179,44 @@ describe("Predictions", () => {
       });
     });
 
+    describe("execute", () => {
+      it("should execute a named model on images", async () => {
+        const mockResponse = { id: "pred_123", status: "completed" };
+        requestMock.mockResolvedValue([mockResponse, 200, {}]);
+
+        const result = await imagePredictions.execute({
+          name: "model1",
+          images: ["image1.jpg"],
+        });
+
+        expect(result).toEqual(mockResponse);
+        expect(requestMock).toHaveBeenCalledWith(
+          "POST",
+          "image/execute",
+          undefined,
+          {
+            name: "model1",
+            version: "latest",
+            images: ["base64-encoded-image"],
+            batch: false,
+            config: {
+              confidence: false,
+              detail: "auto",
+              gql_stmt: null,
+              grounding: false,
+              json_schema: undefined,
+            },
+            metadata: {
+              environment: "dev",
+              session_id: undefined,
+              allow_training: true,
+            },
+            callback_url: undefined,
+          }
+        );
+      });
+    });
+
     describe("schema", () => {
       let requestMock: jest.SpyInstance;
 

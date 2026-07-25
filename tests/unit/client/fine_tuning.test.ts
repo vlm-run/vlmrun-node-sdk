@@ -173,6 +173,36 @@ describe('Finetuning', () => {
     });
   });
 
+  describe('listModels', () => {
+    it('should list fine-tuning models', async () => {
+      const mockModels = ['ft_model_1', 'ft_model_2'];
+      const requestMock = jest
+        .spyOn(finetuning['requestor'], 'request')
+        .mockResolvedValue([mockModels, 200, {}]);
+
+      const result = await finetuning.listModels({ skip: 5, limit: 20 });
+
+      expect(result).toEqual(mockModels);
+      expect(requestMock).toHaveBeenCalledWith('GET', 'models', {
+        skip: 5,
+        limit: 20,
+      });
+    });
+
+    it('should use default pagination parameters', async () => {
+      const requestMock = jest
+        .spyOn(finetuning['requestor'], 'request')
+        .mockResolvedValue([[], 200, {}]);
+
+      await finetuning.listModels();
+
+      expect(requestMock).toHaveBeenCalledWith('GET', 'models', {
+        skip: 0,
+        limit: 10,
+      });
+    });
+  });
+
   describe('generate', () => {
     it('should generate a prediction with valid parameters', async () => {
       const mockResponse: PredictionResponse = {
