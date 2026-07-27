@@ -189,7 +189,8 @@ describe("Agent", () => {
           },
           metadata: {
             environment: "dev",
-            sessionId: "test-session",
+            session_id: "test-session",
+            allow_training: true,
           },
           callback_url: "https://webhook.example.com/callback",
         }
@@ -357,6 +358,46 @@ describe("Agent", () => {
           batch: false,
         })
       ).rejects.toThrow("Batch mode is required for agent execution");
+    });
+
+    it("should normalize plain-object metadata to snake_case", async () => {
+      const mockResponse = {
+        id: "execution_456",
+        name: "test-agent",
+        created_at: "2023-01-01T00:00:00Z",
+        status: "running",
+        usage: { credits_used: 0 },
+      };
+
+      jest
+        .spyOn(agent["requestor"], "request")
+        .mockResolvedValue([mockResponse, 200, {}]);
+
+      await agent.execute({
+        name: "test-agent",
+        inputs: { test: "data" },
+        metadata: {
+          environment: "prod",
+          sessionId: "session-xyz",
+          allowTraining: false,
+        },
+      });
+
+      expect(agent["requestor"].request).toHaveBeenCalledWith(
+        "POST",
+        "agent/execute",
+        undefined,
+        {
+          name: "test-agent",
+          batch: true,
+          inputs: { test: "data" },
+          metadata: {
+            environment: "prod",
+            session_id: "session-xyz",
+            allow_training: false,
+          },
+        }
+      );
     });
   });
 

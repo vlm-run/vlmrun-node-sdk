@@ -293,8 +293,11 @@ export class Agent {
     }
 
     if (metadata) {
-      data.metadata =
-        metadata instanceof RequestMetadata ? metadata.toJSON() : metadata;
+      const metadataObj =
+        metadata instanceof RequestMetadata
+          ? metadata
+          : new RequestMetadata(metadata);
+      data.metadata = metadataObj.toJSON();
     }
 
     if (callbackUrl) {
@@ -385,8 +388,11 @@ export class Agent {
     }
 
     if (metadata) {
-      data.metadata =
-        metadata instanceof RequestMetadata ? metadata.toJSON() : metadata;
+      const metadataObj =
+        metadata instanceof RequestMetadata
+          ? metadata
+          : new RequestMetadata(metadata);
+      data.metadata = metadataObj.toJSON();
     }
 
     if (callbackUrl) {
