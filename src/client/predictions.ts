@@ -401,6 +401,10 @@ export class FilePredictions extends Predictions {
 
   /**
    * Execute a named model/agent on files
+   * @deprecated The /document/execute endpoint has been removed in v0.19.0.
+   * Redaction domains are now served via /document/generate.
+   * Use `generate({ domain: "healthcare.phi-redaction", ... })` instead of
+   * `execute({ name: "healthcare/phi-redaction", ... })`.
    * @param params.name - Name of the model/agent to execute
    * @param params.version - Version of the model/agent (default: "latest")
    * @param params.fileId - File ID to use
@@ -412,55 +416,20 @@ export class FilePredictions extends Predictions {
    * @returns Promise containing the prediction response
    */
   async execute(params: FileExecuteParams): Promise<PredictionResponse> {
-    const {
-      name,
-      version = "latest",
-      fileId,
-      url,
-      batch = true,
-      config,
-      metadata,
-      callbackUrl,
-    } = params;
-
-    const fileOrUrl = this._handleFileOrUrl(fileId, url);
-
-    let jsonSchema = config?.jsonSchema;
-    if (config && "responseModel" in config && config.responseModel) {
-      jsonSchema = convertToJsonSchema(
-        config.responseModel,
-        config.zodToJsonParams
-      );
-    }
-
-    const [response] = await this.requestor.request<PredictionResponse>(
-      "POST",
-      `/${this.route}/execute`,
-      undefined,
-      {
-        name,
-        version,
-        ...fileOrUrl,
-        batch,
-        config: {
-          detail: config?.detail ?? "auto",
-          json_schema: jsonSchema,
-          confidence: config?.confidence ?? false,
-          grounding: config?.grounding ?? false,
-          gql_stmt: config?.gqlStmt ?? null,
-        },
-        metadata: {
-          environment: metadata?.environment ?? "dev",
-          session_id: metadata?.sessionId,
-          allow_training: metadata?.allowTraining ?? true,
-        },
-        callback_url: callbackUrl,
-      }
+    console.warn(
+      `${this.route}.execute() is deprecated and will be removed in a future release. ` +
+        `Use ${this.route}.generate({ domain: "${params.name.replace(/\//g, ".")}", ... }) instead.`
     );
-
-    this._castResponseToSchema(response, name, config);
-
-    return response;
+    const domain = params.name.replace(/\//g, ".");
+    return this.generate({
+      fileId: params.fileId,
+      url: params.url,
+      domain,
+      batch: params.batch ?? true,
+      config: params.config,
+      metadata: params.metadata,
+      callbackUrl: params.callbackUrl,
+    });
   }
 
   /**
