@@ -20,6 +20,9 @@ import {
   AgentToolset,
 } from "./types";
 
+const DEFAULT_TIMEOUT = 120000;
+const AGENT_MIN_TIMEOUT = 600000;
+
 export class Agent {
   /**
    * Agent resource for VLM Run API.
@@ -116,7 +119,8 @@ export class Agent {
     const openaiClient = new OpenAI({
       apiKey: this.client.apiKey,
       baseURL: baseUrl,
-      timeout: this.client.timeout,
+      // Agent loops routinely exceed the 120s client default, so raise the floor.
+      timeout: Math.max(this.client.timeout ?? DEFAULT_TIMEOUT, AGENT_MIN_TIMEOUT),
       maxRetries: this.client.maxRetries ?? 1,
     });
 
