@@ -339,6 +339,36 @@ npm install openai
 yarn add openai
 ```
 
+### Model Gateway
+
+`client.gateway` exposes the [VLM Run Gateway](https://gateway.vlm.run/v1), an OpenAI-compatible surface for third-party OCR / vision-language models. It authenticates with the same API key and can be pointed elsewhere with `gatewayURL` or the `VLMRUN_GATEWAY_URL` environment variable.
+
+```typescript
+import { VlmRun } from "vlmrun";
+
+const client = new VlmRun({ apiKey: "your-api-key" });
+
+const response = await client.gateway.completions.create({
+  model: "paddleocr/pp-ocrv6",
+  messages: [
+    {
+      role: "user",
+      content: [
+        {
+          type: "document_url",
+          document_url: { url: "https://example.com/document.pdf" },
+        },
+      ],
+    },
+  ],
+});
+
+console.log(response.choices[0].message.content);
+
+// Embeddings, audio transcriptions and model listing are available too
+const models = await client.gateway.models();
+```
+
 ## 🛠️ Examples
 
 Check out the [examples](./examples) directory for more detailed usage examples:
