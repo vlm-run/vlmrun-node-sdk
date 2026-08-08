@@ -162,6 +162,23 @@ export class Finetuning {
   }
 
   /**
+   * List all fine-tuning models
+   * @param {FinetuningListParams} params - List parameters
+   */
+  async listModels(params?: FinetuningListParams): Promise<string[]> {
+    const [response] = await this.requestor.request<unknown[]>("GET", "models", {
+      skip: params?.skip ?? 0,
+      limit: params?.limit ?? 10,
+    });
+
+    if (!Array.isArray(response)) {
+      throw new TypeError("Expected array response");
+    }
+
+    return response.map((model) => String(model));
+  }
+
+  /**
    * Get fine-tuning job details
    * @param {string} jobId - ID of job to retrieve
    */
