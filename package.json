@@ -38,7 +38,7 @@
     "dotenv": "^16.4.7",
     "mime-types": "^2.1.35",
     "path": "^0.12.7",
-    "tar": "^7.4.3",
+    "tar": "^7.5.22",
     "zod": "~3.24.2",
     "zod-to-json-schema": "~3.24.1"
   },
@@ -61,6 +61,7 @@
   },
   "overrides": {
     "esbuild": "^0.28.1",
-    "js-yaml": "^4.2.0"
+    "js-yaml": "^4.3.1",
+    "brace-expansion": "^2.1.4"
   }
 }
