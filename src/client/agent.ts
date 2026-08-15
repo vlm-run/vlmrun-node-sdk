@@ -20,6 +20,13 @@ import {
   AgentToolset,
 } from "./types";
 
+/**
+ * Agent runs are long-lived, so the OpenAI-compatible completions client uses a
+ * floor of 600s rather than the client's 120s default.
+ */
+const AGENT_COMPLETIONS_TIMEOUT_MS = (timeout?: number): number =>
+  Math.max(timeout ?? 0, 600000);
+
 export class Agent {
   /**
    * Agent resource for VLM Run API.
@@ -116,7 +123,7 @@ export class Agent {
     const openaiClient = new OpenAI({
       apiKey: this.client.apiKey,
       baseURL: baseUrl,
-      timeout: this.client.timeout,
+      timeout: AGENT_COMPLETIONS_TIMEOUT_MS(this.client.timeout),
       maxRetries: this.client.maxRetries ?? 1,
     });
 

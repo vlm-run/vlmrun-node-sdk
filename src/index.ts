@@ -17,6 +17,7 @@ import { Skills } from "./client/skills";
 import { Executions } from "./client/executions";
 import { Domains } from "./client/domains";
 import { Artifacts } from "./client/artifacts";
+import { Gateway } from "./client/gateway";
 
 export * from "./client/types";
 export * from "./client/base_requestor";
@@ -30,6 +31,7 @@ export * from "./client/agent";
 export * from "./client/skills";
 export * from "./client/executions";
 export * from "./client/artifacts";
+export * from "./client/gateway";
 
 export * from "./utils";
 
@@ -38,6 +40,11 @@ export interface VlmRunConfig {
   baseURL?: string;
   timeout?: number;
   maxRetries?: number;
+  /**
+   * Base URL for the OpenAI-compatible model gateway. Defaults to the
+   * `VLMRUN_GATEWAY_URL` environment variable, then `https://gateway.vlm.run/v1`.
+   */
+  gatewayURL?: string;
 }
 
 export class VlmRun {
@@ -59,6 +66,7 @@ export class VlmRun {
   readonly executions: Executions;
   readonly domains: Domains;
   readonly artifacts: Artifacts;
+  readonly gateway: Gateway;
 
   constructor(config: VlmRunConfig) {
     this.client = {
@@ -85,6 +93,7 @@ export class VlmRun {
     this.executions = new Executions(this.client);
     this.domains = new Domains(this.client);
     this.artifacts = new Artifacts(this.client);
+    this.gateway = new Gateway(this.client, config.gatewayURL);
   }
 
   /**

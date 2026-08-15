@@ -231,4 +231,24 @@ describe('Finetuning', () => {
       })).rejects.toThrow('Detail level is not supported for fine-tuned model predictions');
     });
   });
+
+  describe('listModels', () => {
+    it('should list fine-tuning models with default pagination', async () => {
+      jest.spyOn(finetuning['requestor'], 'request').mockResolvedValue([['ft_model_1', 'ft_model_2'], 200, {}]);
+
+      const result = await finetuning.listModels();
+
+      expect(result).toEqual(['ft_model_1', 'ft_model_2']);
+      expect(finetuning['requestor'].request).toHaveBeenCalledWith('GET', 'models', {
+        skip: 0,
+        limit: 10,
+      });
+    });
+
+    it('should throw error for non-array responses', async () => {
+      jest.spyOn(finetuning['requestor'], 'request').mockResolvedValue([{} as any, 200, {}]);
+
+      await expect(finetuning.listModels()).rejects.toThrow('Expected array response');
+    });
+  });
 });

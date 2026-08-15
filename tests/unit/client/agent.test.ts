@@ -401,7 +401,7 @@ describe("Agent", () => {
       expect(mockOpenAI).toHaveBeenCalledWith({
         apiKey: "test-api-key",
         baseURL: "https://api.example.com/openai",
-        timeout: undefined,
+        timeout: 600000,
         maxRetries: 1,
       });
     });
@@ -414,7 +414,7 @@ describe("Agent", () => {
       expect(mockOpenAI).toHaveBeenCalledTimes(1);
     });
 
-    it("should use client timeout and maxRetries when provided", () => {
+    it("should use client maxRetries and a 600s timeout floor", () => {
       const clientWithOptions: jest.Mocked<Client> = {
         apiKey: "test-api-key",
         baseURL: "https://agent.vlm.run/v1",
@@ -428,9 +428,24 @@ describe("Agent", () => {
       expect(mockOpenAI).toHaveBeenCalledWith({
         apiKey: "test-api-key",
         baseURL: "https://agent.vlm.run/v1/openai",
-        timeout: 30000,
+        timeout: 600000,
         maxRetries: 3,
       });
+    });
+
+    it("should keep client timeouts above the 600s floor", () => {
+      const clientWithOptions: jest.Mocked<Client> = {
+        apiKey: "test-api-key",
+        baseURL: "https://agent.vlm.run/v1",
+        timeout: 900000,
+        maxRetries: 3,
+      } as jest.Mocked<Client>;
+
+      new Agent(clientWithOptions).completions;
+
+      expect(mockOpenAI).toHaveBeenCalledWith(
+        expect.objectContaining({ timeout: 900000 })
+      );
     });
 
     it("should allow calling create on completions", async () => {
@@ -644,6 +659,43 @@ describe("Agent", () => {
 
       const call = (agent["requestor"].request as jest.Mock).mock.calls[0];
       expect(call[3].config).not.toHaveProperty("service_tier");
+    });
+
+    it.each(["agent", "program"] as const)(
+      "forwards mode=%s to /agent/execute",
+      async (mode) => {
+        jest
+          .spyOn(agent["requestor"], "request")
+          .mockResolvedValue([mockExecuteResponse, 200, {}]);
+
+        await agent.execute({
+          name: "test-agent",
+          config: { prompt: "hi", mode },
+        });
+
+        expect(agent["requestor"].request).toHaveBeenCalledWith(
+          "POST",
+          "agent/execute",
+          undefined,
+          expect.objectContaining({
+            config: expect.objectContaining({ mode }),
+          })
+        );
+      }
+    );
+
+    it("omits mode from /agent/execute payload when not set", async () => {
+      jest
+        .spyOn(agent["requestor"], "request")
+        .mockResolvedValue([mockExecuteResponse, 200, {}]);
+
+      await agent.execute({
+        name: "test-agent",
+        config: { prompt: "hi" },
+      });
+
+      const call = (agent["requestor"].request as jest.Mock).mock.calls[0];
+      expect(call[3].config).not.toHaveProperty("mode");
     });
 
     it("forwards service_tier through /agent/create", async () => {
