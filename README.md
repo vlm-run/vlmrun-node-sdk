@@ -339,6 +339,65 @@ npm install openai
 yarn add openai
 ```
 
+### Model Gateway
+
+The gateway (`https://gateway.vlm.run/v1`) exposes an OpenAI-compatible surface for third-party OCR / vision-language models (e.g. `glm-ocr`, `paddle-ocrv6`) using the same API key.
+
+```typescript
+import { VlmRun } from "vlmrun";
+
+const client = new VlmRun({ apiKey: "your-api-key" });
+
+// List gateway models
+const models = await client.gateway.models();
+
+// OCR a PDF via chat completions
+const response = await client.gateway.completions.create({
+  model: "glm-ocr",
+  messages: [
+    {
+      role: "user",
+      content: [
+        {
+          type: "document_url",
+          document_url: { url: "data:application/pdf;base64,..." },
+        },
+      ],
+    },
+  ],
+});
+
+// Multimodal embeddings
+const embeddings = await client.gateway.embeddings.create({
+  model: "qwen/qwen3-vl-embedding-2b",
+  input: [[{ type: "image_url", image_url: { url: "data:image/jpeg;base64,..." } }]],
+});
+
+// Audio transcriptions
+import fs from "fs";
+const transcription = await client.gateway.transcriptions.create({
+  model: "nvidia/parakeet-tdt-0.6b-v3",
+  file: fs.createReadStream("clip.mp3"),
+});
+```
+
+Override the gateway URL with the `gatewayURL` client option or the `VLMRUN_GATEWAY_URL` environment variable.
+
+### Agent Execution Modes
+
+For Orion-2, `mode` selects between replaying a skill's cached `pipeline.py` (`program`, the server default) and running the full LLM agent loop (`agent`):
+
+```typescript
+const execution = await client.agent.execute({
+  name: "my-agent",
+  inputs: { file: "https://example.com/document.pdf" },
+  model: "vlmrun-orion-2:pro",
+  config: { mode: "agent", skills: [{ skillId: "my-skill-id" }] },
+});
+
+console.log(execution.execution_mode); // "program" | "agent"
+```
+
 ## 🛠️ Examples
 
 Check out the [examples](./examples) directory for more detailed usage examples:
