@@ -113,10 +113,15 @@ export class Agent {
     }
 
     const baseUrl = `${this.client.baseURL}/openai`;
+    // Chat completions routinely run long, so enforce a 600s timeout floor.
+    const timeout =
+      this.client.timeout === undefined
+        ? undefined
+        : Math.max(this.client.timeout, 600000);
     const openaiClient = new OpenAI({
       apiKey: this.client.apiKey,
       baseURL: baseUrl,
-      timeout: this.client.timeout,
+      timeout,
       maxRetries: this.client.maxRetries ?? 1,
     });
 

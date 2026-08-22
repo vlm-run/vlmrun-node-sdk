@@ -425,10 +425,30 @@ describe("Agent", () => {
       const agentWithOptions = new Agent(clientWithOptions);
       agentWithOptions.completions;
 
+      // Timeouts below the 600s floor are raised to 600s.
       expect(mockOpenAI).toHaveBeenCalledWith({
         apiKey: "test-api-key",
         baseURL: "https://agent.vlm.run/v1/openai",
-        timeout: 30000,
+        timeout: 600000,
+        maxRetries: 3,
+      });
+    });
+
+    it("should keep an explicit timeout above the 600s floor", () => {
+      const clientWithOptions: jest.Mocked<Client> = {
+        apiKey: "test-api-key",
+        baseURL: "https://agent.vlm.run/v1",
+        timeout: 900000,
+        maxRetries: 3,
+      } as jest.Mocked<Client>;
+
+      const agentWithOptions = new Agent(clientWithOptions);
+      agentWithOptions.completions;
+
+      expect(mockOpenAI).toHaveBeenCalledWith({
+        apiKey: "test-api-key",
+        baseURL: "https://agent.vlm.run/v1/openai",
+        timeout: 900000,
         maxRetries: 3,
       });
     });
