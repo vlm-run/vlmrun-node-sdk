@@ -49,7 +49,7 @@ export class Executions {
    * Wait for execution to complete.
    * 
    * @param id - ID of execution to wait for
-   * @param timeout - Maximum number of seconds to wait (default: 300)
+   * @param timeout - Maximum number of seconds to wait (default: 600)
    * @param sleep - Time to wait between checks in seconds (default: 5)
    * @returns Completed execution
    * @throws RequestTimeoutError if execution does not complete within timeout
