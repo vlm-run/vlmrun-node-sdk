@@ -8,7 +8,7 @@ export class Executions {
 
   constructor(client: Client) {
     this.client = client;
-    this.requestor = new APIRequestor({ ...client, timeout: 120000 });
+    this.requestor = new APIRequestor({ ...client, timeout: 600000 });
   }
 
   /**

@@ -8,6 +8,7 @@ import {
   VideoUrl,
   AudioUrl,
   DocumentUrl,
+  AgentExecutionConfig,
 } from "../../../src/client/types";
 
 describe("Types", () => {
@@ -222,6 +223,27 @@ describe("Types", () => {
         url: "https://example.com/document.pdf",
       };
       expect(documentUrl.url).toBe("https://example.com/document.pdf");
+    });
+  });
+
+  describe("AgentExecutionConfig", () => {
+    it("should serialize mode when provided", () => {
+      const config = new AgentExecutionConfig({
+        prompt: "test",
+        mode: "program",
+      });
+      expect(config.toJSON()).toMatchObject({
+        prompt: "test",
+        mode: "program",
+      });
+    });
+
+    it("should omit mode, serviceTier, and orchestrationMode when unset", () => {
+      const config = new AgentExecutionConfig({ prompt: "test" });
+      const json = config.toJSON();
+      expect(json).not.toHaveProperty("mode");
+      expect(json).not.toHaveProperty("service_tier");
+      expect(json).not.toHaveProperty("orchestration_mode");
     });
   });
 });
