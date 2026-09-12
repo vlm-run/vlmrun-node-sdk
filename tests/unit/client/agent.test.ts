@@ -1,7 +1,11 @@
+import { z } from "zod";
 import { Client } from "../../../src/client/base_requestor";
 import { Agent } from "../../../src/client/agent";
 import { PredictionResponse, AgentInfo } from "../../../src/client/types";
-import { DependencyError } from "../../../src/client/exceptions";
+import {
+  DependencyError,
+  InputError,
+} from "../../../src/client/exceptions";
 
 jest.mock("../../../src/client/base_requestor");
 
@@ -711,6 +715,37 @@ describe("Agent", () => {
 
       const call = (agent["requestor"].request as jest.Mock).mock.calls[0];
       expect(call[3].config).not.toHaveProperty("mode");
+    });
+
+    it("converts a zod responseModel into json_schema", async () => {
+      jest
+        .spyOn(agent["requestor"], "request")
+        .mockResolvedValue([mockExecuteResponse, 200, {}]);
+
+      await agent.execute({
+        name: "test-agent",
+        config: { responseModel: z.object({ total: z.number() }) },
+      });
+
+      const call = (agent["requestor"].request as jest.Mock).mock.calls[0];
+      expect(call[3].config.json_schema).toEqual(
+        expect.objectContaining({
+          type: "object",
+          properties: { total: { type: "number" } },
+        })
+      );
+    });
+
+    it("rejects responseModel and jsonSchema together", async () => {
+      await expect(
+        agent.execute({
+          name: "test-agent",
+          config: {
+            responseModel: z.object({ total: z.number() }),
+            jsonSchema: { type: "object" },
+          },
+        })
+      ).rejects.toThrow(InputError);
     });
 
     it("forwards service_tier through /agent/create", async () => {
