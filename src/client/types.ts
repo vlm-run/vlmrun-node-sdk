@@ -209,6 +209,8 @@ export interface PresignedUrlResponse {
   upload_method?: string;
   public_url?: string;
   created_at?: string;
+  expiration?: number;
+  method?: string;
 }
 
 export interface PresignedUrlRequest {
@@ -327,6 +329,47 @@ export class AgentSkill {
     }
 
     return json;
+  }
+
+  /**
+   * Build an inline skill from a local skill directory.
+   *
+   * Zips the directory contents, base64-encodes the result, and returns an
+   * `AgentSkill` with `type: "inline"` that can be sent directly in a chat
+   * completion or agent execution request.
+   *
+   * @param directory - Path to a skill folder containing at least a `SKILL.md`.
+   * @param overrides - Optional name/description overrides (default to the
+   *   SKILL.md frontmatter, then the directory name).
+   * @throws {Error} If `SKILL.md` is missing from the directory.
+   *
+   * @example
+   * ```typescript
+   * const skill = AgentSkill.fromDirectory("./my-skill");
+   * const response = await client.agent.completions.create({
+   *   model: "vlmrun-orion-1:auto",
+   *   messages: [...],
+   *   skills: [skill.toJSON()],
+   * });
+   * ```
+   */
+  static fromDirectory(
+    directory: string,
+    overrides: { name?: string; description?: string } = {}
+  ): AgentSkill {
+    const {
+      resolveSkillMetadata,
+      bundleFromDirectory,
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+    } = require("../utils/skill");
+    const { name, description } = resolveSkillMetadata(directory, overrides);
+
+    return new AgentSkill({
+      type: "inline",
+      name,
+      description: description ?? "",
+      source: { data: bundleFromDirectory(directory) },
+    });
   }
 }
 
@@ -487,6 +530,17 @@ export interface ImagePredictionParams extends PredictionGenerateParams {
   batch?: boolean;
   images?: string[];
   urls?: string[];
+}
+
+export interface ImageExecuteParams {
+  name: string;
+  version?: string;
+  images?: string[];
+  urls?: string[];
+  batch?: boolean;
+  config?: GenerationConfigInput;
+  metadata?: RequestMetadataInput;
+  callbackUrl?: string;
 }
 
 export interface FilePredictionParams extends PredictionGenerateParams {
@@ -729,6 +783,7 @@ export type AgentExecutionConfigParams = {
   skills?: AgentSkillInput[];
   serviceTier?: "auto" | "default" | "standard" | "flex" | "priority" | null;
   orchestrationMode?: boolean | null;
+  mode?: "agent" | "program" | null;
 };
 
 export class AgentExecutionConfig {
@@ -748,6 +803,12 @@ export class AgentExecutionConfig {
    * omitted, the server default applies.
    */
   orchestrationMode?: boolean | null;
+  /**
+   * Orion-2 only (ignored for other models). `program` (default): run the
+   * cached skill `pipeline.py` as fixed code when available. `agent`: run the
+   * full LLM agent loop. When omitted, the server default applies.
+   */
+  mode?: "agent" | "program" | null;
 
   constructor(params: Partial<AgentExecutionConfig> = {}) {
     Object.assign(this, params);
@@ -764,6 +825,7 @@ export class AgentExecutionConfig {
     if (this.serviceTier !== undefined) json.service_tier = this.serviceTier;
     if (this.orchestrationMode !== undefined)
       json.orchestration_mode = this.orchestrationMode;
+    if (this.mode !== undefined) json.mode = this.mode;
     return json;
   }
 }
@@ -891,6 +953,12 @@ export interface SkillGetParams {
   skillVersion?: string;
   /** @deprecated Use skillVersion instead */
   version?: string;
+}
+
+export interface SkillCreateFromDirectoryParams {
+  directory: string;
+  name?: string;
+  description?: string;
 }
 
 export interface SkillCreateParams {
