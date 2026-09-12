@@ -198,7 +198,7 @@ export class Skills {
     const { name, description } = resolveSkillMetadata(directory, overrides);
     const zipPath = writeSkillArchive(directory, name);
 
-    const files = new Files(this.client);
+    const files = new Files({ ...this.client, timeout: 0 });
     const fileResponse = await files.upload({
       filePath: zipPath,
       purpose: "assistants",

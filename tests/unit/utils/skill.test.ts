@@ -75,6 +75,17 @@ describe("skill utils", () => {
       expect(text).toContain("scripts/pipeline.py");
     });
 
+    it("flags entry names as utf-8 so non-ascii paths round-trip", () => {
+      const dir = makeSkillDir("---\nname: unicode\n---");
+      fs.writeFileSync(path.join(dir, "café.txt"), "latte\n");
+      const zip = zipDirectory(dir);
+
+      expect(zip.readUInt16LE(6) & 0x0800).toBe(0x0800);
+      const centralOffset = zip.readUInt32LE(zip.length - 6);
+      expect(zip.readUInt16LE(centralOffset + 8) & 0x0800).toBe(0x0800);
+      expect(zip.toString("utf-8")).toContain("café.txt");
+    });
+
     it("is deterministic for identical contents", () => {
       const dirA = makeSkillDir("---\nname: same\n---");
       const dirB = makeSkillDir("---\nname: same\n---");
@@ -98,6 +109,16 @@ describe("skill utils", () => {
       expect(zipPath).toContain(path.join(".vlmrun", "skill_archives"));
       expect(path.basename(zipPath)).toMatch(/^archived_[0-9a-f]{8}\.zip$/);
       expect(fs.existsSync(zipPath)).toBe(true);
+    });
+
+    it("keeps traversal segments in the skill name inside the cache", () => {
+      const dir = makeSkillDir("---\nname: sneaky\n---");
+      const zipPath = writeSkillArchive(dir, "../../evil");
+
+      expect(path.dirname(zipPath)).toEqual(
+        path.join(os.homedir(), ".vlmrun", "skill_archives")
+      );
+      expect(path.basename(zipPath)).toMatch(/^\.\._\.\._evil_[0-9a-f]{8}\.zip$/);
     });
   });
 });

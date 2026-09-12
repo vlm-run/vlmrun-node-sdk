@@ -120,8 +120,10 @@ export class Agent {
       apiKey: this.client.apiKey,
       baseURL: baseUrl,
       timeout:
-        this.client.timeout === undefined || this.client.timeout === null
-          ? undefined
+        this.client.timeout === undefined ||
+        this.client.timeout === null ||
+        this.client.timeout === 0
+          ? this.client.timeout
           : Math.max(this.client.timeout, COMPLETIONS_MIN_TIMEOUT_MS),
       maxRetries: this.client.maxRetries ?? 1,
     });

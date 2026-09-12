@@ -130,7 +130,7 @@ export const zipDirectory = (directory: string): Buffer => {
     const localHeader = Buffer.alloc(30);
     localHeader.writeUInt32LE(0x04034b50, 0);
     localHeader.writeUInt16LE(20, 4); // version needed
-    localHeader.writeUInt16LE(0, 6); // flags
+    localHeader.writeUInt16LE(0x0800, 6); // flags (bit 11: UTF-8 names)
     localHeader.writeUInt16LE(8, 8); // deflate
     localHeader.writeUInt16LE(0, 10); // mod time
     localHeader.writeUInt16LE(0x21, 12); // mod date (1980-01-01)
@@ -144,7 +144,7 @@ export const zipDirectory = (directory: string): Buffer => {
     centralHeader.writeUInt32LE(0x02014b50, 0);
     centralHeader.writeUInt16LE(20, 4); // version made by
     centralHeader.writeUInt16LE(20, 6); // version needed
-    centralHeader.writeUInt16LE(0, 8); // flags
+    centralHeader.writeUInt16LE(0x0800, 8); // flags (bit 11: UTF-8 names)
     centralHeader.writeUInt16LE(8, 10); // deflate
     centralHeader.writeUInt16LE(0, 12); // mod time
     centralHeader.writeUInt16LE(0x21, 14); // mod date
@@ -247,7 +247,8 @@ export const writeSkillArchive = (
   fs.mkdirSync(archiveDir, { recursive: true });
 
   const shortHash = hashDirectory(directory).slice(0, 8);
-  const zipPath = path.join(archiveDir, `${skillName}_${shortHash}.zip`);
+  const safeName = skillName.replace(/[^A-Za-z0-9._-]/g, "_") || "skill";
+  const zipPath = path.join(archiveDir, `${safeName}_${shortHash}.zip`);
   fs.writeFileSync(zipPath, zipDirectory(directory));
   return zipPath;
 };

@@ -433,6 +433,21 @@ describe("Agent", () => {
       });
     });
 
+    it("should preserve a zero timeout as unlimited", () => {
+      const clientWithOptions: jest.Mocked<Client> = {
+        apiKey: "test-api-key",
+        baseURL: "https://agent.vlm.run/v1",
+        timeout: 0,
+        maxRetries: 3,
+      } as jest.Mocked<Client>;
+
+      new Agent(clientWithOptions).completions;
+
+      expect(mockOpenAI).toHaveBeenCalledWith(
+        expect.objectContaining({ timeout: 0 })
+      );
+    });
+
     it("should keep a client timeout above the floor", () => {
       const clientWithOptions: jest.Mocked<Client> = {
         apiKey: "test-api-key",
