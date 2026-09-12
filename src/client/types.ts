@@ -1,4 +1,24 @@
 import { ZodType } from "zod";
+import { convertToJsonSchema } from "../utils/utils";
+import { InputError } from "./exceptions";
+
+/**
+ * Resolve the JSON schema for an agent config, converting a Zod
+ * `responseModel` when one is provided.
+ */
+const resolveAgentJsonSchema = (config: {
+  responseModel?: ZodType;
+  jsonSchema?: Record<string, any>;
+}): Record<string, any> | null | undefined => {
+  if (config.responseModel && config.jsonSchema) {
+    throw new InputError(
+      "`responseModel` and `jsonSchema` cannot be used together, please provide only one",
+    );
+  }
+  return config.responseModel
+    ? convertToJsonSchema(config.responseModel)
+    : config.jsonSchema;
+};
 
 export type JobStatus = string;
 
@@ -788,6 +808,7 @@ export type AgentExecutionConfigParams = {
 
 export class AgentExecutionConfig {
   prompt?: string;
+  responseModel?: ZodType;
   jsonSchema?: Record<string, any>;
   skills?: AgentSkillInput[];
   /**
@@ -817,7 +838,7 @@ export class AgentExecutionConfig {
   toJSON() {
     const json: Record<string, any> = {
       prompt: this.prompt,
-      json_schema: this.jsonSchema,
+      json_schema: resolveAgentJsonSchema(this),
       skills: this.skills?.map((s) =>
         s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
       ),
@@ -841,6 +862,7 @@ export type AgentCreationConfigParams = {
 
 export class AgentCreationConfig {
   prompt?: string;
+  responseModel?: ZodType;
   jsonSchema?: Record<string, any>;
   skills?: AgentSkillInput[];
   /**
@@ -864,7 +886,7 @@ export class AgentCreationConfig {
   toJSON() {
     const json: Record<string, any> = {
       prompt: this.prompt,
-      json_schema: this.jsonSchema,
+      json_schema: resolveAgentJsonSchema(this),
       skills: this.skills?.map((s) =>
         s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
       ),
