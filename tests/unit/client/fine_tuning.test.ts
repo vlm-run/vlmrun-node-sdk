@@ -46,7 +46,7 @@ describe('Finetuning', () => {
           training_file: 'file_123',
           validation_file: undefined,
           num_epochs: 1,
-          batch_size: 1,
+          batch_size: "auto",
           learning_rate: 2e-4,
           suffix: undefined,
           wandb_api_key: undefined,
