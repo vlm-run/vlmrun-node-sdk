@@ -36,7 +36,12 @@ export * from "./client/artifacts";
 export * from "./utils";
 
 export interface VlmRunConfig {
-  apiKey: string;
+  /**
+   * VLM Run API key. Falls back to the `VLMRUN_API_KEY` environment variable.
+   * Optional for gateway-only usage (`client.gateway.*`); all other resources
+   * require a key.
+   */
+  apiKey?: string;
   baseURL?: string;
   timeout?: number;
   maxRetries?: number;
@@ -63,9 +68,9 @@ export class VlmRun {
   readonly domains: Domains;
   readonly artifacts: Artifacts;
 
-  constructor(config: VlmRunConfig) {
+  constructor(config: VlmRunConfig = {}) {
     this.client = {
-      apiKey: config.apiKey,
+      apiKey: config.apiKey ?? process.env.VLMRUN_API_KEY ?? "",
       baseURL: config.baseURL ?? "https://api.vlm.run/v1",
       timeout: config.timeout,
       maxRetries: config.maxRetries,

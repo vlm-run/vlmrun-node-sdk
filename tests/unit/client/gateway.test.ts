@@ -152,6 +152,17 @@ describe("Gateway", () => {
       );
     });
 
+    it("omits the Authorization header when no API key is set", async () => {
+      mockedAxios.get.mockResolvedValue({ status: 200 });
+      const gateway = new Gateway({ ...client, apiKey: "" });
+
+      expect(await gateway.health()).toBe(true);
+      expect(mockedAxios.get).toHaveBeenCalledWith(
+        `${DEFAULT_GATEWAY_URL}/health`,
+        expect.objectContaining({ headers: {} }),
+      );
+    });
+
     it("returns false on a non-2xx (non-404) status", async () => {
       mockedAxios.get.mockResolvedValue({ status: 503 });
       const gateway = new Gateway(client);
