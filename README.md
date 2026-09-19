@@ -339,6 +339,26 @@ npm install openai
 yarn add openai
 ```
 
+### Model Gateway
+
+`client.gateway` exposes the OpenAI-compatible VLM Run gateway (chat completions, embeddings, transcriptions, model listing) for third-party models. An API key is optional for gateway-only usage; `VLMRUN_API_KEY` is picked up from the environment when `apiKey` is omitted.
+
+```typescript
+import { VlmRun } from "vlmrun";
+
+const client = new VlmRun(); // apiKey optional for gateway-only usage
+const models = await client.gateway.models();
+const response = await client.gateway.completions.create({
+  model: "zai-org/glm-ocr",
+  messages: [
+    {
+      role: "user",
+      content: [{ type: "document_url", document_url: { url: "https://vlm.run/example.pdf" } }],
+    },
+  ],
+});
+```
+
 ## 🛠️ Examples
 
 Check out the [examples](./examples) directory for more detailed usage examples:
