@@ -108,7 +108,7 @@ export class Gateway {
     }
 
     this._openaiClient = new OpenAI({
-      apiKey: this.client.apiKey,
+      apiKey: this.client.apiKey || "",
       baseURL: this.openaiBaseUrl,
       timeout: this._timeout(),
       maxRetries: this.client.maxRetries ?? 1,
@@ -220,7 +220,10 @@ export class Gateway {
    * @returns True if the gateway is reachable and authenticated, else false.
    */
   async health(): Promise<boolean> {
-    const headers = { Authorization: `Bearer ${this.client.apiKey}` };
+    const headers: Record<string, string> = {};
+    if (this.client.apiKey) {
+      headers.Authorization = `Bearer ${this.client.apiKey}`;
+    }
     let status: number;
     try {
       const resp = await axios.get(`${this.baseUrl}/health`, {
