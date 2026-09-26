@@ -89,6 +89,107 @@ describe("System One", () => {
     });
   });
 
+  it("waits for one shared session handshake across concurrent opens", async () => {
+    const server = new WebSocketServer({ port: 0 });
+    const address = server.address() as AddressInfo;
+    let acknowledge!: () => void;
+    let resolveCreation!: () => void;
+    const created = new Promise<void>((resolve) => {
+      resolveCreation = resolve;
+    });
+    server.on("connection", (socket) => {
+      socket.on("message", (raw) => {
+        const frame = JSON.parse(raw.toString()) as Record<string, unknown>;
+        if (frame.type === "session.create") {
+          acknowledge = () =>
+            socket.send(
+              JSON.stringify({ type: "session.created", max_inflight: 2 }),
+            );
+          resolveCreation();
+        } else if (frame.type === "decide") {
+          socket.send(
+            JSON.stringify({
+              type: "decision",
+              id: frame.id,
+              answers: result.answers,
+            }),
+          );
+        } else if (frame.type === "session.close") {
+          socket.close();
+        }
+      });
+    });
+    const stream = new Gateway(
+      client,
+      `http://localhost:${address.port}/v1`,
+    ).systemone.stream({ questions, transport: "ws" });
+    try {
+      const first = stream.open();
+      const second = stream.open();
+      await created;
+      acknowledge();
+      await Promise.all([first, second]);
+      expect((await stream.send("frame")).answers.urgent.noul).toBe(0.9);
+      await stream.close();
+    } finally {
+      for (const socket of server.clients) socket.terminate();
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
+
+  it("rejects queued reads when closing a session", async () => {
+    const server = new WebSocketServer({ port: 0 });
+    const address = server.address() as AddressInfo;
+    let reply!: () => void;
+    let resolveFirst!: () => void;
+    const firstReceived = new Promise<void>((resolve) => {
+      resolveFirst = resolve;
+    });
+    server.on("connection", (socket) => {
+      socket.on("message", (raw) => {
+        const frame = JSON.parse(raw.toString()) as Record<string, unknown>;
+        if (frame.type === "session.create") {
+          socket.send(
+            JSON.stringify({ type: "session.created", max_inflight: 2 }),
+          );
+        } else if (frame.type === "decide") {
+          reply = () =>
+            socket.send(
+              JSON.stringify({
+                type: "decision",
+                id: frame.id,
+                answers: result.answers,
+              }),
+            );
+          resolveFirst();
+        } else if (frame.type === "session.close") {
+          socket.close();
+        }
+      });
+    });
+    const stream = new Gateway(
+      client,
+      `http://localhost:${address.port}/v1`,
+    ).systemone.stream({ questions, transport: "ws" });
+    try {
+      await stream.open();
+      const first = stream.send("frame 1");
+      await firstReceived;
+      const queued = stream.send("frame 2", "new state");
+      const closing = stream.close();
+      await expect(queued).rejects.toThrow("System One session is closed");
+      reply();
+      await first;
+      await closing;
+      await expect(stream.send("frame 3")).rejects.toThrow(
+        "System One session is closed",
+      );
+    } finally {
+      for (const socket of server.clients) socket.terminate();
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
+
   it("correlates WebSocket decisions by id and closes the session", async () => {
     const server = new WebSocketServer({ port: 0 });
     const address = server.address() as AddressInfo;
