@@ -18,6 +18,7 @@ import { Skills } from "./client/skills";
 import { Executions } from "./client/executions";
 import { Domains } from "./client/domains";
 import { Artifacts } from "./client/artifacts";
+import { DomainInfo, GenerationConfigInput, SchemaResponse } from "./client/types";
 
 export * from "./client/types";
 export * from "./client/base_requestor";
@@ -29,6 +30,7 @@ export * from "./client/fine_tuning";
 export * from "./client/exceptions";
 export * from "./client/agent";
 export * from "./client/gateway";
+export * from "./client/systemone";
 export * from "./client/skills";
 export * from "./client/executions";
 export * from "./client/artifacts";
@@ -62,6 +64,17 @@ export class VlmRun {
   readonly executions: Executions;
   readonly domains: Domains;
   readonly artifacts: Artifacts;
+
+  async getSchema(
+    domain: string,
+    config?: GenerationConfigInput,
+  ): Promise<SchemaResponse> {
+    return this.domains.getSchema(domain, config);
+  }
+
+  async listDomains(): Promise<DomainInfo[]> {
+    return this.domains.list();
+  }
 
   constructor(config: VlmRunConfig) {
     this.client = {

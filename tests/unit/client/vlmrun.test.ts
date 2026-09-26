@@ -15,6 +15,25 @@ describe("VlmRun healthcheck", () => {
     });
   });
 
+  it("exposes domain listing and schema lookup from the root client", async () => {
+    const domains = [{ domain: "document.invoice" }] as DomainInfo[];
+    const schema: SchemaResponse = {
+      domain: "document.invoice",
+      json_schema: { type: "object" },
+      schema_version: "1.0.0",
+      schema_hash: "abc123",
+      gql_stmt: "",
+      description: "Invoice document type",
+    };
+    const list = jest.spyOn(client.domains, "list").mockResolvedValue(domains);
+    const getSchema = jest.spyOn(client.domains, "getSchema").mockResolvedValue(schema);
+
+    expect(await client.listDomains()).toBe(domains);
+    expect(await client.getSchema("document.invoice")).toBe(schema);
+    expect(list).toHaveBeenCalledTimes(1);
+    expect(getSchema).toHaveBeenCalledWith("document.invoice", undefined);
+  });
+
   describe("healthcheck", () => {
     it("should return true when API returns 200", async () => {
       jest

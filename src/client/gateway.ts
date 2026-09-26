@@ -14,10 +14,11 @@
 import axios from "axios";
 import { Client } from "./base_requestor";
 import { DependencyError } from "./exceptions";
+import { SystemOne } from "./systemone";
 
 /**
- * Default gateway base URL. Overridable via the `VLMRUN_GATEWAY_URL`
- * environment variable or the constructor `baseUrl` argument.
+ * Default gateway base URL. Overridable with the constructor `baseUrl` or
+ * `VLMRUN_GATEWAY_BASE_URL` and `VLMRUN_GATEWAY_URL` environment variables.
  */
 export const DEFAULT_GATEWAY_URL = "https://gateway.vlm.run/v1";
 
@@ -38,20 +39,21 @@ export class Gateway {
   private client: Client;
   private _baseUrl: string;
   private _openaiClient: any = null;
+  private _systemone?: SystemOne;
 
   /**
    * Initialize the Gateway resource.
    *
    * @param client - VLM Run API client configuration (provides the API key).
    * @param baseUrl - Optional gateway base URL override. Falls back to the
-   *   `VLMRUN_GATEWAY_URL` environment variable, then {@link DEFAULT_GATEWAY_URL}.
+   *   `VLMRUN_GATEWAY_BASE_URL`, `VLMRUN_GATEWAY_URL`, then {@link DEFAULT_GATEWAY_URL}.
    */
   constructor(client: Client, baseUrl?: string) {
     this.client = client;
     this._baseUrl =
       baseUrl ??
       (typeof process !== "undefined"
-        ? process.env?.VLMRUN_GATEWAY_URL
+        ? process.env?.VLMRUN_GATEWAY_BASE_URL || process.env?.VLMRUN_GATEWAY_URL
         : undefined) ??
       DEFAULT_GATEWAY_URL;
   }
@@ -64,6 +66,10 @@ export class Gateway {
   /** OpenAI-compatible base URL used by the OpenAI SDK. */
   get openaiBaseUrl(): string {
     return `${this.baseUrl}/openai`;
+  }
+
+  get systemone(): SystemOne {
+    return (this._systemone ??= new SystemOne(this.client, this.baseUrl));
   }
 
   /**

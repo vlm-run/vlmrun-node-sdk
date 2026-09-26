@@ -2,8 +2,14 @@
  * VLM Run API Skills resource.
  */
 
+import { createHash } from "node:crypto";
+import { readdir, readFile } from "node:fs/promises";
+import { basename, join, relative } from "node:path";
+import { ZipFile } from "yazl";
 import { Client, APIRequestor } from "./base_requestor";
+import { Files } from "./files";
 import {
+  AgentSkill,
   SkillInfo,
   SkillDownloadResponse,
   SkillCreateParams,
@@ -11,6 +17,68 @@ import {
   SkillGetParams,
   SkillListParams,
 } from "./types";
+
+async function skillFiles(
+  directory: string,
+  root: string = directory,
+): Promise<string[]> {
+  const entries = await readdir(root, { withFileTypes: true });
+  const files: string[] = [];
+  for (const entry of entries) {
+    const path = join(root, entry.name);
+    if (entry.isDirectory()) files.push(...(await skillFiles(directory, path)));
+    else if (entry.isFile()) files.push(path);
+  }
+  return files.sort((a, b) => {
+    const left = relative(directory, a);
+    const right = relative(directory, b);
+    return left < right ? -1 : left > right ? 1 : 0;
+  });
+}
+
+export async function parseSkillFrontmatter(
+  skillMarkdownPath: string,
+): Promise<{ name?: string; description?: string }> {
+  const markdown = await readFile(skillMarkdownPath, "utf8");
+  const frontmatter = markdown.match(/^---\s*\n([\s\S]*?)\n---/);
+  const field = (key: string): string | undefined =>
+    frontmatter?.[1]
+      .split("\n")
+      .find((line) => line.startsWith(`${key}:`))
+      ?.slice(key.length + 1)
+      .trim()
+      .replace(/^["']|["']$/g, "");
+  return { name: field("name"), description: field("description") };
+}
+
+export async function hashDirectory(directory: string): Promise<string> {
+  const hash = createHash("sha256");
+  for (const file of await skillFiles(directory)) {
+    hash.update(relative(directory, file).split("\\").join("/"));
+    hash.update(await readFile(file));
+  }
+  return hash.digest("hex");
+}
+
+export async function bundleFromDirectory(directory: string): Promise<string> {
+  const zip = new ZipFile();
+  for (const file of await skillFiles(directory)) {
+    zip.addBuffer(
+      await readFile(file),
+      relative(directory, file).split("\\").join("/"),
+    );
+  }
+  const chunks: Buffer[] = [];
+  const result = new Promise<string>((resolve, reject) => {
+    zip.outputStream.on("data", (chunk: Buffer) => chunks.push(chunk));
+    zip.outputStream.on("end", () =>
+      resolve(Buffer.concat(chunks).toString("base64")),
+    );
+    zip.outputStream.on("error", reject);
+  });
+  zip.end();
+  return result;
+}
 
 export class Skills {
   /**
@@ -29,6 +97,31 @@ export class Skills {
      */
     this.client = client;
     this.requestor = new APIRequestor(client);
+  }
+
+  async createFromDirectory(
+    directory: string,
+    name?: string,
+    description?: string,
+  ): Promise<AgentSkill> {
+    const frontmatter = await parseSkillFrontmatter(
+      join(directory, "SKILL.md"),
+    );
+    const skillName = name ?? frontmatter.name ?? basename(directory);
+    const data = await bundleFromDirectory(directory);
+    const file = new File([Buffer.from(data, "base64")], `${skillName}.zip`, {
+      type: "application/zip",
+    });
+    const uploaded = await new Files(this.client).upload({
+      file,
+      purpose: "assistants",
+    });
+    const skill = await this.create({
+      fileId: uploaded.id,
+      name: skillName,
+      description: description ?? frontmatter.description,
+    });
+    return new AgentSkill({ skillId: skill.id, skillName: skill.name });
   }
 
   /**

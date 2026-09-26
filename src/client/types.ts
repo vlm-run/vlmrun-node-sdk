@@ -729,6 +729,7 @@ export type AgentExecutionConfigParams = {
   skills?: AgentSkillInput[];
   serviceTier?: "auto" | "default" | "standard" | "flex" | "priority" | null;
   orchestrationMode?: boolean | null;
+  mode?: "agent" | "program" | null;
 };
 
 export class AgentExecutionConfig {
@@ -748,6 +749,7 @@ export class AgentExecutionConfig {
    * omitted, the server default applies.
    */
   orchestrationMode?: boolean | null;
+  mode?: "agent" | "program" | null;
 
   constructor(params: Partial<AgentExecutionConfig> = {}) {
     Object.assign(this, params);
@@ -764,6 +766,7 @@ export class AgentExecutionConfig {
     if (this.serviceTier !== undefined) json.service_tier = this.serviceTier;
     if (this.orchestrationMode !== undefined)
       json.orchestration_mode = this.orchestrationMode;
+    if (this.mode !== undefined) json.mode = this.mode;
     return json;
   }
 }
@@ -907,5 +910,4 @@ export interface SkillUpdateParams {
   fileId?: string;
   description?: string;
 }
-
 

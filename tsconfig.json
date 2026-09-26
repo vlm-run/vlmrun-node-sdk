@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
       "target": "ES2019",
+      "module": "commonjs",
       "strict": true,
       "declaration": true,
       "declarationDir": "dist/types",

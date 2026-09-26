@@ -1,6 +1,11 @@
 import { Client } from "../../../src/client/base_requestor";
-import { Skills } from "../../../src/client/skills";
+import { Skills, hashDirectory, parseSkillFrontmatter } from "../../../src/client/skills";
 import { SkillInfo, SkillDownloadResponse } from "../../../src/client/types";
+import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { Files } from "../../../src/client/files";
+import { createHash } from "node:crypto";
 
 jest.mock("../../../src/client/base_requestor");
 
@@ -15,6 +20,39 @@ describe("Skills", () => {
     } as jest.Mocked<Client>;
 
     skills = new Skills(client);
+  });
+
+  it("bundles a local skill directory and uploads it as a referenced skill", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "vlmrun-skill-"));
+    try {
+      await mkdir(join(directory, "scripts"));
+      await writeFile(join(directory, "SKILL.md"), "---\nname: invoice-skill\ndescription: Read invoices\n---\nInstructions");
+      await writeFile(join(directory, "scripts", "read.py"), "print('invoice')");
+      expect(await parseSkillFrontmatter(join(directory, "SKILL.md"))).toEqual({
+        name: "invoice-skill", description: "Read invoices",
+      });
+      const digest = createHash("sha256")
+        .update("SKILL.md").update("---\nname: invoice-skill\ndescription: Read invoices\n---\nInstructions")
+        .update("scripts/read.py").update("print('invoice')").digest("hex");
+      expect(await hashDirectory(directory)).toBe(digest);
+      const upload = jest.spyOn(Files.prototype, "upload").mockResolvedValue({ id: "file_1", bytes: 100 } as never);
+      jest.spyOn(skills["requestor"], "request").mockResolvedValue([{
+        id: "skill_1", name: "invoice-skill", version: "1", created_at: "", updated_at: "",
+      }, 200, {}]);
+
+      const reference = await skills.createFromDirectory(directory);
+
+      expect(reference.toJSON()).toMatchObject({ type: "skill_reference", skill_id: "skill_1" });
+      const uploadedFile = upload.mock.calls[0][0].file;
+      expect(uploadedFile?.name).toBe("invoice-skill.zip");
+      const archive = Buffer.from(await uploadedFile!.arrayBuffer());
+      expect(archive.subarray(0, 2).toString()).toBe("PK");
+      expect(archive.includes(Buffer.from("scripts/read.py"))).toBe(true);
+      expect(skills["requestor"].request).toHaveBeenCalledWith("POST", "skills/create", undefined,
+        expect.objectContaining({ file_id: "file_1", name: "invoice-skill", description: "Read invoices" }));
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 
   describe("list", () => {
