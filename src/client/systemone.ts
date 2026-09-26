@@ -155,6 +155,8 @@ export class DecisionStream<Q extends Questions> {
   >();
   private readonly inflight = new Set<Promise<SystemOneResult<Q>>>();
   private dispatchQueue: Promise<void> = Promise.resolve();
+  private opening?: Promise<this>;
+  private closing = false;
   private state?: EntryType;
   readonly options: SystemOneStreamOptions<Q>;
   limits?: Record<string, unknown>;
@@ -179,7 +181,18 @@ export class DecisionStream<Q extends Questions> {
   }
 
   async open(): Promise<this> {
-    if (this.options.transport !== "ws" || this.socket) return this;
+    if (this.closing) throw new Error("System One session is closed");
+    if (this.opening) return this.opening;
+    if (this.options.transport !== "ws" || this.limits) return this;
+    this.opening = this.openSocket();
+    try {
+      return await this.opening;
+    } finally {
+      this.opening = undefined;
+    }
+  }
+
+  private async openSocket(): Promise<this> {
     let Socket: typeof WebSocket;
     try {
       ({ default: Socket } = await import("ws"));
@@ -258,18 +271,19 @@ export class DecisionStream<Q extends Questions> {
           this.fail(new Error("System One session closed"));
         });
       });
+      if (this.state !== undefined && this.state !== "") {
+        await new Promise<void>((resolve, reject) => {
+          socket.send(
+            JSON.stringify({ type: "state", state: this.state }),
+            (error) => (error ? reject(error) : resolve()),
+          );
+        });
+      }
     } catch (error) {
       socket.close();
       this.socket = undefined;
+      this.limits = undefined;
       throw error;
-    }
-    if (this.state !== undefined && this.state !== "") {
-      await new Promise<void>((resolve, reject) => {
-        socket.send(
-          JSON.stringify({ type: "state", state: this.state }),
-          (error) => (error ? reject(error) : resolve()),
-        );
-      });
     }
     return this;
   }
@@ -295,9 +309,11 @@ export class DecisionStream<Q extends Questions> {
         timeout: this.options.timeout,
       });
     }
+    if (this.closing) throw new Error("System One session is closed");
     if (!this.socket || !this.limits)
       throw new Error("Open the WebSocket stream before sending a read");
     const dispatch = this.dispatchQueue.then(async () => {
+      if (this.closing) throw new Error("System One session is closed");
       if (state !== undefined && state !== this.state) {
         await Promise.all(
           [...this.inflight].map((read) =>
@@ -307,6 +323,7 @@ export class DecisionStream<Q extends Questions> {
             ),
           ),
         );
+        if (this.closing) throw new Error("System One session is closed");
         await new Promise<void>((resolve, reject) => {
           this.socket!.send(
             JSON.stringify({ type: "state", state }),
@@ -315,6 +332,7 @@ export class DecisionStream<Q extends Questions> {
         });
         this.state = state;
       }
+      if (this.closing) throw new Error("System One session is closed");
       const id = String(this.nextId++);
       const response = new Promise<SystemOneResult<Q>>((resolve, reject) => {
         const timer = this.options.timeout
@@ -388,6 +406,15 @@ export class DecisionStream<Q extends Questions> {
   }
 
   async close(): Promise<void> {
+    this.closing = true;
+    if (this.opening) {
+      try {
+        await this.opening;
+      } catch {
+        return;
+      }
+    }
+    await this.dispatchQueue;
     if (!this.socket) return;
     const socket = this.socket;
     this.socket = undefined;
