@@ -8,6 +8,8 @@ import {
   VideoUrl,
   AudioUrl,
   DocumentUrl,
+  CreditUsage,
+  PredictionResponse,
 } from "../../../src/client/types";
 
 describe("Types", () => {
@@ -222,6 +224,51 @@ describe("Types", () => {
         url: "https://example.com/document.pdf",
       };
       expect(documentUrl.url).toBe("https://example.com/document.pdf");
+    });
+  });
+
+  describe("CreditUsage dollar fields", () => {
+    it("should expose the dollar/tier fields returned by the API", () => {
+      const usage: CreditUsage = {
+        elements_processed: 1,
+        element_type: "page",
+        credits_used: 50,
+        duration_seconds: 2,
+        service_tier: "flex",
+        mode_multiplier: 0.5,
+        standard_cost_dollars: 1.0,
+        cost_dollars: 0.5,
+        savings_dollars: 0.5,
+      };
+      expect(usage.service_tier).toBe("flex");
+      expect(usage.mode_multiplier).toBe(0.5);
+      expect(usage.standard_cost_dollars).toBe(1.0);
+      expect(usage.cost_dollars).toBe(0.5);
+      expect(usage.savings_dollars).toBe(0.5);
+    });
+
+    it("should allow omitting the dollar/tier fields", () => {
+      const usage: CreditUsage = { credits_used: 100 };
+      expect(usage.cost_dollars).toBeUndefined();
+      expect(usage.service_tier).toBeUndefined();
+    });
+
+    it("should carry the usage dollar fields on a PredictionResponse", () => {
+      const response: PredictionResponse = {
+        id: "pred1",
+        created_at: "2024-01-01T00:00:00Z",
+        completed_at: "2024-01-01T00:00:01Z",
+        response: { invoice_number: "INV-001", total_amount: 100.0 },
+        status: "completed",
+        usage: {
+          credits_used: 50,
+          service_tier: "flex",
+          cost_dollars: 0.5,
+          savings_dollars: 0.5,
+        },
+      };
+      expect(response.usage?.cost_dollars).toBe(0.5);
+      expect(response.usage?.savings_dollars).toBe(0.5);
     });
   });
 });
