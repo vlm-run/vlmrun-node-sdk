@@ -49,7 +49,7 @@ export class Finetuning {
         training_file: params.trainingFile,
         validation_file: params.validationFile,
         num_epochs: params.numEpochs ?? 1,
-        batch_size: params.batchSize ?? 1,
+        batch_size: params.batchSize ?? "auto",
         learning_rate: params.learningRate ?? 2e-4,
         suffix: params.suffix,
         wandb_api_key: params.wandbApiKey,
@@ -170,6 +170,27 @@ export class Finetuning {
       "GET",
       `jobs/${jobId}`
     );
+
+    return response;
+  }
+
+  /**
+   * List all fine-tuned models.
+   *
+   * @param skip - Number of items to skip (default: 0)
+   * @param limit - Maximum number of items to return (default: 10)
+   * @returns List of fine-tuned model name strings
+   */
+  async listModels(skip: number = 0, limit: number = 10): Promise<string[]> {
+    const [response] = await this.requestor.request<string[]>(
+      "GET",
+      "models",
+      { skip, limit }
+    );
+
+    if (!Array.isArray(response)) {
+      throw new Error("Expected array response");
+    }
 
     return response;
   }
