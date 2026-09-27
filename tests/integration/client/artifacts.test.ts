@@ -48,8 +48,6 @@ describe("Integration: Artifacts", () => {
         preview: false,
       });
 
-      console.log("Chat response:", JSON.stringify(chatResponse, null, 2));
-
       // Verify chat completion response
       expect(chatResponse).toBeTruthy();
       expect(chatResponse).toHaveProperty("id");
@@ -70,11 +68,9 @@ describe("Integration: Artifacts", () => {
         artifactObjectId = imgMatch[0];
       }
 
-      console.log("Found artifact object ID:", artifactObjectId);
-      console.log("Session ID:", sessionId);
-
       // Skip artifact retrieval if no artifact was generated
       if (!artifactObjectId) {
+        // eslint-disable-next-line no-console
         console.warn(
           "No image artifact found in response, skipping artifact retrieval"
         );
@@ -95,10 +91,6 @@ describe("Integration: Artifacts", () => {
       // For image artifacts, verify it's a valid buffer with content
       const buffer = artifact as Buffer;
       expect(buffer.length).toBeGreaterThan(0);
-
-      console.log(
-        `Successfully retrieved artifact: ${artifactObjectId}, size: ${buffer.length} bytes`
-      );
     });
 
     it("should retrieve an artifact with sessionId parameter", async () => {
@@ -128,6 +120,7 @@ describe("Integration: Artifacts", () => {
       }
 
       if (!artifactObjectId || !sessionId) {
+        // eslint-disable-next-line no-console
         console.warn("No artifact or session ID found, skipping test");
         return;
       }
@@ -145,23 +138,17 @@ describe("Integration: Artifacts", () => {
     });
 
     it("should retrieve an artifact with executionId from agent execute", async () => {
-      // Step 1: Execute an agent that generates artifacts
-      const testImageUrl =
-        "https://storage.googleapis.com/vlm-data-public-prod/hub/examples/media.tv-news/finance_bb_3_speakers.jpg";
+      // Step 1: Execute an agent that generates artifacts (prompt in config for ad-hoc execution)
+      const chartPrompt =
+        "Generate a bar chart showing Q1-Q4 sales: 100, 150, 120, 180. Return the chart as an image.";
 
       const executionResponse = await client.agent.execute({
-        name: "test-agent",
-        inputs: {
-          prompt:
-            "Generate a bar chart showing Q1-Q4 sales: 100, 150, 120, 180. Return the chart as an image.",
+        config: {
+          prompt: chartPrompt,
         },
+        inputs: {},
         batch: true,
       });
-
-      console.log(
-        "Execution response:",
-        JSON.stringify(executionResponse, null, 2)
-      );
 
       // Verify execution response
       expect(executionResponse).toBeTruthy();
@@ -178,6 +165,7 @@ describe("Integration: Artifacts", () => {
         try {
           completedExecution = await client.executions.wait(executionId, 60, 5);
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.warn(
             "Execution did not complete within timeout, skipping test"
           );
@@ -185,17 +173,14 @@ describe("Integration: Artifacts", () => {
         }
       }
 
-      console.log(
-        "Completed execution:",
-        JSON.stringify(completedExecution, null, 2)
-      );
-
       if (completedExecution.status !== "completed") {
+        // eslint-disable-next-line no-console
         console.warn("Execution not completed, skipping test");
         return;
       }
 
       if (!completedExecution.response) {
+        // eslint-disable-next-line no-console
         console.warn("No response in execution, skipping test");
         return;
       }
@@ -211,14 +196,12 @@ describe("Integration: Artifacts", () => {
       }
 
       if (!artifactObjectId) {
+        // eslint-disable-next-line no-console
         console.warn(
           "No artifact found in execution response, skipping artifact retrieval"
         );
         return;
       }
-
-      console.log("Found artifact object ID:", artifactObjectId);
-      console.log("Execution ID:", executionId);
 
       // Step 4: Retrieve the artifact using executionId
       const artifact = await client.artifacts.get({
@@ -233,10 +216,6 @@ describe("Integration: Artifacts", () => {
 
       const buffer = artifact as Buffer;
       expect(buffer.length).toBeGreaterThan(0);
-
-      console.log(
-        `Successfully retrieved artifact: ${artifactObjectId}, size: ${buffer.length} bytes`
-      );
     });
 
     it("should throw error when neither sessionId nor executionId is provided", async () => {
