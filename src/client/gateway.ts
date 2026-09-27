@@ -15,12 +15,12 @@ import axios from "axios";
 import { Client } from "./base_requestor";
 import { DependencyError } from "./exceptions";
 import { SystemOne } from "./systemone";
-import {
-  DEFAULT_GATEWAY_URL,
-  gatewayBaseUrl,
-} from "./systemone/urls";
 
-export { DEFAULT_GATEWAY_URL };
+/**
+ * Default gateway base URL. Overridable via the `VLMRUN_GATEWAY_URL`
+ * environment variable or the constructor `baseUrl` argument.
+ */
+export const DEFAULT_GATEWAY_URL = "https://gateway.vlm.run/v1";
 
 /** The `openai` SDK default timeout in milliseconds (10 minutes). */
 const GATEWAY_TIMEOUT_MS = 600000;
@@ -45,13 +45,17 @@ export class Gateway {
    * Initialize the Gateway resource.
    *
    * @param client - VLM Run API client configuration (provides the API key).
-   * @param baseUrl - Optional gateway base URL override. Falls back to
-   *   `VLMRUN_GATEWAY_BASE_URL`, then the older `VLMRUN_GATEWAY_URL`,
-   *   then {@link DEFAULT_GATEWAY_URL}.
+   * @param baseUrl - Optional gateway base URL override. Falls back to the
+   *   `VLMRUN_GATEWAY_URL` environment variable, then {@link DEFAULT_GATEWAY_URL}.
    */
   constructor(client: Client, baseUrl?: string) {
     this.client = client;
-    this._baseUrl = gatewayBaseUrl(baseUrl);
+    this._baseUrl =
+      baseUrl ??
+      (typeof process !== "undefined"
+        ? process.env?.VLMRUN_GATEWAY_URL
+        : undefined) ??
+      DEFAULT_GATEWAY_URL;
   }
 
   /** Gateway base URL (without trailing slash). */
