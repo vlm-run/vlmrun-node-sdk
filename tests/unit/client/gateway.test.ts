@@ -32,6 +32,7 @@ describe("Gateway", () => {
     mockModelsList.mockClear();
     mockedAxios.get.mockReset();
     delete process.env.VLMRUN_GATEWAY_URL;
+    delete process.env.VLMRUN_GATEWAY_BASE_URL;
 
     client = {
       apiKey: "test-api-key",
@@ -50,6 +51,13 @@ describe("Gateway", () => {
       process.env.VLMRUN_GATEWAY_URL = "https://custom.gateway.dev/v1";
       const gateway = new Gateway(client);
       expect(gateway.baseUrl).toBe("https://custom.gateway.dev/v1");
+    });
+
+    it("prefers VLMRUN_GATEWAY_BASE_URL over VLMRUN_GATEWAY_URL", () => {
+      process.env.VLMRUN_GATEWAY_BASE_URL = "https://new.gateway.dev/v1";
+      process.env.VLMRUN_GATEWAY_URL = "https://old.gateway.dev/v1";
+      const gateway = new Gateway(client);
+      expect(gateway.baseUrl).toBe("https://new.gateway.dev/v1");
     });
 
     it("prefers an explicit baseUrl over the env var", () => {
@@ -117,6 +125,13 @@ describe("Gateway", () => {
     it("exposes transcriptions", () => {
       const gateway = new Gateway(client);
       expect(gateway.transcriptions).toBe(mockTranscriptions);
+    });
+
+    it("exposes System One on the typesafe prefix", () => {
+      const gateway = new Gateway(client, "https://gw.dev/v1");
+      expect(gateway.systemone.baseUrl).toBe("https://gw.dev/typesafe");
+      expect(gateway.systemone.apiKey).toBe("test-api-key");
+      expect(gateway.systemone).toBe(gateway.systemone);
     });
   });
 

@@ -339,6 +339,70 @@ npm install openai
 yarn add openai
 ```
 
+### System One (TypeSafe decisions)
+
+`client.gateway.systemone` answers named questions about text, JSON, images and PDFs on `POST {gateway}/typesafe/v1/systemone`. Questions are TypeSafe Jev primitives — `noul` (yes/no), `choice` (a label), `score` (an ordered rubric) — and a **forestry** is a named, reusable set of those questions.
+
+```typescript
+import { VlmRun, forestry, noul, choice, score } from "vlmrun";
+
+const client = new VlmRun({ apiKey: "your-api-key" });
+
+const ticket = forestry("support-ticket", {
+  urgent: noul("Is this time-sensitive?"),
+  department: choice("Which team?", ["billing", "technical", "sales"]),
+  severity: score("How severe?", ["minor", "normal", "major", "critical"]),
+});
+
+const result = await client.gateway.systemone.decide({
+  state: "Invoice #44 was charged twice, I need this fixed today",
+  forestry: ticket,
+});
+
+console.log(result.nouls.urgent.noul);
+console.log(result.choices.department.choice);
+console.log(result.scores.severity.score);
+```
+
+The list dialect from the Python SDK is accepted as well:
+
+```typescript
+const result = await client.gateway.systemone.decide({
+  state: "Invoice #44 was charged twice",
+  questions: [
+    { id: "is_urgent", type: "noul", instructions: "Is this time-sensitive?" },
+    { id: "department", type: "choice", options: ["billing", "technical", "sales"] },
+  ],
+});
+```
+
+A series of inputs — frames, a camera, a queue — goes through a stream. HTTP is the default; `transport: "ws"` opens one session on `{gateway}/typesafe/ws` so the question spec is sent once and reads are pipelined.
+
+```typescript
+const stream = await client.gateway.systemone.stream({
+  forestry: ticket,
+  state: "Is the door open?",
+  transport: "ws",
+  concurrency: 4,
+});
+
+try {
+  for await (const decision of stream.map(frames)) {
+    console.log(decision.index, decision.response.nouls.urgent.noul);
+  }
+} finally {
+  await stream.close();
+}
+```
+
+Gateway URL resolution matches the Python SDK: `VLMRUN_GATEWAY_BASE_URL`, then the older `VLMRUN_GATEWAY_URL`, then `https://gateway.vlm.run/v1`. Override the TypeSafe root with `TYPESAFE_BASE_URL` when you need to. Websocket sessions need the optional `ws` peer:
+
+```bash
+npm install ws
+# or
+yarn add ws
+```
+
 ## 🛠️ Examples
 
 Check out the [examples](./examples) directory for more detailed usage examples:
@@ -347,6 +411,7 @@ Check out the [examples](./examples) directory for more detailed usage examples:
 - [Files](./examples/files.ts) - Upload and manage files
 - [Predictions](./examples/predictions.ts) - Make predictions with different types of inputs
 - [Feedback](./examples/feedback.ts) - Submit feedback for predictions
+- [System One](./examples/systemone.ts) - Typed forestries over HTTP and websockets
 
 ## 🔑 Authentication
 
