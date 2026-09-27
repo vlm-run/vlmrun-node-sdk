@@ -32,6 +32,9 @@ export * from "./client/gateway";
 export * from "./client/skills";
 export * from "./client/executions";
 export * from "./client/artifacts";
+export * from "./client/hub";
+export * from "./client/datasets";
+export * from "./client/domains";
 
 export * from "./utils";
 
@@ -54,7 +57,7 @@ export class VlmRun {
   readonly video: ReturnType<typeof VideoPredictions>;
   readonly feedback: Feedback;
   readonly finetuning: Finetuning;
-  readonly dataset: Datasets;
+  readonly datasets: Datasets;
   readonly hub: Hub;
   readonly agent: Agent;
   readonly gateway: Gateway;
@@ -81,7 +84,7 @@ export class VlmRun {
     this.video = VideoPredictions(this.client);
     this.feedback = new Feedback(this.client);
     this.finetuning = new Finetuning(this.client);
-    this.dataset = new Datasets(this.client);
+    this.datasets = new Datasets(this.client);
     this.hub = new Hub(this.client);
     this.agent = new Agent(this.client);
     this.gateway = new Gateway(this.client);

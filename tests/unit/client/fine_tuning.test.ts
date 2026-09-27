@@ -23,10 +23,6 @@ describe('Finetuning', () => {
         status: 'running',
         model: 'base-model',
         created_at: new Date().toISOString(),
-        training_file_id: 'file_123',
-        num_epochs: 1,
-        batch_size: 1,
-        learning_rate: 2e-4,
       };
       jest.spyOn(finetuning['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
@@ -46,7 +42,7 @@ describe('Finetuning', () => {
           training_file: 'file_123',
           validation_file: undefined,
           num_epochs: 1,
-          batch_size: 1,
+          batch_size: 'auto',
           learning_rate: 2e-4,
           suffix: undefined,
           wandb_api_key: undefined,
@@ -62,10 +58,6 @@ describe('Finetuning', () => {
         status: 'running',
         model: 'base-model',
         created_at: new Date().toISOString(),
-        training_file_id: 'file_123',
-        num_epochs: 5,
-        batch_size: 8,
-        learning_rate: 1e-4,
       };
       jest.spyOn(finetuning['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
@@ -117,11 +109,8 @@ describe('Finetuning', () => {
     it('should provision a model with default parameters', async () => {
       const mockResponse: FinetuningProvisionResponse = {
         id: 'prov_123',
-        status: 'running',
         model: 'ft_model',
         created_at: new Date().toISOString(),
-        duration: 600,
-        concurrency: 1,
       };
       jest.spyOn(finetuning['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
@@ -145,11 +134,8 @@ describe('Finetuning', () => {
     it('should provision a model with custom parameters', async () => {
       const mockResponse: FinetuningProvisionResponse = {
         id: 'prov_123',
-        status: 'running',
         model: 'ft_model',
         created_at: new Date().toISOString(),
-        duration: 1200,
-        concurrency: 2,
       };
       jest.spyOn(finetuning['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
 
@@ -229,6 +215,42 @@ describe('Finetuning', () => {
         detail: 'hi',
         images: [],
       })).rejects.toThrow('Detail level is not supported for fine-tuned model predictions');
+    });
+  });
+
+  describe('listModels', () => {
+    it('should list fine-tuning models with default parameters', async () => {
+      const mockResponse = ['model-1', 'model-2'];
+      jest.spyOn(finetuning['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await finetuning.listModels();
+
+      expect(result).toEqual(mockResponse);
+      expect(finetuning['requestor'].request).toHaveBeenCalledWith(
+        'GET',
+        'models',
+        {
+          skip: 0,
+          limit: 10,
+        }
+      );
+    });
+
+    it('should list fine-tuning models with custom parameters', async () => {
+      const mockResponse = ['model-3'];
+      jest.spyOn(finetuning['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
+
+      const result = await finetuning.listModels({ skip: 5, limit: 20 });
+
+      expect(result).toEqual(mockResponse);
+      expect(finetuning['requestor'].request).toHaveBeenCalledWith(
+        'GET',
+        'models',
+        {
+          skip: 5,
+          limit: 20,
+        }
+      );
     });
   });
 });
