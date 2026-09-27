@@ -32,6 +32,7 @@ export * from "./client/gateway";
 export * from "./client/skills";
 export * from "./client/executions";
 export * from "./client/artifacts";
+export * from "./client/systemone";
 
 export * from "./utils";
 

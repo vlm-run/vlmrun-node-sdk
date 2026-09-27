@@ -14,12 +14,13 @@
 import axios from "axios";
 import { Client } from "./base_requestor";
 import { DependencyError } from "./exceptions";
+import { SystemOne } from "./systemone";
+import {
+  DEFAULT_GATEWAY_URL,
+  gatewayBaseUrl,
+} from "./systemone/urls";
 
-/**
- * Default gateway base URL. Overridable via the `VLMRUN_GATEWAY_URL`
- * environment variable or the constructor `baseUrl` argument.
- */
-export const DEFAULT_GATEWAY_URL = "https://gateway.vlm.run/v1";
+export { DEFAULT_GATEWAY_URL };
 
 /** The `openai` SDK default timeout in milliseconds (10 minutes). */
 const GATEWAY_TIMEOUT_MS = 600000;
@@ -38,22 +39,19 @@ export class Gateway {
   private client: Client;
   private _baseUrl: string;
   private _openaiClient: any = null;
+  private _systemone: SystemOne | null = null;
 
   /**
    * Initialize the Gateway resource.
    *
    * @param client - VLM Run API client configuration (provides the API key).
-   * @param baseUrl - Optional gateway base URL override. Falls back to the
-   *   `VLMRUN_GATEWAY_URL` environment variable, then {@link DEFAULT_GATEWAY_URL}.
+   * @param baseUrl - Optional gateway base URL override. Falls back to
+   *   `VLMRUN_GATEWAY_BASE_URL`, then the older `VLMRUN_GATEWAY_URL`,
+   *   then {@link DEFAULT_GATEWAY_URL}.
    */
   constructor(client: Client, baseUrl?: string) {
     this.client = client;
-    this._baseUrl =
-      baseUrl ??
-      (typeof process !== "undefined"
-        ? process.env?.VLMRUN_GATEWAY_URL
-        : undefined) ??
-      DEFAULT_GATEWAY_URL;
+    this._baseUrl = gatewayBaseUrl(baseUrl);
   }
 
   /** Gateway base URL (without trailing slash). */
@@ -194,6 +192,43 @@ export class Gateway {
    */
   get transcriptions(): any {
     return this._openai.audio.transcriptions;
+  }
+
+  /**
+   * System One decisions served beside this gateway's OpenAI routes.
+   *
+   * `POST {gateway}/typesafe/v1/systemone` answers named questions (or a
+   * Forestry) about text, JSON, images and PDFs. A websocket session on
+   * `{gateway}/typesafe/ws` pipelines many reads against one question spec.
+   *
+   * @example
+   * ```typescript
+   * import { VlmRun, forestry, noul, choice } from "vlmrun";
+   *
+   * const client = new VlmRun({ apiKey: "your-key" });
+   * const ticket = forestry("support-ticket", {
+   *   urgent: noul("Is this time-sensitive?"),
+   *   department: choice("Which team?", ["billing", "technical", "sales"]),
+   * });
+   * const result = await client.gateway.systemone.decide({
+   *   state: "Invoice #44 was charged twice, I need this fixed today",
+   *   forestry: ticket,
+   * });
+   * result.nouls.urgent.noul;
+   * result.choices.department.choice;
+   * ```
+   *
+   * @returns System One resource pointed at this gateway's `/typesafe` prefix.
+   */
+  get systemone(): SystemOne {
+    if (this._systemone) {
+      return this._systemone;
+    }
+    this._systemone = new SystemOne(this.client, {
+      gatewayUrl: this.baseUrl,
+      timeoutMs: this.client.timeout,
+    });
+    return this._systemone;
   }
 
   /**
