@@ -15,9 +15,12 @@ interface PendingRead {
   reject: (error: Error) => void;
 }
 
-function requireWs(): typeof import("ws") {
+async function loadWs(): Promise<typeof import("ws")> {
   try {
-    return require("ws");
+    // A dynamic import resolves from both the CJS and the ESM build; a bare
+    // require() throws inside the ESM bundle.
+    const mod = (await import("ws")) as unknown as { default?: typeof import("ws") };
+    return mod.default ?? (mod as unknown as typeof import("ws"));
   } catch {
     throw new DependencyError(
       "websockets are not installed",
@@ -70,10 +73,19 @@ export class WebSocketStream<Q extends Questions = Questions> extends DecisionSt
   }
 
   async open(): Promise<this> {
-    const WebSocket = requireWs();
+    const WebSocket = await loadWs();
     const socket = await this.connect(WebSocket);
     this.socket = socket;
     this.attachPump(socket);
+    try {
+      return await this.handshakeAndConfigure();
+    } catch (error) {
+      await this.teardown();
+      throw error;
+    }
+  }
+
+  private async handshakeAndConfigure(): Promise<this> {
     const create: Record<string, unknown> = {
       type: "session.create",
       model: this.options.model ?? this.resource.model,
@@ -91,7 +103,6 @@ export class WebSocketStream<Q extends Questions = Questions> extends DecisionSt
     }
     const ack = await this.waitForHandshake(create);
     if (ack.type !== "session.created") {
-      await this.teardown();
       throw new InputError(
         `the gateway refused the session: ${String(ack.message ?? JSON.stringify(ack))}`,
         "input_error",
@@ -294,6 +305,15 @@ export class WebSocketStream<Q extends Questions = Questions> extends DecisionSt
         this.settle(message.id, message);
       } else if (kind === "session.stats") {
         this._stats = message as SessionStats;
+      } else if (kind === "error" && this.handshake) {
+        this.handshake.reject(
+          new InputError(
+            `the gateway refused the session: ${String(message.message ?? JSON.stringify(message))}`,
+            "input_error",
+            "Check the model and question spec with client.gateway.systemone.models()."
+          )
+        );
+        this.handshake = null;
       } else if (kind === "error") {
         this.abort(
           new APIError(String(message.message ?? JSON.stringify(message))),
@@ -324,12 +344,17 @@ export class WebSocketStream<Q extends Questions = Questions> extends DecisionSt
   }
 
   private abort(error: Error, only?: unknown): void {
-    this.pumpError = error;
-    if (only !== undefined && this.pending.has(String(only))) {
+    if (only !== undefined && only !== null) {
+      // A per-read error fails that read only; the session stays usable.
       const pending = this.pending.get(String(only));
       this.pending.delete(String(only));
       pending?.reject(error);
       return;
+    }
+    this.pumpError = error;
+    if (this.handshake) {
+      this.handshake.reject(error);
+      this.handshake = null;
     }
     for (const pending of Array.from(this.pending.values())) {
       pending.reject(error);

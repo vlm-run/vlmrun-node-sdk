@@ -34,6 +34,8 @@ export class StubServer {
       maxInflight?: number;
       reverse?: boolean;
       failOn?: number;
+      failId?: string;
+      refuse?: string;
       noul?: number;
     } = {}
   ) {}
@@ -62,6 +64,10 @@ export class StubServer {
     this.server = null;
   }
 
+  get openSockets(): number {
+    return this.server?.clients.size ?? 0;
+  }
+
   get decides(): Record<string, unknown>[] {
     return this.received.filter((message) => message.type === "decide");
   }
@@ -80,6 +86,12 @@ export class StubServer {
       const message = JSON.parse(String(raw)) as Record<string, unknown>;
       this.received.push(message);
       const kind = message.type;
+      if (kind === "session.create" && this.options.refuse) {
+        socket.send(
+          JSON.stringify({ type: "error", message: this.options.refuse })
+        );
+        return;
+      }
       if (kind === "session.create") {
         const asked = Number(message.max_inflight ?? this.maxInflight);
         this.granted = Math.min(asked, this.maxInflight);
@@ -108,6 +120,20 @@ export class StubServer {
               type: "error",
               error_type: "invalid_request_error",
               message: "stub refuses this read",
+            })
+          );
+          this.live -= 1;
+          return;
+        }
+        if (
+          this.options.failId !== undefined &&
+          String(message.id) === this.options.failId
+        ) {
+          socket.send(
+            JSON.stringify({
+              type: "error",
+              id: message.id,
+              message: "stub refuses this frame",
             })
           );
           this.live -= 1;

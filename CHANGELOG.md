@@ -4,7 +4,7 @@
 
 ### Features
 
-* **gateway:** TypeSafe System One on `client.gateway.systemone` — typed `noul` / `choice` / `score` questions, named forestries, HTTP `decide()` / `stream()`, and optional websocket sessions (`transport: "ws"`). Gateway URL resolution now prefers `VLMRUN_GATEWAY_BASE_URL` over the older `VLMRUN_GATEWAY_URL`.
+* **gateway:** TypeSafe System One on `client.gateway.systemone` — typed `noul` / `choice` / `score` questions, named forestries, HTTP `decide()` / `stream()`, and optional websocket sessions (`transport: "ws"`).
 
 ## 0.4.1 (2025-01-16)
 

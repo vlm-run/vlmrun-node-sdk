@@ -110,15 +110,17 @@ export class DecisionStream<Q extends Questions = Questions> {
         const index = nextIndex;
         nextIndex += 1;
         const item = asInput(step.value);
-        pending.set(
+        const read = this.read(item).then((response) => ({
           index,
-          this.read(item).then((response) => ({
-            index,
-            input: item.image ?? "",
-            timestampS: item.timestampS,
-            response,
-          }))
-        );
+          input: item.image ?? "",
+          timestampS: item.timestampS,
+          response,
+        }));
+        // Reads finish out of order. Observe each one now so a later read
+        // failing while an earlier one is awaited is not an unhandled
+        // rejection; the error still surfaces when its index is awaited.
+        read.catch(() => undefined);
+        pending.set(index, read);
       }
     };
 

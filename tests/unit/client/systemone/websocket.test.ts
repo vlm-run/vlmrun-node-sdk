@@ -152,6 +152,32 @@ describe("WebSocketStream decisions", () => {
     expect(ws.stats.session_id).toBe("stub");
     expect(ws.stats.decisions).toBe(1);
   });
+
+  it("keeps the session usable after a per-read error", async () => {
+    const server = await startServer({ failId: "0" });
+    const stream = await streamTo(server);
+    try {
+      await expect(stream.send(PNG)).rejects.toThrow("stub refuses this frame");
+      expect(stream.isOpen).toBe(true);
+      const next = await stream.send(PNG);
+      expect(next.response.nouls.a?.noul).toBeGreaterThan(0);
+    } finally {
+      await stream.close();
+    }
+  });
+});
+
+describe("WebSocketStream refused session", () => {
+  it("rejects promptly and closes the socket", async () => {
+    const server = await startServer({ refuse: "invalid model" });
+    const started = Date.now();
+    await expect(streamTo(server)).rejects.toThrow(
+      "the gateway refused the session: invalid model"
+    );
+    expect(Date.now() - started).toBeLessThan(5_000);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(server.openSockets).toBe(0);
+  });
 });
 
 function distinctPng(seed: number): string {

@@ -205,6 +205,40 @@ describe("SystemOne.stream (http)", () => {
       await stream.close();
     }
   });
+
+  it("delivers a later read's failure through the iterator after earlier results", async () => {
+    mockedAxios.request.mockImplementation(async (config) => {
+      const body = config.data as { state: string };
+      if (body.state === "bad") {
+        throw new Error("boom");
+      }
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      return {
+        data: { model: "m", answers: { a: { type: "noul", noul: 0.8 } } },
+        status: 200,
+      };
+    });
+    const stream = await systemOne().stream({
+      questions: [{ id: "a", type: "noul" }],
+      concurrency: 2,
+    });
+    const seen: number[] = [];
+    try {
+      await expect(
+        (async () => {
+          for await (const decision of stream.map([
+            { state: "slow" },
+            { state: "bad" },
+          ])) {
+            seen.push(decision.index);
+          }
+        })()
+      ).rejects.toThrow("boom");
+      expect(seen).toEqual([0]);
+    } finally {
+      await stream.close();
+    }
+  });
 });
 
 describe("stream URL", () => {
