@@ -118,6 +118,13 @@ describe("Gateway", () => {
       const gateway = new Gateway(client);
       expect(gateway.transcriptions).toBe(mockTranscriptions);
     });
+
+    it("exposes System One on the typesafe prefix", () => {
+      const gateway = new Gateway(client, "https://gw.dev/v1");
+      expect(gateway.systemone.baseUrl).toBe("https://gw.dev/typesafe");
+      expect(gateway.systemone.apiKey).toBe("test-api-key");
+      expect(gateway.systemone).toBe(gateway.systemone);
+    });
   });
 
   describe("models", () => {

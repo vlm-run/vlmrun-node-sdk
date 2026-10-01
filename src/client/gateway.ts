@@ -14,6 +14,7 @@
 import axios from "axios";
 import { Client } from "./base_requestor";
 import { DependencyError } from "./exceptions";
+import { SystemOne } from "./systemone";
 
 /**
  * Default gateway base URL. Overridable via the `VLMRUN_GATEWAY_URL`
@@ -38,6 +39,7 @@ export class Gateway {
   private client: Client;
   private _baseUrl: string;
   private _openaiClient: any = null;
+  private _systemone: SystemOne | null = null;
 
   /**
    * Initialize the Gateway resource.
@@ -194,6 +196,43 @@ export class Gateway {
    */
   get transcriptions(): any {
     return this._openai.audio.transcriptions;
+  }
+
+  /**
+   * System One decisions served beside this gateway's OpenAI routes.
+   *
+   * `POST {gateway}/typesafe/v1/systemone` answers named questions (or a
+   * Forestry) about text, JSON, images and PDFs. A websocket session on
+   * `{gateway}/typesafe/ws` pipelines many reads against one question spec.
+   *
+   * @example
+   * ```typescript
+   * import { VlmRun, forestry, noul, choice } from "vlmrun";
+   *
+   * const client = new VlmRun({ apiKey: "your-key" });
+   * const ticket = forestry("support-ticket", {
+   *   urgent: noul("Is this time-sensitive?"),
+   *   department: choice("Which team?", ["billing", "technical", "sales"]),
+   * });
+   * const result = await client.gateway.systemone.decide({
+   *   state: "Invoice #44 was charged twice, I need this fixed today",
+   *   forestry: ticket,
+   * });
+   * result.nouls.urgent.noul;
+   * result.choices.department.choice;
+   * ```
+   *
+   * @returns System One resource pointed at this gateway's `/typesafe` prefix.
+   */
+  get systemone(): SystemOne {
+    if (this._systemone) {
+      return this._systemone;
+    }
+    this._systemone = new SystemOne(this.client, {
+      gatewayUrl: this.baseUrl,
+      timeoutMs: this.client.timeout,
+    });
+    return this._systemone;
   }
 
   /**
