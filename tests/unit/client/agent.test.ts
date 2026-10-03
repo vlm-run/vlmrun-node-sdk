@@ -1,6 +1,10 @@
 import { Client } from "../../../src/client/base_requestor";
 import { Agent } from "../../../src/client/agent";
-import { PredictionResponse, AgentInfo } from "../../../src/client/types";
+import {
+  PredictionResponse,
+  AgentInfo,
+  AgentExecutionConfig,
+} from "../../../src/client/types";
 import { DependencyError } from "../../../src/client/exceptions";
 
 jest.mock("../../../src/client/base_requestor");
@@ -644,6 +648,37 @@ describe("Agent", () => {
 
       const call = (agent["requestor"].request as jest.Mock).mock.calls[0];
       expect(call[3].config).not.toHaveProperty("service_tier");
+    });
+
+    it.each(["program", "agent"] as const)(
+      "forwards mode=%s to /agent/execute",
+      async (mode) => {
+        jest
+          .spyOn(agent["requestor"], "request")
+          .mockResolvedValue([mockExecuteResponse, 200, {}]);
+
+        await agent.execute({
+          name: "test-agent",
+          config: { prompt: "hi", mode },
+        });
+
+        const call = (agent["requestor"].request as jest.Mock).mock.calls[0];
+        expect(call[3].config.mode).toBe(mode);
+      }
+    );
+
+    it("omits mode from /agent/execute payload when not set", async () => {
+      jest
+        .spyOn(agent["requestor"], "request")
+        .mockResolvedValue([mockExecuteResponse, 200, {}]);
+
+      await agent.execute({
+        name: "test-agent",
+        config: new AgentExecutionConfig({ prompt: "hi", mode: null }),
+      });
+
+      const call = (agent["requestor"].request as jest.Mock).mock.calls[0];
+      expect(call[3].config).not.toHaveProperty("mode");
     });
 
     it("forwards service_tier through /agent/create", async () => {

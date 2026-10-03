@@ -37,7 +37,7 @@ export class APIRequestor {
     this.axios = axios.create({
       baseURL: client.baseURL,
       headers: {
-        Authorization: `Bearer ${client.apiKey}`,
+        ...(client.apiKey ? { Authorization: `Bearer ${client.apiKey}` } : {}),
         "Content-Type": "application/json",
       },
       timeout: this.timeout,
@@ -72,10 +72,16 @@ export class APIRequestor {
     url: string,
     params?: Record<string, any>,
     data?: any,
-    files?: { [key: string]: any }
+    files?: { [key: string]: any },
+    options?: { headers?: Record<string, string>; timeout?: number }
   ): Promise<[T, number, Record<string, string>]> {
     try {
       let headers = new AxiosHeaders(this.axios.defaults.headers);
+      if (options?.headers) {
+        Object.entries(options.headers).forEach(([key, value]) => {
+          headers.set(key, value);
+        });
+      }
 
       if (files) {
         const formData = new FormData();
@@ -92,6 +98,7 @@ export class APIRequestor {
         params,
         data,
         headers,
+        ...(options?.timeout !== undefined ? { timeout: options.timeout } : {}),
       });
 
       return [
@@ -108,7 +115,9 @@ export class APIRequestor {
         try {
           const errorData = error.response?.data;
 
-          if (Array.isArray(errorData.detail)) {
+          if (errorData?.error?.message) {
+            errorMessage = errorData.error.message;
+          } else if (Array.isArray(errorData.detail)) {
             errorMessage =
               errorData.detail[0].msg || errorData.detail[0] || errorMessage;
           } else {

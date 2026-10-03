@@ -18,6 +18,13 @@ import { Skills } from "./client/skills";
 import { Executions } from "./client/executions";
 import { Domains } from "./client/domains";
 import { Artifacts } from "./client/artifacts";
+import { ConfigurationError } from "./client/exceptions";
+import {
+  DEFAULT_BASE_URL,
+  VLMRUN_API_KEY_ENV,
+  VLMRUN_BASE_URL_ENV,
+  readEnv,
+} from "./constants";
 
 export * from "./client/types";
 export * from "./client/base_requestor";
@@ -29,6 +36,8 @@ export * from "./client/fine_tuning";
 export * from "./client/exceptions";
 export * from "./client/agent";
 export * from "./client/gateway";
+export * from "./client/systemone";
+export * from "./constants";
 export * from "./client/skills";
 export * from "./client/executions";
 export * from "./client/artifacts";
@@ -36,10 +45,18 @@ export * from "./client/artifacts";
 export * from "./utils";
 
 export interface VlmRunConfig {
-  apiKey: string;
+  /** API key. Falls back to the `VLMRUN_API_KEY` environment variable. */
+  apiKey?: string;
+  /** API base URL. Falls back to `VLMRUN_BASE_URL`, then `https://api.vlm.run/v1`. */
   baseURL?: string;
   timeout?: number;
   maxRetries?: number;
+  /**
+   * When true (default), a missing API key throws a `ConfigurationError`.
+   * Set to false to use deployments that do not authenticate (e.g. a local
+   * gateway).
+   */
+  requireApiKey?: boolean;
 }
 
 export class VlmRun {
@@ -63,10 +80,19 @@ export class VlmRun {
   readonly domains: Domains;
   readonly artifacts: Artifacts;
 
-  constructor(config: VlmRunConfig) {
+  constructor(config: VlmRunConfig = {}) {
+    const apiKey = config.apiKey || readEnv(VLMRUN_API_KEY_ENV) || "";
+    if (!apiKey && config.requireApiKey !== false) {
+      throw new ConfigurationError(
+        "Missing API key",
+        "missing_api_key",
+        "Pass `apiKey` to `new VlmRun({ apiKey })` or set the VLMRUN_API_KEY " +
+          "environment variable. Get your API key at https://app.vlm.run/dashboard",
+      );
+    }
     this.client = {
-      apiKey: config.apiKey,
-      baseURL: config.baseURL ?? "https://api.vlm.run/v1",
+      apiKey,
+      baseURL: config.baseURL ?? readEnv(VLMRUN_BASE_URL_ENV) ?? DEFAULT_BASE_URL,
       timeout: config.timeout,
       maxRetries: config.maxRetries,
     };

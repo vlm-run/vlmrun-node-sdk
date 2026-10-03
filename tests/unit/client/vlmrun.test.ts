@@ -1,9 +1,39 @@
-import { VlmRun } from "../../../src";
+import { VlmRun, ConfigurationError } from "../../../src";
 import {
   DomainInfo,
   SchemaResponse,
   GenerationConfig,
 } from "../../../src/client/types";
+
+describe("VlmRun configuration", () => {
+  const saved = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...saved };
+  });
+
+  it("throws ConfigurationError without an API key", () => {
+    delete process.env.VLMRUN_API_KEY;
+    expect(() => new VlmRun()).toThrow(ConfigurationError);
+    expect(() => new VlmRun({ apiKey: "" })).toThrow("Missing API key");
+  });
+
+  it("allows a missing API key when requireApiKey is false", () => {
+    delete process.env.VLMRUN_API_KEY;
+    const client = new VlmRun({ requireApiKey: false });
+    expect(client.gateway.baseUrl).toBe("https://gateway.vlm.run/v1");
+  });
+
+  it("falls back to VLMRUN_API_KEY and VLMRUN_BASE_URL", () => {
+    process.env.VLMRUN_API_KEY = "env-key";
+    process.env.VLMRUN_BASE_URL = "https://env.example/v1";
+    const client = new VlmRun();
+    expect((client as any).client).toMatchObject({
+      apiKey: "env-key",
+      baseURL: "https://env.example/v1",
+    });
+  });
+});
 
 describe("VlmRun healthcheck", () => {
   let client: VlmRun;
