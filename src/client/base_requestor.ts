@@ -43,7 +43,9 @@ export class APIRequestor {
       timeout: this.timeout,
     });
 
-    axiosRetry(this.axios, {
+    // axios >=1.20 ships separate CJS typings, which axios-retry's CJS
+    // declarations resolve to, so its AxiosInstance type differs nominally.
+    axiosRetry(this.axios as unknown as Parameters<typeof axiosRetry>[0], {
       retries: this.maxRetries,
       retryDelay: (retryCount, error) => {
         const delay = Math.min(
