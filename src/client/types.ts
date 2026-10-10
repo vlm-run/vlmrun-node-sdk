@@ -224,6 +224,11 @@ export interface CreditUsage {
   steps?: number;
   message?: string;
   duration_seconds?: number;
+  service_tier?: string;
+  mode_multiplier?: number;
+  standard_cost_dollars?: number;
+  cost_dollars?: number;
+  savings_dollars?: number;
 }
 
 export interface ModelInfoResponse {
