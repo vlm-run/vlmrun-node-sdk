@@ -395,7 +395,7 @@ try {
 }
 ```
 
-System One follows the gateway URL: `VLMRUN_GATEWAY_URL` (a `/v1` root), then `https://gateway.vlm.run/v1`, with `/v1` swapped for `/typesafe`. Override the TypeSafe root with `TYPESAFE_BASE_URL` when you need to. Websocket sessions need the optional `ws` peer:
+System One follows the gateway URL: `VLMRUN_GATEWAY_BASE_URL`, then the older `VLMRUN_GATEWAY_URL` (a `/v1` root), then `https://gateway.vlm.run/v1`, with `/v1` swapped for `/typesafe`. Override the TypeSafe root with `TYPESAFE_BASE_URL` when you need to. Websocket sessions need the optional `ws` peer:
 
 ```bash
 npm install ws
@@ -426,6 +426,13 @@ Then use it to initialize the client:
 const client = new VlmRun({
   apiKey: "your-api-key",
 });
+```
+
+`apiKey` falls back to the `VLMRUN_API_KEY` environment variable and `baseURL` to `VLMRUN_BASE_URL`, so `new VlmRun()` works when they are set. A missing key throws a `ConfigurationError`; pass `requireApiKey: false` for gateway-only usage, where the key is optional:
+
+```typescript
+const client = new VlmRun({ requireApiKey: false });
+const models = await client.gateway.models();
 ```
 
 ## 📚 Documentation

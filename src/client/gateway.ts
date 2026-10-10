@@ -4,7 +4,7 @@
  * The gateway (`https://gateway.vlm.run/v1`) exposes an OpenAI-compatible
  * surface for third-party OCR / vision-language models (e.g. `glm-ocr`,
  * `paddle-ocrv6`, `qwen3.6-0.8b`). It authenticates with the same
- * `VLMRUN_API_KEY` used everywhere else in the SDK.
+ * `VLMRUN_API_KEY` used everywhere else in the SDK; the key is optional.
  *
  * This mirrors the {@link Agent} completions pattern: we point the OpenAI SDK
  * at `{gateway_url}/openai` and reuse the familiar chat-completions /
@@ -15,10 +15,12 @@ import axios from "axios";
 import { Client } from "./base_requestor";
 import { DependencyError } from "./exceptions";
 import { SystemOne } from "./systemone";
+import { gatewayBaseUrl } from "./systemone/urls";
 
 /**
- * Default gateway base URL. Overridable via the `VLMRUN_GATEWAY_URL`
- * environment variable or the constructor `baseUrl` argument.
+ * Default gateway base URL. Overridable via the constructor `baseUrl`
+ * argument, the `VLMRUN_GATEWAY_BASE_URL` environment variable, or the older
+ * `VLMRUN_GATEWAY_URL`.
  */
 export const DEFAULT_GATEWAY_URL = "https://gateway.vlm.run/v1";
 
@@ -46,16 +48,12 @@ export class Gateway {
    *
    * @param client - VLM Run API client configuration (provides the API key).
    * @param baseUrl - Optional gateway base URL override. Falls back to the
-   *   `VLMRUN_GATEWAY_URL` environment variable, then {@link DEFAULT_GATEWAY_URL}.
+   *   `VLMRUN_GATEWAY_BASE_URL` environment variable, then the older
+   *   `VLMRUN_GATEWAY_URL`, then {@link DEFAULT_GATEWAY_URL}.
    */
   constructor(client: Client, baseUrl?: string) {
     this.client = client;
-    this._baseUrl =
-      baseUrl ??
-      (typeof process !== "undefined"
-        ? process.env?.VLMRUN_GATEWAY_URL
-        : undefined) ??
-      DEFAULT_GATEWAY_URL;
+    this._baseUrl = gatewayBaseUrl(baseUrl);
   }
 
   /** Gateway base URL (without trailing slash). */
@@ -109,8 +107,10 @@ export class Gateway {
       );
     }
 
+    // An empty key (not undefined) so the OpenAI SDK never falls back to
+    // OPENAI_API_KEY and forwards it to the gateway.
     this._openaiClient = new OpenAI({
-      apiKey: this.client.apiKey,
+      apiKey: this.client.apiKey || "",
       baseURL: this.openaiBaseUrl,
       timeout: this._timeout(),
       maxRetries: this.client.maxRetries ?? 1,
@@ -259,7 +259,9 @@ export class Gateway {
    * @returns True if the gateway is reachable and authenticated, else false.
    */
   async health(): Promise<boolean> {
-    const headers = { Authorization: `Bearer ${this.client.apiKey}` };
+    const headers: Record<string, string> = this.client.apiKey
+      ? { Authorization: `Bearer ${this.client.apiKey}` }
+      : {};
     let status: number;
     try {
       const resp = await axios.get(`${this.baseUrl}/health`, {
