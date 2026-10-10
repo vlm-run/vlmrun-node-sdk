@@ -25,7 +25,7 @@ describe('Finetuning', () => {
         created_at: new Date().toISOString(),
         training_file_id: 'file_123',
         num_epochs: 1,
-        batch_size: 1,
+        batch_size: "auto",
         learning_rate: 2e-4,
       };
       jest.spyOn(finetuning['requestor'], 'request').mockResolvedValue([mockResponse, 200, {}]);
@@ -46,7 +46,7 @@ describe('Finetuning', () => {
           training_file: 'file_123',
           validation_file: undefined,
           num_epochs: 1,
-          batch_size: 1,
+          batch_size: "auto",
           learning_rate: 2e-4,
           suffix: undefined,
           wandb_api_key: undefined,
