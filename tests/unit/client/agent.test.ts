@@ -401,7 +401,7 @@ describe("Agent", () => {
       expect(mockOpenAI).toHaveBeenCalledWith({
         apiKey: "test-api-key",
         baseURL: "https://api.example.com/openai",
-        timeout: undefined,
+        timeout: 600000,
         maxRetries: 1,
       });
     });
@@ -428,7 +428,7 @@ describe("Agent", () => {
       expect(mockOpenAI).toHaveBeenCalledWith({
         apiKey: "test-api-key",
         baseURL: "https://agent.vlm.run/v1/openai",
-        timeout: 30000,
+        timeout: 600000,
         maxRetries: 3,
       });
     });
