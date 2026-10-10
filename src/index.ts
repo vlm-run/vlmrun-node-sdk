@@ -30,6 +30,7 @@ export * from "./client/exceptions";
 export * from "./client/agent";
 export * from "./client/gateway";
 export * from "./client/skills";
+export * from "./client/skill_bundle";
 export * from "./client/executions";
 export * from "./client/artifacts";
 export * from "./client/systemone";

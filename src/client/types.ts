@@ -1,4 +1,7 @@
 import { ZodType } from "zod";
+import * as path from "path";
+import * as fs from "fs";
+import { bundleFromDirectory, parseSkillFrontmatter } from "./skill_bundle";
 
 export type JobStatus = string;
 
@@ -327,6 +330,50 @@ export class AgentSkill {
     }
 
     return json;
+  }
+
+  /**
+   * Build an inline {@link AgentSkill} from a local skill directory.
+   *
+   * Zips the directory contents, base64-encodes the result, and returns an
+   * `AgentSkill` with `type="inline"` that can be sent directly in a chat
+   * completion or agent execution request.
+   *
+   * @param directory - Path to a skill folder containing at least a `SKILL.md`.
+   * @param options.name - Override skill name (defaults to SKILL.md frontmatter
+   *   or directory name).
+   * @param options.description - Override skill description (defaults to
+   *   SKILL.md frontmatter).
+   * @returns An `AgentSkill` with `type="inline"` and the base64-encoded zip bundle.
+   * @throws If `SKILL.md` is missing from `directory`.
+   *
+   * @example
+   * ```typescript
+   * const skill = await AgentSkill.fromDirectory("./my-skill");
+   * const response = await client.agent.completions.create({
+   *   model: "vlmrun-orion-1:auto",
+   *   messages: [...],
+   *   skills: [skill],
+   * });
+   * ```
+   */
+  static async fromDirectory(
+    directory: string,
+    options: { name?: string; description?: string } = {}
+  ): Promise<AgentSkill> {
+    const skillMd = path.join(directory, "SKILL.md");
+    if (!fs.existsSync(skillMd)) {
+      throw new Error(`SKILL.md not found in ${directory}`);
+    }
+
+    const [fmName, fmDescription] = parseSkillFrontmatter(skillMd);
+
+    return new AgentSkill({
+      type: "inline",
+      name: options.name || fmName || path.basename(path.resolve(directory)),
+      description: options.description || fmDescription || "",
+      source: { data: await bundleFromDirectory(directory) },
+    });
   }
 }
 

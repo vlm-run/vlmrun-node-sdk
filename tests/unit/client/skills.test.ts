@@ -1,6 +1,14 @@
+import * as os from "os";
+import * as path from "path";
+import * as fs from "fs";
 import { Client } from "../../../src/client/base_requestor";
 import { Skills } from "../../../src/client/skills";
-import { SkillInfo, SkillDownloadResponse } from "../../../src/client/types";
+import { Files } from "../../../src/client/files";
+import {
+  SkillInfo,
+  SkillDownloadResponse,
+  FileResponse,
+} from "../../../src/client/types";
 
 jest.mock("../../../src/client/base_requestor");
 
@@ -413,6 +421,67 @@ describe("Skills", () => {
       await expect(
         skills.download({ skillId: "skill_001" })
       ).rejects.toThrow("Expected object response");
+    });
+  });
+
+  describe("createFromDirectory", () => {
+    let tmpDir: string;
+
+    beforeEach(() => {
+      tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "skill-create-"));
+      fs.writeFileSync(
+        path.join(tmpDir, "SKILL.md"),
+        "---\nname: dir-skill\ndescription: A directory skill\n---\n"
+      );
+    });
+
+    afterEach(() => {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+      jest.restoreAllMocks();
+    });
+
+    it("zips, uploads, and creates a referenced skill", async () => {
+      const fileResponse = { id: "file_123" } as FileResponse;
+      const uploadSpy = jest
+        .spyOn(Files.prototype, "upload")
+        .mockResolvedValue(fileResponse);
+
+      const skillInfo: SkillInfo = {
+        id: "skill_new",
+        name: "dir-skill",
+        version: "1.0",
+        created_at: "2024-01-01T00:00:00Z",
+        updated_at: "2024-01-01T00:00:00Z",
+      };
+      const createSpy = jest
+        .spyOn(skills, "create")
+        .mockResolvedValue(skillInfo);
+
+      const result = await skills.createFromDirectory({ directory: tmpDir });
+
+      expect(uploadSpy).toHaveBeenCalledTimes(1);
+      expect(uploadSpy.mock.calls[0][0]).toMatchObject({
+        purpose: "assistants",
+      });
+      expect(uploadSpy.mock.calls[0][0].filePath).toMatch(/\.zip$/);
+
+      expect(createSpy).toHaveBeenCalledWith({
+        fileId: "file_123",
+        name: "dir-skill",
+        description: "A directory skill",
+      });
+
+      expect(result.type).toBe("skill_reference");
+      expect(result.skillId).toBe("skill_new");
+      expect(result.skillName).toBe("dir-skill");
+    });
+
+    it("throws when SKILL.md is missing", async () => {
+      const emptyDir = fs.mkdtempSync(path.join(os.tmpdir(), "empty-skill-"));
+      await expect(
+        skills.createFromDirectory({ directory: emptyDir })
+      ).rejects.toThrow("SKILL.md not found");
+      fs.rmSync(emptyDir, { recursive: true, force: true });
     });
   });
 });
