@@ -877,4 +877,158 @@ describe("Predictions", () => {
     });
   });
 
+
+  describe("generation config forwarding", () => {
+    const newConfig = {
+      serviceTier: "flex" as const,
+      videoSegmentDuration: 2.5,
+      videoFramesPerSegment: 4,
+      pageIndices: [0, 2],
+    };
+    const expectedConfig = {
+      service_tier: "flex",
+      video_segment_duration: 2.5,
+      video_frames_per_segment: 4,
+      page_indices: [0, 2],
+    };
+
+    it("forwards new config fields through image.generate", async () => {
+      const imagePredictions = new ImagePredictions(client);
+      const requestMock = jest
+        .spyOn(imagePredictions["requestor"], "request")
+        .mockResolvedValue([{ id: "pred_1", status: "completed" }, 200, {}]);
+      (imageUtils.processImage as jest.Mock).mockReturnValue("base64-image");
+
+      await imagePredictions.generate({
+        images: ["image.jpg"],
+        domain: "document.invoice",
+        config: newConfig,
+      });
+
+      expect(requestMock).toHaveBeenCalledWith(
+        "POST",
+        "image/generate",
+        undefined,
+        expect.objectContaining({
+          config: expect.objectContaining(expectedConfig),
+        })
+      );
+    });
+
+    it("forwards new config fields through video.execute", async () => {
+      const videoPredictions = VideoPredictions(client);
+      const requestMock = jest
+        .spyOn(videoPredictions["requestor"], "request")
+        .mockResolvedValue([{ id: "pred_2", status: "completed" }, 200, {}]);
+
+      await videoPredictions.execute({
+        name: "test-agent",
+        fileId: "file_123",
+        config: newConfig,
+      });
+
+      expect(requestMock).toHaveBeenCalledWith(
+        "POST",
+        "/video/execute",
+        undefined,
+        expect.objectContaining({
+          config: expect.objectContaining(expectedConfig),
+        })
+      );
+    });
+
+    it("omits unset config fields", async () => {
+      const documentPredictions = DocumentPredictions(client);
+      const requestMock = jest
+        .spyOn(documentPredictions["requestor"], "request")
+        .mockResolvedValue([{ id: "pred_3", status: "completed" }, 200, {}]);
+
+      await documentPredictions.execute({
+        name: "test-agent",
+        fileId: "file_123",
+      });
+
+      const payloadConfig = (requestMock.mock.calls[0] as any[])[3].config;
+      expect(payloadConfig).not.toHaveProperty("service_tier");
+      expect(payloadConfig).not.toHaveProperty("page_indices");
+    });
+  });
+
+  describe("ImagePredictions.execute", () => {
+    let imagePredictions: ImagePredictions;
+    let requestMock: jest.SpyInstance;
+
+    beforeEach(() => {
+      imagePredictions = new ImagePredictions(client);
+      requestMock = jest
+        .spyOn(imagePredictions["requestor"], "request")
+        .mockResolvedValue([{ id: "pred_4", status: "completed" }, 200, {}]);
+      (imageUtils.processImage as jest.Mock).mockReturnValue("base64-image");
+    });
+
+    it("executes a named model on local images", async () => {
+      const result = await imagePredictions.execute({
+        name: "test-agent",
+        images: ["image.jpg"],
+      });
+
+      expect(result).toEqual({ id: "pred_4", status: "completed" });
+      expect(requestMock).toHaveBeenCalledWith(
+        "POST",
+        "image/execute",
+        undefined,
+        expect.objectContaining({
+          name: "test-agent",
+          version: "latest",
+          images: ["base64-image"],
+          batch: false,
+          metadata: {
+            environment: "dev",
+            session_id: undefined,
+            allow_training: true,
+          },
+          callback_url: undefined,
+        })
+      );
+    });
+
+    it("executes a named model on urls with overrides", async () => {
+      await imagePredictions.execute({
+        name: "test-agent",
+        version: "1.2",
+        urls: ["https://example.com/image.jpg"],
+        batch: true,
+        config: { detail: "hi", serviceTier: "priority" },
+        metadata: { environment: "prod", sessionId: "s1", allowTraining: false },
+        callbackUrl: "https://example.com/cb",
+      });
+
+      expect(requestMock).toHaveBeenCalledWith(
+        "POST",
+        "image/execute",
+        undefined,
+        expect.objectContaining({
+          version: "1.2",
+          images: ["https://example.com/image.jpg"],
+          batch: true,
+          config: expect.objectContaining({
+            detail: "hi",
+            service_tier: "priority",
+          }),
+          metadata: {
+            environment: "prod",
+            session_id: "s1",
+            allow_training: false,
+          },
+          callback_url: "https://example.com/cb",
+        })
+      );
+    });
+
+    it("throws when neither images nor urls are provided", async () => {
+      await expect(
+        imagePredictions.execute({ name: "test-agent" })
+      ).rejects.toThrow("Either `images` or `urls` must be provided");
+    });
+  });
 });

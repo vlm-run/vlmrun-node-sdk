@@ -3,6 +3,7 @@ import {
   PredictionResponse,
   ListParams,
   ImagePredictionParams,
+  ImageExecuteParams,
   FilePredictionParams,
   FileExecuteParams,
   SchemaResponse,
@@ -12,6 +13,43 @@ import {
 import { processImage } from "../utils/image";
 import { convertToJsonSchema } from "../utils/utils";
 import { InputError, RequestTimeoutError } from "./exceptions";
+
+/**
+ * Serialize a generation config into the payload expected by the API.
+ * @param config - The generation config to serialize
+ * @returns The serialized `config` payload
+ */
+const buildConfigPayload = (
+  config?: GenerationConfigParams
+): Record<string, any> => {
+  let jsonSchema = config?.jsonSchema;
+  if (config && "responseModel" in config && config.responseModel) {
+    jsonSchema = convertToJsonSchema(
+      config.responseModel,
+      config.zodToJsonParams
+    );
+  }
+
+  const payload: Record<string, any> = {
+    detail: config?.detail ?? "auto",
+    json_schema: jsonSchema,
+    skills: config?.skills?.map((s) =>
+      s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
+    ),
+    confidence: config?.confidence ?? false,
+    grounding: config?.grounding ?? false,
+    gql_stmt: config?.gqlStmt ?? null,
+  };
+  if (config?.serviceTier !== undefined)
+    payload.service_tier = config.serviceTier;
+  if (config?.videoSegmentDuration !== undefined)
+    payload.video_segment_duration = config.videoSegmentDuration;
+  if (config?.videoFramesPerSegment !== undefined)
+    payload.video_frames_per_segment = config.videoFramesPerSegment;
+  if (config?.pageIndices !== undefined)
+    payload.page_indices = config.pageIndices;
+  return payload;
+};
 
 export class Predictions {
   protected client: Client;
@@ -195,30 +233,7 @@ export class ImagePredictions extends Predictions {
 
     const imagesData = this._handleImagesOrUrls(images, urls);
 
-    let jsonSchema = config?.jsonSchema;
-    if (config && "responseModel" in config && config.responseModel) {
-      jsonSchema = convertToJsonSchema(
-        config.responseModel,
-        config.zodToJsonParams
-      );
-    }
-
-    const serializedSkills = config?.skills?.map((s) =>
-      s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
-    );
-
-    const configPayload: Record<string, any> = {
-      detail: config?.detail ?? "auto",
-      json_schema: jsonSchema,
-      skills: serializedSkills,
-      confidence: config?.confidence ?? false,
-      grounding: config?.grounding ?? false,
-      gql_stmt: config?.gqlStmt ?? null,
-    };
-    if (config?.serviceTier !== undefined) configPayload.service_tier = config.serviceTier;
-    if (config?.videoSegmentDuration !== undefined) configPayload.video_segment_duration = config.videoSegmentDuration;
-    if (config?.videoFramesPerSegment !== undefined) configPayload.video_frames_per_segment = config.videoFramesPerSegment;
-    if (config?.pageIndices !== undefined) configPayload.page_indices = config.pageIndices;
+    const configPayload = buildConfigPayload(config);
 
     const data: Record<string, any> = {
       images: imagesData,
@@ -246,6 +261,58 @@ export class ImagePredictions extends Predictions {
     if (domain) {
       this._castResponseToSchema(response, domain, config);
     }
+
+    return response;
+  }
+
+  /**
+   * Execute a named model/agent on images
+   * @param params.name - Name of the model/agent to execute
+   * @param params.version - Version of the model/agent (default: "latest")
+   * @param params.images - Array of image inputs. Each image can be:
+   *   - A local file path string
+   *   - A base64 encoded image string
+   * @param params.urls - Array of URL strings pointing to images
+   * @param params.batch - Whether to process as batch (default: false)
+   * @param params.config - Configuration options for the prediction
+   * @param params.metadata - Additional metadata to include
+   * @param params.callbackUrl - URL to receive prediction completion webhook
+   * @returns Promise containing the prediction response
+   */
+  async execute(params: ImageExecuteParams): Promise<PredictionResponse> {
+    const {
+      name,
+      version = "latest",
+      images,
+      urls,
+      batch = false,
+      config,
+      metadata,
+      callbackUrl,
+    } = params;
+
+    const imagesData = this._handleImagesOrUrls(images, urls);
+
+    const [response] = await this.requestor.request<PredictionResponse>(
+      "POST",
+      "image/execute",
+      undefined,
+      {
+        name,
+        version,
+        images: imagesData,
+        batch,
+        config: buildConfigPayload(config),
+        metadata: {
+          environment: metadata?.environment ?? "dev",
+          session_id: metadata?.sessionId,
+          allow_training: metadata?.allowTraining ?? true,
+        },
+        callback_url: callbackUrl,
+      }
+    );
+
+    this._castResponseToSchema(response, name, config);
 
     return response;
   }
@@ -344,30 +411,7 @@ export class FilePredictions extends Predictions {
 
     const fileOrUrl = this._handleFileOrUrl(fileId, url);
 
-    let jsonSchema = config?.jsonSchema;
-    if (config && "responseModel" in config && config.responseModel) {
-      jsonSchema = convertToJsonSchema(
-        config.responseModel,
-        config.zodToJsonParams
-      );
-    }
-
-    const serializedSkills = config?.skills?.map((s) =>
-      s instanceof AgentSkill ? s.toJSON() : new AgentSkill(s).toJSON()
-    );
-
-    const configPayload: Record<string, any> = {
-      detail: config?.detail ?? "auto",
-      json_schema: jsonSchema,
-      skills: serializedSkills,
-      confidence: config?.confidence ?? false,
-      grounding: config?.grounding ?? false,
-      gql_stmt: config?.gqlStmt ?? null,
-    };
-    if (config?.serviceTier !== undefined) configPayload.service_tier = config.serviceTier;
-    if (config?.videoSegmentDuration !== undefined) configPayload.video_segment_duration = config.videoSegmentDuration;
-    if (config?.videoFramesPerSegment !== undefined) configPayload.video_frames_per_segment = config.videoFramesPerSegment;
-    if (config?.pageIndices !== undefined) configPayload.page_indices = config.pageIndices;
+    const configPayload = buildConfigPayload(config);
 
     const data: Record<string, any> = {
       ...fileOrUrl,
@@ -425,14 +469,6 @@ export class FilePredictions extends Predictions {
 
     const fileOrUrl = this._handleFileOrUrl(fileId, url);
 
-    let jsonSchema = config?.jsonSchema;
-    if (config && "responseModel" in config && config.responseModel) {
-      jsonSchema = convertToJsonSchema(
-        config.responseModel,
-        config.zodToJsonParams
-      );
-    }
-
     const [response] = await this.requestor.request<PredictionResponse>(
       "POST",
       `/${this.route}/execute`,
@@ -442,13 +478,7 @@ export class FilePredictions extends Predictions {
         version,
         ...fileOrUrl,
         batch,
-        config: {
-          detail: config?.detail ?? "auto",
-          json_schema: jsonSchema,
-          confidence: config?.confidence ?? false,
-          grounding: config?.grounding ?? false,
-          gql_stmt: config?.gqlStmt ?? null,
-        },
+        config: buildConfigPayload(config),
         metadata: {
           environment: metadata?.environment ?? "dev",
           session_id: metadata?.sessionId,
