@@ -3,14 +3,18 @@
  */
 
 import { Client, APIRequestor } from "./base_requestor";
+import { Files } from "./files";
 import {
+  AgentSkill,
   SkillInfo,
   SkillDownloadResponse,
+  SkillCreateFromDirectoryParams,
   SkillCreateParams,
   SkillUpdateParams,
   SkillGetParams,
   SkillListParams,
 } from "./types";
+import { resolveSkillMetadata, writeSkillArchive } from "../utils/skill";
 
 export class Skills {
   /**
@@ -176,6 +180,43 @@ export class Skills {
    * @param params - Object with skillId
    * @returns Download URL and expiry information
    */
+  /**
+   * Upload a local skill directory and create a server-side skill.
+   *
+   * Zips the directory, uploads the archive via the files API, and creates a
+   * new skill pointing to it. Returns a referenced `AgentSkill` that can be
+   * sent in a chat completion or agent execution request.
+   *
+   * @param params - Skill directory and optional name/description overrides
+   * @returns AgentSkill with `type: "skill_reference"` pointing to the created skill
+   * @throws {Error} If `SKILL.md` is missing from the directory
+   */
+  async createFromDirectory(
+    params: SkillCreateFromDirectoryParams,
+  ): Promise<AgentSkill> {
+    const { directory, ...overrides } = params;
+    const { name, description } = resolveSkillMetadata(directory, overrides);
+    const zipPath = writeSkillArchive(directory, name);
+
+    const files = new Files({ ...this.client, timeout: 0 });
+    const fileResponse = await files.upload({
+      filePath: zipPath,
+      purpose: "assistants",
+    });
+
+    const skillInfo = await this.create({
+      fileId: fileResponse.id,
+      name,
+      description,
+    });
+
+    return new AgentSkill({
+      type: "skill_reference",
+      skillId: skillInfo.id,
+      skillName: skillInfo.name,
+    });
+  }
+
   async download(params: { skillId: string }): Promise<SkillDownloadResponse> {
     const [response] = await this.requestor.request<SkillDownloadResponse>(
       "GET",
