@@ -1,4 +1,4 @@
-import { VlmRun } from "../../../src";
+import { VlmRun, DEFAULT_BASE_URL, ConfigurationError } from "../../../src";
 import {
   DomainInfo,
   SchemaResponse,
@@ -142,5 +142,56 @@ describe("Domains class methods", () => {
         "/domains"
       );
     });
+  });
+});
+
+describe("VlmRun configuration", () => {
+  const saved = {
+    apiKey: process.env.VLMRUN_API_KEY,
+    baseURL: process.env.VLMRUN_BASE_URL,
+  };
+
+  beforeEach(() => {
+    delete process.env.VLMRUN_API_KEY;
+    delete process.env.VLMRUN_BASE_URL;
+  });
+
+  afterAll(() => {
+    if (saved.apiKey !== undefined) process.env.VLMRUN_API_KEY = saved.apiKey;
+    if (saved.baseURL !== undefined) process.env.VLMRUN_BASE_URL = saved.baseURL;
+  });
+
+  it("falls back to VLMRUN_API_KEY and VLMRUN_BASE_URL", () => {
+    process.env.VLMRUN_API_KEY = "env-key";
+    process.env.VLMRUN_BASE_URL = "https://env.example.com/v1";
+    const client = new VlmRun();
+    expect(client["client"].apiKey).toBe("env-key");
+    expect(client["client"].baseURL).toBe("https://env.example.com/v1");
+  });
+
+  it("prefers explicit options over the environment", () => {
+    process.env.VLMRUN_API_KEY = "env-key";
+    process.env.VLMRUN_BASE_URL = "https://env.example.com/v1";
+    const client = new VlmRun({
+      apiKey: "explicit-key",
+      baseURL: "https://explicit.example.com/v1",
+    });
+    expect(client["client"].apiKey).toBe("explicit-key");
+    expect(client["client"].baseURL).toBe("https://explicit.example.com/v1");
+  });
+
+  it("defaults the base URL", () => {
+    const client = new VlmRun({ apiKey: "k" });
+    expect(client["client"].baseURL).toBe(DEFAULT_BASE_URL);
+  });
+
+  it("throws ConfigurationError when the API key is missing", () => {
+    expect(() => new VlmRun()).toThrow(ConfigurationError);
+  });
+
+  it("allows a missing API key when requireApiKey is false", () => {
+    const client = new VlmRun({ requireApiKey: false });
+    expect(client["client"].apiKey).toBe("");
+    expect(client.gateway.baseUrl).toBe("https://gateway.vlm.run/v1");
   });
 });

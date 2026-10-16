@@ -225,3 +225,22 @@ describe("Types", () => {
     });
   });
 });
+
+describe("AgentExecutionConfig mode", () => {
+  it("serializes mode when set", () => {
+    const { AgentExecutionConfig } = require("../../../src/client/types");
+    expect(new AgentExecutionConfig({ mode: "agent" }).toJSON().mode).toBe(
+      "agent"
+    );
+    expect(new AgentExecutionConfig({ mode: "program" }).toJSON().mode).toBe(
+      "program"
+    );
+  });
+
+  it("omits mode when unset", () => {
+    const { AgentExecutionConfig } = require("../../../src/client/types");
+    expect("mode" in new AgentExecutionConfig({ prompt: "hi" }).toJSON()).toBe(
+      false
+    );
+  });
+});

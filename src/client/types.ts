@@ -729,7 +729,14 @@ export type AgentExecutionConfigParams = {
   skills?: AgentSkillInput[];
   serviceTier?: "auto" | "default" | "standard" | "flex" | "priority" | null;
   orchestrationMode?: boolean | null;
+  mode?: AgentExecutionMode | null;
 };
+
+/**
+ * Orion-2 execution path. `program` replays a skill's cached `pipeline.py`
+ * as fixed code when available; `agent` runs the full LLM agent loop.
+ */
+export type AgentExecutionMode = "agent" | "program";
 
 export class AgentExecutionConfig {
   prompt?: string;
@@ -748,6 +755,12 @@ export class AgentExecutionConfig {
    * omitted, the server default applies.
    */
   orchestrationMode?: boolean | null;
+  /**
+   * Orion-2 only (ignored for other models). `program` runs the cached skill
+   * `pipeline.py` as fixed code when available; `agent` runs the full LLM
+   * agent loop. When omitted, the server default applies.
+   */
+  mode?: AgentExecutionMode | null;
 
   constructor(params: Partial<AgentExecutionConfig> = {}) {
     Object.assign(this, params);
@@ -764,6 +777,7 @@ export class AgentExecutionConfig {
     if (this.serviceTier !== undefined) json.service_tier = this.serviceTier;
     if (this.orchestrationMode !== undefined)
       json.orchestration_mode = this.orchestrationMode;
+    if (this.mode !== undefined) json.mode = this.mode;
     return json;
   }
 }

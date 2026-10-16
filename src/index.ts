@@ -1,6 +1,7 @@
 import { Models } from "./client/models";
 import { Files } from "./client/files";
 import { Client, APIRequestor } from "./client/base_requestor";
+import { ConfigurationError } from "./client/exceptions";
 import {
   Predictions,
   ImagePredictions,
@@ -36,11 +37,27 @@ export * from "./client/systemone";
 
 export * from "./utils";
 
+export const DEFAULT_BASE_URL = "https://api.vlm.run/v1";
+
 export interface VlmRunConfig {
-  apiKey: string;
+  /** API key. Falls back to the `VLMRUN_API_KEY` environment variable. */
+  apiKey?: string;
+  /** API base URL. Falls back to `VLMRUN_BASE_URL`, then {@link DEFAULT_BASE_URL}. */
   baseURL?: string;
   timeout?: number;
   maxRetries?: number;
+  /**
+   * When true (default), a missing API key throws a `ConfigurationError`.
+   * Set to false for gateway-only usage, where the key is optional.
+   */
+  requireApiKey?: boolean;
+}
+
+function readEnv(name: string): string | undefined {
+  if (typeof process === "undefined") {
+    return undefined;
+  }
+  return process.env?.[name] || undefined;
 }
 
 export class VlmRun {
@@ -64,10 +81,19 @@ export class VlmRun {
   readonly domains: Domains;
   readonly artifacts: Artifacts;
 
-  constructor(config: VlmRunConfig) {
+  constructor(config: VlmRunConfig = {}) {
+    const apiKey = config.apiKey || readEnv("VLMRUN_API_KEY") || "";
+    if (!apiKey && config.requireApiKey !== false) {
+      throw new ConfigurationError(
+        "Missing API key",
+        "missing_api_key",
+        "Pass `apiKey` to `new VlmRun({ apiKey })` or set the VLMRUN_API_KEY " +
+          "environment variable. Get your API key at https://app.vlm.run/dashboard"
+      );
+    }
     this.client = {
-      apiKey: config.apiKey,
-      baseURL: config.baseURL ?? "https://api.vlm.run/v1",
+      apiKey,
+      baseURL: config.baseURL ?? readEnv("VLMRUN_BASE_URL") ?? DEFAULT_BASE_URL,
       timeout: config.timeout,
       maxRetries: config.maxRetries,
     };
