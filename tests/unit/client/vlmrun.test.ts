@@ -1,9 +1,56 @@
-import { VlmRun } from "../../../src";
+import { VlmRun, ConfigurationError, DEFAULT_BASE_URL } from "../../../src";
 import {
   DomainInfo,
   SchemaResponse,
   GenerationConfig,
 } from "../../../src/client/types";
+
+describe("VlmRun configuration", () => {
+  const saved = { ...process.env };
+
+  beforeEach(() => {
+    delete process.env.VLMRUN_API_KEY;
+    delete process.env.VLMRUN_BASE_URL;
+  });
+
+  afterAll(() => {
+    process.env = saved;
+  });
+
+  it("reads VLMRUN_API_KEY and VLMRUN_BASE_URL from the environment", () => {
+    process.env.VLMRUN_API_KEY = "env-key";
+    process.env.VLMRUN_BASE_URL = "https://env.example.com/v1";
+    const client = new VlmRun();
+    expect(client["client"].apiKey).toBe("env-key");
+    expect(client["client"].baseURL).toBe("https://env.example.com/v1");
+  });
+
+  it("prefers explicit options over the environment", () => {
+    process.env.VLMRUN_API_KEY = "env-key";
+    process.env.VLMRUN_BASE_URL = "https://env.example.com/v1";
+    const client = new VlmRun({
+      apiKey: "explicit-key",
+      baseURL: "https://explicit.example.com/v1",
+    });
+    expect(client["client"].apiKey).toBe("explicit-key");
+    expect(client["client"].baseURL).toBe("https://explicit.example.com/v1");
+  });
+
+  it("defaults the base URL", () => {
+    const client = new VlmRun({ apiKey: "k" });
+    expect(client["client"].baseURL).toBe(DEFAULT_BASE_URL);
+  });
+
+  it("throws ConfigurationError when no API key is available", () => {
+    expect(() => new VlmRun()).toThrow(ConfigurationError);
+  });
+
+  it("allows a missing API key when requireApiKey is false", () => {
+    const client = new VlmRun({ requireApiKey: false });
+    expect(client["client"].apiKey).toBe("");
+    expect(client.gateway.baseUrl).toBeDefined();
+  });
+});
 
 describe("VlmRun healthcheck", () => {
   let client: VlmRun;

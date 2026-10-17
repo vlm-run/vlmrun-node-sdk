@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+* **client:** `apiKey` falls back to `VLMRUN_API_KEY` and `baseURL` to `VLMRUN_BASE_URL`; new `requireApiKey: false` option for gateway-only usage. A missing key now throws `ConfigurationError`.
+* **gateway:** `Gateway` honors `VLMRUN_GATEWAY_BASE_URL` before `VLMRUN_GATEWAY_URL`; `health()` omits `Authorization` when no key is set.
+* **agent:** `AgentExecutionConfig.mode` (`"agent"` | `"program"`) for Orion-2 execution.
+* **predictions:** `GenerationConfig` accepts `prompt`, `maxRetries`, `maxTokens`, `temperature`.
+* **types:** `PresignedUrlResponse.expiration` / `method`; dataset and fine-tuning `wandb_base_url`, `wandb_project_name`, `usage`; `FinetuningProvisionResponse.completed_at`.
+* **systemone:** stream inputs accept `index` so a sampled frame keeps its source index.
+
 ## 1.4.0 (2026-10-08)
 
 ### Features

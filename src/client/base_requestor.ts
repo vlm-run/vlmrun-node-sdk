@@ -37,7 +37,7 @@ export class APIRequestor {
     this.axios = axios.create({
       baseURL: client.baseURL,
       headers: {
-        Authorization: `Bearer ${client.apiKey}`,
+        ...(client.apiKey ? { Authorization: `Bearer ${client.apiKey}` } : {}),
         "Content-Type": "application/json",
       },
       timeout: this.timeout,
