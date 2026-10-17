@@ -34,6 +34,15 @@ pnpm add vlmrun
 
 ### Basic Usage
 
+### Client Configuration
+
+`apiKey` falls back to the `VLMRUN_API_KEY` environment variable and `baseURL` to `VLMRUN_BASE_URL` (default `https://api.vlm.run/v1`). A missing key throws `ConfigurationError`; pass `requireApiKey: false` for gateway-only usage without a key.
+
+```typescript
+// Reads VLMRUN_API_KEY / VLMRUN_BASE_URL from the environment
+const client = new VlmRun();
+```
+
 ### Image Predictions
 
 ```typescript
@@ -395,7 +404,7 @@ try {
 }
 ```
 
-System One follows the gateway URL: `VLMRUN_GATEWAY_URL` (a `/v1` root), then `https://gateway.vlm.run/v1`, with `/v1` swapped for `/typesafe`. Override the TypeSafe root with `TYPESAFE_BASE_URL` when you need to. Websocket sessions need the optional `ws` peer:
+System One follows the gateway URL: `VLMRUN_GATEWAY_BASE_URL`, then `VLMRUN_GATEWAY_URL` (a `/v1` root), then `https://gateway.vlm.run/v1`, with `/v1` swapped for `/typesafe`. Override the TypeSafe root with `TYPESAFE_BASE_URL` when you need to. Websocket sessions need the optional `ws` peer:
 
 ```bash
 npm install ws

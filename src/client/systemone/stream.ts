@@ -19,6 +19,8 @@ export interface StreamOptions {
 export interface DecisionInput {
   image?: string;
   state?: unknown;
+  /** Source frame index; when set it is reported instead of the stream position. */
+  index?: number;
   timestampS?: number;
 }
 
@@ -79,10 +81,10 @@ export class DecisionStream<Q extends Questions = Questions> {
     this.checkOpen();
     const item = asInput(input);
     const response = await this.read(item);
-    const index = this.count;
+    const position = this.count;
     this.count += 1;
     return {
-      index,
+      index: item.index ?? position,
       input: item.image ?? "",
       timestampS: item.timestampS,
       response,
@@ -111,7 +113,7 @@ export class DecisionStream<Q extends Questions = Questions> {
         nextIndex += 1;
         const item = asInput(step.value);
         const read = this.read(item).then((response) => ({
-          index,
+          index: item.index ?? index,
           input: item.image ?? "",
           timestampS: item.timestampS,
           response,

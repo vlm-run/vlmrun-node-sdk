@@ -32,6 +32,7 @@ describe("Gateway", () => {
     mockModelsList.mockClear();
     mockedAxios.get.mockReset();
     delete process.env.VLMRUN_GATEWAY_URL;
+    delete process.env.VLMRUN_GATEWAY_BASE_URL;
 
     client = {
       apiKey: "test-api-key",
@@ -50,6 +51,13 @@ describe("Gateway", () => {
       process.env.VLMRUN_GATEWAY_URL = "https://custom.gateway.dev/v1";
       const gateway = new Gateway(client);
       expect(gateway.baseUrl).toBe("https://custom.gateway.dev/v1");
+    });
+
+    it("prefers VLMRUN_GATEWAY_BASE_URL over VLMRUN_GATEWAY_URL", () => {
+      process.env.VLMRUN_GATEWAY_BASE_URL = "https://base.gateway.dev/v1";
+      process.env.VLMRUN_GATEWAY_URL = "https://legacy.gateway.dev/v1";
+      const gateway = new Gateway(client);
+      expect(gateway.baseUrl).toBe("https://base.gateway.dev/v1");
     });
 
     it("prefers an explicit baseUrl over the env var", () => {
@@ -156,6 +164,17 @@ describe("Gateway", () => {
         expect.objectContaining({
           headers: { Authorization: "Bearer test-api-key" },
         }),
+      );
+    });
+
+    it("omits the Authorization header without an API key", async () => {
+      mockedAxios.get.mockResolvedValue({ status: 200 });
+      const gateway = new Gateway({ ...client, apiKey: "" });
+
+      expect(await gateway.health()).toBe(true);
+      expect(mockedAxios.get).toHaveBeenCalledWith(
+        `${DEFAULT_GATEWAY_URL}/health`,
+        expect.objectContaining({ headers: {} }),
       );
     });
 
