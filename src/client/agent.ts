@@ -20,6 +20,8 @@ import {
   AgentToolset,
 } from "./types";
 
+const AGENT_COMPLETIONS_MIN_TIMEOUT_MS = 600000;
+
 export class Agent {
   /**
    * Agent resource for VLM Run API.
@@ -113,10 +115,15 @@ export class Agent {
     }
 
     const baseUrl = `${this.client.baseURL}/openai`;
+    const timeout = this.client.timeout;
     const openaiClient = new OpenAI({
-      apiKey: this.client.apiKey,
+      apiKey: this.client.apiKey || "",
       baseURL: baseUrl,
-      timeout: this.client.timeout,
+      // Agent completions routinely exceed the SDK's 120s default.
+      timeout:
+        timeout === undefined || timeout === null
+          ? timeout
+          : Math.max(timeout, AGENT_COMPLETIONS_MIN_TIMEOUT_MS),
       maxRetries: this.client.maxRetries ?? 1,
     });
 
