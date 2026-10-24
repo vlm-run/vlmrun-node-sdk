@@ -162,6 +162,23 @@ export class Finetuning {
   }
 
   /**
+   * List fine-tuned models
+   * @param {FinetuningListParams} params - Pagination parameters
+   */
+  async listModels(params?: FinetuningListParams): Promise<string[]> {
+    const [response] = await this.requestor.request<unknown[]>(
+      "GET",
+      "models",
+      {
+        skip: params?.skip ?? 0,
+        limit: params?.limit ?? 10,
+      }
+    );
+
+    return response.map((model) => String(model));
+  }
+
+  /**
    * Get fine-tuning job details
    * @param {string} jobId - ID of job to retrieve
    */
