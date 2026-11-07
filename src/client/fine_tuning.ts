@@ -145,6 +145,26 @@ export class Finetuning {
   }
 
   /**
+   * List fine-tuned models.
+   * @param {FinetuningListParams} params - Pagination (`skip`, default 0; `limit`, default 10)
+   * @returns Model identifiers
+   */
+  async listModels(params?: FinetuningListParams): Promise<string[]> {
+    const [response] = await this.requestor.request<unknown[]>(
+      "GET",
+      "models",
+      {
+        skip: params?.skip ?? 0,
+        limit: params?.limit ?? 10,
+      }
+    );
+    if (!Array.isArray(response)) {
+      throw new TypeError("Expected array response");
+    }
+    return response.map((model) => String(model));
+  }
+
+  /**
    * List all fine-tuning jobs
    * @param {FinetuningListParams} params - List parameters
    */

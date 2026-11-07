@@ -17,10 +17,16 @@ const INITIAL_RETRY_DELAY = 1000; // 1 second in ms
 const MAX_RETRY_DELAY = 10000; // 10 seconds in ms
 
 export interface Client {
+  /** API key; an empty string sends no `Authorization` header. */
   apiKey: string;
   baseURL: string;
   timeout?: number;
   maxRetries?: number;
+}
+
+/** `Authorization` header for an API key, or no header when the key is empty. */
+export function authHeaders(apiKey?: string): Record<string, string> {
+  return apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
 }
 
 export class APIRequestor {
@@ -37,7 +43,7 @@ export class APIRequestor {
     this.axios = axios.create({
       baseURL: client.baseURL,
       headers: {
-        Authorization: `Bearer ${client.apiKey}`,
+        ...authHeaders(client.apiKey),
         "Content-Type": "application/json",
       },
       timeout: this.timeout,

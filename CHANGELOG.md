@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+* **client:** `apiKey` falls back to `VLMRUN_API_KEY` and `baseURL` to `VLMRUN_BASE_URL`; `requireApiKey: false` allows a keyless, gateway-only client. Requests omit `Authorization` when no key is set. A missing key now throws `ConfigurationError` at construction.
+* **gateway:** base URL resolves explicit `baseUrl` → `VLMRUN_GATEWAY_BASE_URL` → `VLMRUN_GATEWAY_URL` → default, matching System One and the Python SDK.
+* **agent:** `AgentExecutionConfig.mode` (`"program"` | `"agent"`), sent as `config.mode`.
+* **fine-tuning:** `client.finetuning.listModels()`.
+* **systemone:** remote image fetches follow up to 5 redirects, guarding every hop against non-public addresses.
+
 ## 1.4.0 (2026-10-08)
 
 ### Features

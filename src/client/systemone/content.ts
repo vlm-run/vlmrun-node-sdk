@@ -10,6 +10,8 @@ import type { ContentPart, ImageDetail } from "./types";
 const lookupAsync = promisify(lookup);
 const MAX_IMAGES = 8;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_REDIRECTS = 5;
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 const ALLOW_PRIVATE_URLS_ENV = "VLMRUN_ALLOW_PRIVATE_URLS";
 const IMAGE_MIME_TYPES = new Set([
   "image/jpeg",
@@ -131,14 +133,44 @@ async function guardFetchable(url: string): Promise<void> {
   }
 }
 
+/**
+ * GET a URL, following redirects by hand so every hop is guarded: a public URL
+ * that redirects to a metadata address would otherwise slip past a check made
+ * only on the URL the caller passed.
+ */
+async function guardedGet(url: string, timeoutMs: number) {
+  let target = url;
+  for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+    await guardFetchable(target);
+    const response = await axios.get<ArrayBuffer>(target, {
+      responseType: "arraybuffer",
+      timeout: timeoutMs,
+      maxRedirects: 0,
+      maxContentLength: MAX_IMAGE_BYTES,
+      validateStatus: (status) => (status >= 200 && status < 300) || REDIRECT_STATUSES.has(status),
+    });
+    if (!REDIRECT_STATUSES.has(response.status)) {
+      return response;
+    }
+    const location = response.headers?.location;
+    if (!location) {
+      throw new InputError(
+        `${JSON.stringify(target)} redirected without a location`,
+        "input_error",
+        "Pass the file as a local path."
+      );
+    }
+    target = new URL(String(location), target).toString();
+  }
+  throw new InputError(
+    `${JSON.stringify(url)} redirected more than ${MAX_REDIRECTS} times`,
+    "input_error",
+    "Pass the file as a local path."
+  );
+}
+
 async function fetchImage(url: string, timeoutMs: number): Promise<Uint8Array> {
-  await guardFetchable(url);
-  const response = await axios.get<ArrayBuffer>(url, {
-    responseType: "arraybuffer",
-    timeout: timeoutMs,
-    maxRedirects: 0,
-    maxContentLength: MAX_IMAGE_BYTES,
-  });
+  const response = await guardedGet(url, timeoutMs);
   const buffer = Buffer.from(response.data);
   if (buffer.byteLength > MAX_IMAGE_BYTES) {
     throw new InputError(
