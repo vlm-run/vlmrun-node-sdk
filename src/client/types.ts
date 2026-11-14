@@ -722,6 +722,12 @@ export interface AgentCreationResponse {
   status: JobStatus;
 }
 
+/**
+ * How an execution runs: `program` replays a skill's cached `pipeline.py`,
+ * `agent` runs the full LLM agent loop. The server default is `program`.
+ */
+export type AgentExecutionMode = "agent" | "program";
+
 export type AgentExecutionConfigParams = {
   prompt?: string;
   responseModel?: ZodType;
@@ -729,6 +735,7 @@ export type AgentExecutionConfigParams = {
   skills?: AgentSkillInput[];
   serviceTier?: "auto" | "default" | "standard" | "flex" | "priority" | null;
   orchestrationMode?: boolean | null;
+  mode?: AgentExecutionMode | null;
 };
 
 export class AgentExecutionConfig {
@@ -748,6 +755,11 @@ export class AgentExecutionConfig {
    * omitted, the server default applies.
    */
   orchestrationMode?: boolean | null;
+  /**
+   * `program` (server default) replays a skill's cached `pipeline.py`;
+   * `agent` runs the full LLM agent loop. Sent only when set.
+   */
+  mode?: AgentExecutionMode | null;
 
   constructor(params: Partial<AgentExecutionConfig> = {}) {
     Object.assign(this, params);
@@ -764,6 +776,7 @@ export class AgentExecutionConfig {
     if (this.serviceTier !== undefined) json.service_tier = this.serviceTier;
     if (this.orchestrationMode !== undefined)
       json.orchestration_mode = this.orchestrationMode;
+    if (this.mode !== undefined && this.mode !== null) json.mode = this.mode;
     return json;
   }
 }

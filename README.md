@@ -395,7 +395,7 @@ try {
 }
 ```
 
-System One follows the gateway URL: `VLMRUN_GATEWAY_URL` (a `/v1` root), then `https://gateway.vlm.run/v1`, with `/v1` swapped for `/typesafe`. Override the TypeSafe root with `TYPESAFE_BASE_URL` when you need to. Websocket sessions need the optional `ws` peer:
+System One follows the gateway URL: `VLMRUN_GATEWAY_BASE_URL`, then the older `VLMRUN_GATEWAY_URL` (both `/v1` roots), then `https://gateway.vlm.run/v1`, with `/v1` swapped for `/typesafe`. Override the TypeSafe root with `TYPESAFE_BASE_URL` when you need to. Websocket sessions need the optional `ws` peer:
 
 ```bash
 npm install ws

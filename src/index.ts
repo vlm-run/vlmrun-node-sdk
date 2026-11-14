@@ -18,6 +18,7 @@ import { Skills } from "./client/skills";
 import { Executions } from "./client/executions";
 import { Domains } from "./client/domains";
 import { Artifacts } from "./client/artifacts";
+import { ConfigurationError } from "./client/exceptions";
 
 export * from "./client/types";
 export * from "./client/base_requestor";
@@ -37,10 +38,25 @@ export * from "./client/systemone";
 export * from "./utils";
 
 export interface VlmRunConfig {
-  apiKey: string;
+  /** API key. Falls back to the `VLMRUN_API_KEY` environment variable. */
+  apiKey?: string;
+  /** API base URL. Falls back to `VLMRUN_BASE_URL`, then `https://api.vlm.run/v1`. */
   baseURL?: string;
   timeout?: number;
   maxRetries?: number;
+  /**
+   * When true (default), a missing API key throws `ConfigurationError`. Set
+   * false for gateway-only usage against a deployment that does not
+   * authenticate; requests are then sent without an `Authorization` header.
+   */
+  requireApiKey?: boolean;
+}
+
+function envVar(name: string): string | undefined {
+  if (typeof process === "undefined") {
+    return undefined;
+  }
+  return process.env?.[name] || undefined;
 }
 
 export class VlmRun {
@@ -64,10 +80,19 @@ export class VlmRun {
   readonly domains: Domains;
   readonly artifacts: Artifacts;
 
-  constructor(config: VlmRunConfig) {
+  constructor(config: VlmRunConfig = {}) {
+    const apiKey = config.apiKey || envVar("VLMRUN_API_KEY") || "";
+    if (!apiKey && config.requireApiKey !== false) {
+      throw new ConfigurationError(
+        "Missing API key",
+        "missing_api_key",
+        "Pass `apiKey` to `new VlmRun({ apiKey })` or set the VLMRUN_API_KEY environment variable. Get your API key at https://app.vlm.run/dashboard"
+      );
+    }
     this.client = {
-      apiKey: config.apiKey,
-      baseURL: config.baseURL ?? "https://api.vlm.run/v1",
+      apiKey,
+      baseURL:
+        config.baseURL ?? envVar("VLMRUN_BASE_URL") ?? "https://api.vlm.run/v1",
       timeout: config.timeout,
       maxRetries: config.maxRetries,
     };

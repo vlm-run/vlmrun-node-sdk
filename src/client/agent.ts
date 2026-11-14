@@ -114,7 +114,8 @@ export class Agent {
 
     const baseUrl = `${this.client.baseURL}/openai`;
     const openaiClient = new OpenAI({
-      apiKey: this.client.apiKey,
+      apiKey: this.client.apiKey || "",
+      ...(this.client.apiKey ? {} : { defaultHeaders: { Authorization: null } }),
       baseURL: baseUrl,
       timeout: this.client.timeout,
       maxRetries: this.client.maxRetries ?? 1,
