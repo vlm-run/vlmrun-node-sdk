@@ -69,6 +69,16 @@ describe('APIRequestor', () => {
     });
   });
 
+  it('should omit the Authorization header when no API key is set', () => {
+    mockedAxios.create.mockClear();
+    new APIRequestor({ ...client, apiKey: '' });
+    expect(mockedAxios.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headers: { 'Content-Type': 'application/json' }
+      })
+    );
+  });
+
   it('should return successful response', async () => {
     const mockResponse = {
       data: { result: 'success' },

@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+* **client:** `apiKey` / `baseURL` fall back to `VLMRUN_API_KEY` / `VLMRUN_BASE_URL`; new `requireApiKey: false` for gateway-only usage without an API key (matches the Python SDK's `require_api_key`).
+* **agent:** `AgentExecutionConfig.mode` (`"agent"` | `"program"`) to pick the Orion-2 execution path.
+* **gateway:** honour `VLMRUN_GATEWAY_BASE_URL` before the older `VLMRUN_GATEWAY_URL`, matching System One and the Python SDK.
+
+### Bug Fixes
+
+* **gateway, agent:** pass an empty key to the OpenAI SDK when no API key is set, so it never falls back to `OPENAI_API_KEY`; omit the `Authorization` header when the key is unset.
+* **agent:** raise the OpenAI-compatible completions timeout floor to 600s, as the Python SDK does.
+
 ## 1.4.0 (2026-10-08)
 
 ### Features

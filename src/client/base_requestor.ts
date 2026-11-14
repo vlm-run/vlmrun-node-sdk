@@ -23,6 +23,11 @@ export interface Client {
   maxRetries?: number;
 }
 
+/** `Authorization` header for an API key, or no header when the key is unset. */
+export function authHeaders(apiKey?: string): Record<string, string> {
+  return apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
+}
+
 export class APIRequestor {
   private client: Client;
   private axios: AxiosInstance;
@@ -37,7 +42,7 @@ export class APIRequestor {
     this.axios = axios.create({
       baseURL: client.baseURL,
       headers: {
-        Authorization: `Bearer ${client.apiKey}`,
+        ...authHeaders(client.apiKey),
         "Content-Type": "application/json",
       },
       timeout: this.timeout,

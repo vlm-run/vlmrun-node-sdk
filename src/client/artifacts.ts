@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import axios from "axios";
-import { Client } from "./base_requestor";
+import { Client, authHeaders } from "./base_requestor";
 import { ArtifactListParams, ArtifactListResponse } from "./types";
 
 const VLMRUN_ARTIFACTS_DIR = path.join(os.homedir(), ".vlmrun", "artifacts");
@@ -97,9 +97,7 @@ export class Artifacts {
 
     // Use the new API endpoint format with data payload
     const response = await axios.get(`${this.client.baseURL}/artifacts`, {
-      headers: {
-        Authorization: `Bearer ${this.client.apiKey}`,
-      },
+      headers: authHeaders(this.client.apiKey),
       params: queryParams,
       responseType: "arraybuffer",
       timeout: this.client.timeout ?? 120000,
@@ -226,9 +224,7 @@ export class Artifacts {
     if (executionId) queryParams.execution_id = executionId;
 
     const response = await axios.get(`${this.client.baseURL}/artifacts/list`, {
-      headers: {
-        Authorization: `Bearer ${this.client.apiKey}`,
-      },
+      headers: authHeaders(this.client.apiKey),
       params: queryParams,
       timeout: this.client.timeout ?? 120000,
     });
