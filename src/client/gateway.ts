@@ -15,12 +15,14 @@ import axios from "axios";
 import { Client } from "./base_requestor";
 import { DependencyError } from "./exceptions";
 import { SystemOne } from "./systemone";
+import { DEFAULT_GATEWAY_URL, gatewayBaseUrl } from "./systemone/urls";
 
 /**
- * Default gateway base URL. Overridable via the `VLMRUN_GATEWAY_URL`
- * environment variable or the constructor `baseUrl` argument.
+ * Default gateway base URL. Overridable via the constructor `baseUrl`
+ * argument, then the `VLMRUN_GATEWAY_BASE_URL` environment variable, then the
+ * older `VLMRUN_GATEWAY_URL`.
  */
-export const DEFAULT_GATEWAY_URL = "https://gateway.vlm.run/v1";
+export { DEFAULT_GATEWAY_URL };
 
 /** The `openai` SDK default timeout in milliseconds (10 minutes). */
 const GATEWAY_TIMEOUT_MS = 600000;
@@ -46,16 +48,12 @@ export class Gateway {
    *
    * @param client - VLM Run API client configuration (provides the API key).
    * @param baseUrl - Optional gateway base URL override. Falls back to the
-   *   `VLMRUN_GATEWAY_URL` environment variable, then {@link DEFAULT_GATEWAY_URL}.
+   *   `VLMRUN_GATEWAY_BASE_URL` environment variable, then the older
+   *   `VLMRUN_GATEWAY_URL`, then {@link DEFAULT_GATEWAY_URL}.
    */
   constructor(client: Client, baseUrl?: string) {
     this.client = client;
-    this._baseUrl =
-      baseUrl ??
-      (typeof process !== "undefined"
-        ? process.env?.VLMRUN_GATEWAY_URL
-        : undefined) ??
-      DEFAULT_GATEWAY_URL;
+    this._baseUrl = gatewayBaseUrl(baseUrl);
   }
 
   /** Gateway base URL (without trailing slash). */
@@ -110,7 +108,9 @@ export class Gateway {
     }
 
     this._openaiClient = new OpenAI({
-      apiKey: this.client.apiKey,
+      // The gateway accepts unauthenticated calls on deployments that allow
+      // them; the OpenAI SDK only refuses an undefined key.
+      apiKey: this.client.apiKey || "",
       baseURL: this.openaiBaseUrl,
       timeout: this._timeout(),
       maxRetries: this.client.maxRetries ?? 1,
@@ -259,7 +259,10 @@ export class Gateway {
    * @returns True if the gateway is reachable and authenticated, else false.
    */
   async health(): Promise<boolean> {
-    const headers = { Authorization: `Bearer ${this.client.apiKey}` };
+    const headers: Record<string, string> = {};
+    if (this.client.apiKey) {
+      headers.Authorization = `Bearer ${this.client.apiKey}`;
+    }
     let status: number;
     try {
       const resp = await axios.get(`${this.baseUrl}/health`, {
