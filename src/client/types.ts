@@ -209,6 +209,8 @@ export interface PresignedUrlResponse {
   upload_method?: string;
   public_url?: string;
   created_at?: string;
+  expiration?: number;
+  method?: string;
 }
 
 export interface PresignedUrlRequest {
@@ -381,6 +383,7 @@ export class RequestMetadata {
 export type RequestMetadataInput = RequestMetadata | RequestMetadataParams;
 
 export type GenerationConfigParams = {
+  prompt?: string | null;
   detail?: "auto" | "hi" | "lo";
   responseModel?: ZodType;
   zodToJsonParams?: any;
@@ -393,9 +396,17 @@ export type GenerationConfigParams = {
   videoSegmentDuration?: number | null;
   videoFramesPerSegment?: number | null;
   pageIndices?: number[] | null;
+  maxRetries?: number;
+  maxTokens?: number;
+  temperature?: number;
 };
 
 export class GenerationConfig {
+  /**
+   * Optional prompt to guide generation.
+   */
+  prompt?: string | null;
+
   /**
    * The detail level to use for processing the images or documents.
    */
@@ -446,6 +457,21 @@ export class GenerationConfig {
    */
   pageIndices?: number[] | null;
 
+  /**
+   * Maximum number of server-side retries.
+   */
+  maxRetries?: number;
+
+  /**
+   * Maximum number of tokens to generate.
+   */
+  maxTokens?: number;
+
+  /**
+   * Sampling temperature.
+   */
+  temperature?: number;
+
   constructor(params: Partial<GenerationConfig> = {}) {
     Object.assign(this, params);
   }
@@ -468,6 +494,10 @@ export class GenerationConfig {
     if (this.videoSegmentDuration !== undefined) json.video_segment_duration = this.videoSegmentDuration;
     if (this.videoFramesPerSegment !== undefined) json.video_frames_per_segment = this.videoFramesPerSegment;
     if (this.pageIndices !== undefined) json.page_indices = this.pageIndices;
+    if (this.prompt !== undefined && this.prompt !== null) json.prompt = this.prompt;
+    if (this.maxRetries !== undefined) json.max_retries = this.maxRetries;
+    if (this.maxTokens !== undefined) json.max_tokens = this.maxTokens;
+    if (this.temperature !== undefined) json.temperature = this.temperature;
     return json;
   }
 }
@@ -513,12 +543,16 @@ export interface FinetuningResponse {
   learning_rate: number;
   suffix?: string;
   wandb_url?: string;
+  wandb_base_url?: string;
+  wandb_project_name?: string;
   message?: string;
+  usage?: CreditUsage;
 }
 
 export interface FinetuningProvisionResponse {
   id: string;
   created_at: string;
+  completed_at?: string;
   model: string;
   duration: number;
   concurrency: number;
@@ -607,7 +641,10 @@ export interface DatasetResponse {
   dataset_type: "images" | "videos" | "documents";
   file_id: string;
   wandb_url?: string;
+  wandb_base_url?: string;
+  wandb_project_name?: string;
   message?: string;
+  usage?: CreditUsage;
 }
 
 export interface DatasetCreateParams {
@@ -729,7 +766,14 @@ export type AgentExecutionConfigParams = {
   skills?: AgentSkillInput[];
   serviceTier?: "auto" | "default" | "standard" | "flex" | "priority" | null;
   orchestrationMode?: boolean | null;
+  mode?: AgentExecutionMode | null;
 };
+
+/**
+ * Orion-2 execution mode. `program` replays a skill's cached `pipeline.py`
+ * when available; `agent` runs the full LLM agent loop.
+ */
+export type AgentExecutionMode = "agent" | "program";
 
 export class AgentExecutionConfig {
   prompt?: string;
@@ -748,6 +792,12 @@ export class AgentExecutionConfig {
    * omitted, the server default applies.
    */
   orchestrationMode?: boolean | null;
+  /**
+   * Orion-2 only (ignored for other models). `program` (default): run the
+   * cached skill `pipeline.py` as fixed code when available. `agent`: run the
+   * full LLM agent loop. When omitted, the server default applies.
+   */
+  mode?: AgentExecutionMode | null;
 
   constructor(params: Partial<AgentExecutionConfig> = {}) {
     Object.assign(this, params);
@@ -764,6 +814,7 @@ export class AgentExecutionConfig {
     if (this.serviceTier !== undefined) json.service_tier = this.serviceTier;
     if (this.orchestrationMode !== undefined)
       json.orchestration_mode = this.orchestrationMode;
+    if (this.mode !== undefined) json.mode = this.mode;
     return json;
   }
 }

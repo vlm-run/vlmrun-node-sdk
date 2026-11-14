@@ -206,6 +206,42 @@ describe("SystemOne.stream (http)", () => {
     }
   });
 
+  it("reports a source frame index when the input carries one", async () => {
+    mockedAxios.request.mockResolvedValue({
+      data: {
+        id: "s1-1",
+        model: "systemone",
+        decisions: {
+          a: { type: "noul", noul: 0.5, labels: [] },
+        },
+        usage: { input_tokens: 1, output_tokens: 0 },
+      },
+      status: 200,
+    });
+
+    const stream = await systemOne().stream({
+      questions: [{ id: "a", type: "noul" }],
+      concurrency: 2,
+    });
+    try {
+      const decisions = [];
+      for await (const decision of stream.map([
+        { state: "a", index: 10, timestampS: 1.0 },
+        { state: "b", index: 20, timestampS: 2.0 },
+        { state: "c" },
+      ])) {
+        decisions.push(decision);
+      }
+      expect(decisions.map((d) => d.index)).toEqual([10, 20, 2]);
+      expect(decisions.map((d) => d.timestampS)).toEqual([1.0, 2.0, undefined]);
+
+      const sent = await stream.send({ state: "d", index: 42 });
+      expect(sent.index).toBe(42);
+    } finally {
+      await stream.close();
+    }
+  });
+
   it("delivers a later read's failure through the iterator after earlier results", async () => {
     mockedAxios.request.mockImplementation(async (config) => {
       const body = config.data as { state: string };

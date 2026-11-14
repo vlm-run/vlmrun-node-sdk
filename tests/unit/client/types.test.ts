@@ -1,4 +1,6 @@
 import {
+  AgentExecutionConfig,
+  GenerationConfig,
   validateHttpUrl,
   validateMessageContent,
   validateRefId,
@@ -222,6 +224,41 @@ describe("Types", () => {
         url: "https://example.com/document.pdf",
       };
       expect(documentUrl.url).toBe("https://example.com/document.pdf");
+    });
+  });
+
+  describe("AgentExecutionConfig.mode", () => {
+    it("omits mode when unset", () => {
+      expect(new AgentExecutionConfig({ prompt: "p" }).toJSON()).not.toHaveProperty("mode");
+    });
+
+    it.each(["agent", "program"] as const)("serializes mode=%s", (mode) => {
+      expect(new AgentExecutionConfig({ prompt: "p", mode }).toJSON().mode).toBe(mode);
+    });
+  });
+
+  describe("GenerationConfig", () => {
+    it("omits optional generation knobs when unset", () => {
+      const json = new GenerationConfig().toJSON();
+      expect(json).not.toHaveProperty("prompt");
+      expect(json).not.toHaveProperty("max_retries");
+      expect(json).not.toHaveProperty("max_tokens");
+      expect(json).not.toHaveProperty("temperature");
+    });
+
+    it("serializes prompt, maxRetries, maxTokens and temperature", () => {
+      const json = new GenerationConfig({
+        prompt: "Extract the invoice",
+        maxRetries: 2,
+        maxTokens: 1024,
+        temperature: 0.3,
+      }).toJSON();
+      expect(json).toMatchObject({
+        prompt: "Extract the invoice",
+        max_retries: 2,
+        max_tokens: 1024,
+        temperature: 0.3,
+      });
     });
   });
 });
