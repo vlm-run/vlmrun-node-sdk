@@ -84,6 +84,12 @@ describe("VlmRun configuration", () => {
     expect(client["client"].baseURL).toBe("https://explicit.example.com/v1");
   });
 
+  it("treats an explicit empty apiKey as keyless, ignoring VLMRUN_API_KEY", () => {
+    process.env.VLMRUN_API_KEY = "env-key";
+    const client = new VlmRun({ apiKey: "" });
+    expect(client["client"].apiKey).toBe("");
+  });
+
   it("allows construction without an API key for gateway-only use", () => {
     delete process.env.VLMRUN_API_KEY;
     delete process.env.VLMRUN_BASE_URL;

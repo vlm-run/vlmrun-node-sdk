@@ -41,9 +41,9 @@ export * from "./utils";
 
 export interface VlmRunConfig {
   /**
-   * VLM Run API key. Falls back to the `VLMRUN_API_KEY` environment variable.
-   * Optional for gateway-only use against a deployment that does not
-   * authenticate.
+   * VLM Run API key. Falls back to the `VLMRUN_API_KEY` environment variable
+   * when omitted. Pass `""` to send no key (gateway-only use against a
+   * deployment that does not authenticate) even when the variable is set.
    */
   apiKey?: string;
   /**
@@ -78,7 +78,7 @@ export class VlmRun {
 
   constructor(config: VlmRunConfig = {}) {
     this.client = {
-      apiKey: config.apiKey || readEnv("VLMRUN_API_KEY") || "",
+      apiKey: config.apiKey ?? readEnv("VLMRUN_API_KEY") ?? "",
       baseURL: config.baseURL ?? readEnv("VLMRUN_BASE_URL") ?? DEFAULT_BASE_URL,
       timeout: config.timeout,
       maxRetries: config.maxRetries,

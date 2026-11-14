@@ -428,7 +428,7 @@ const client = new VlmRun({
 });
 ```
 
-`apiKey` falls back to the `VLMRUN_API_KEY` environment variable, and `baseURL` falls back to `VLMRUN_BASE_URL`, so `new VlmRun()` works when both are set. The gateway (`client.gateway`) also runs without a key against a deployment that does not authenticate. Its URL comes from `VLMRUN_GATEWAY_BASE_URL`, then the older `VLMRUN_GATEWAY_URL`, then `https://gateway.vlm.run/v1`.
+`apiKey` falls back to the `VLMRUN_API_KEY` environment variable, and `baseURL` falls back to `VLMRUN_BASE_URL`, so `new VlmRun()` works when both are set. The gateway (`client.gateway`) also runs without a key against a deployment that does not authenticate; pass `apiKey: ""` to keep `VLMRUN_API_KEY` from being sent. Its URL comes from `VLMRUN_GATEWAY_BASE_URL`, then the older `VLMRUN_GATEWAY_URL`, then `https://gateway.vlm.run/v1`.
 
 ## 📚 Documentation
 
