@@ -18,6 +18,9 @@ import { Skills } from "./client/skills";
 import { Executions } from "./client/executions";
 import { Domains } from "./client/domains";
 import { Artifacts } from "./client/artifacts";
+import { env as readEnv } from "./client/systemone/urls";
+
+const DEFAULT_BASE_URL = "https://api.vlm.run/v1";
 
 export * from "./client/types";
 export * from "./client/base_requestor";
@@ -37,7 +40,16 @@ export * from "./client/systemone";
 export * from "./utils";
 
 export interface VlmRunConfig {
-  apiKey: string;
+  /**
+   * VLM Run API key. Falls back to the `VLMRUN_API_KEY` environment variable.
+   * Optional for gateway-only use against a deployment that does not
+   * authenticate.
+   */
+  apiKey?: string;
+  /**
+   * Platform API base URL. Falls back to the `VLMRUN_BASE_URL` environment
+   * variable, then `https://api.vlm.run/v1`. Not the gateway URL.
+   */
   baseURL?: string;
   timeout?: number;
   maxRetries?: number;
@@ -64,10 +76,10 @@ export class VlmRun {
   readonly domains: Domains;
   readonly artifacts: Artifacts;
 
-  constructor(config: VlmRunConfig) {
+  constructor(config: VlmRunConfig = {}) {
     this.client = {
-      apiKey: config.apiKey,
-      baseURL: config.baseURL ?? "https://api.vlm.run/v1",
+      apiKey: config.apiKey || readEnv("VLMRUN_API_KEY") || "",
+      baseURL: config.baseURL ?? readEnv("VLMRUN_BASE_URL") ?? DEFAULT_BASE_URL,
       timeout: config.timeout,
       maxRetries: config.maxRetries,
     };

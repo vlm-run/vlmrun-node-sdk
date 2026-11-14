@@ -49,6 +49,50 @@ describe("VlmRun healthcheck", () => {
   });
 });
 
+describe("VlmRun configuration", () => {
+  const saved = {
+    key: process.env.VLMRUN_API_KEY,
+    base: process.env.VLMRUN_BASE_URL,
+  };
+
+  afterEach(() => {
+    for (const [name, value] of [
+      ["VLMRUN_API_KEY", saved.key],
+      ["VLMRUN_BASE_URL", saved.base],
+    ] as const) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+  });
+
+  it("reads VLMRUN_API_KEY and VLMRUN_BASE_URL from the environment", () => {
+    process.env.VLMRUN_API_KEY = "env-key";
+    process.env.VLMRUN_BASE_URL = "https://env.example.com/v1";
+    const client = new VlmRun();
+    expect(client["client"].apiKey).toBe("env-key");
+    expect(client["client"].baseURL).toBe("https://env.example.com/v1");
+  });
+
+  it("prefers explicit options over the environment", () => {
+    process.env.VLMRUN_API_KEY = "env-key";
+    process.env.VLMRUN_BASE_URL = "https://env.example.com/v1";
+    const client = new VlmRun({
+      apiKey: "explicit-key",
+      baseURL: "https://explicit.example.com/v1",
+    });
+    expect(client["client"].apiKey).toBe("explicit-key");
+    expect(client["client"].baseURL).toBe("https://explicit.example.com/v1");
+  });
+
+  it("allows construction without an API key for gateway-only use", () => {
+    delete process.env.VLMRUN_API_KEY;
+    delete process.env.VLMRUN_BASE_URL;
+    const client = new VlmRun();
+    expect(client["client"].apiKey).toBe("");
+    expect(client["client"].baseURL).toBe("https://api.vlm.run/v1");
+  });
+});
+
 describe("Domains class methods", () => {
   let client: VlmRun;
 
