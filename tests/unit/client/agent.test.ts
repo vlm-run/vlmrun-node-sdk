@@ -1,6 +1,10 @@
 import { Client } from "../../../src/client/base_requestor";
 import { Agent } from "../../../src/client/agent";
-import { PredictionResponse, AgentInfo } from "../../../src/client/types";
+import {
+  PredictionResponse,
+  AgentInfo,
+  AgentExecutionConfig,
+} from "../../../src/client/types";
 import { DependencyError } from "../../../src/client/exceptions";
 
 jest.mock("../../../src/client/base_requestor");
@@ -414,7 +418,7 @@ describe("Agent", () => {
       expect(mockOpenAI).toHaveBeenCalledTimes(1);
     });
 
-    it("should use client timeout and maxRetries when provided", () => {
+    it("should raise a short client timeout to 600s and use maxRetries", () => {
       const clientWithOptions: jest.Mocked<Client> = {
         apiKey: "test-api-key",
         baseURL: "https://agent.vlm.run/v1",
@@ -428,9 +432,23 @@ describe("Agent", () => {
       expect(mockOpenAI).toHaveBeenCalledWith({
         apiKey: "test-api-key",
         baseURL: "https://agent.vlm.run/v1/openai",
-        timeout: 30000,
+        timeout: 600000,
         maxRetries: 3,
       });
+    });
+
+    it("should keep a client timeout longer than 600s", () => {
+      const clientWithOptions: jest.Mocked<Client> = {
+        apiKey: "test-api-key",
+        baseURL: "https://agent.vlm.run/v1",
+        timeout: 900000,
+      } as jest.Mocked<Client>;
+
+      new Agent(clientWithOptions).completions;
+
+      expect(mockOpenAI).toHaveBeenCalledWith(
+        expect.objectContaining({ timeout: 900000 })
+      );
     });
 
     it("should allow calling create on completions", async () => {
@@ -664,6 +682,56 @@ describe("Agent", () => {
           config: expect.objectContaining({ service_tier: "flex" }),
         })
       );
+    });
+  });
+  describe("mode", () => {
+    const mockExecuteResponse = {
+      id: "execution_123",
+      name: "test-agent",
+      created_at: "2023-01-01T00:00:00Z",
+      completed_at: "2023-01-01T00:00:01Z",
+      response: { result: "success" },
+      execution_mode: "agent",
+      status: "completed",
+      usage: { credits_used: 10 },
+    };
+
+    it.each(["agent", "program", null] as const)(
+      "forwards mode=%s to /agent/execute",
+      async (mode) => {
+        jest
+          .spyOn(agent["requestor"], "request")
+          .mockResolvedValue([mockExecuteResponse, 200, {}]);
+
+        await agent.execute({
+          name: "test-agent",
+          model: "vlmrun-orion-2:pro",
+          config: { skills: [{ skillId: "my-skill-id" }], mode },
+        });
+
+        expect(agent["requestor"].request).toHaveBeenCalledWith(
+          "POST",
+          "agent/execute",
+          undefined,
+          expect.objectContaining({
+            config: expect.objectContaining({ mode }),
+          })
+        );
+      }
+    );
+
+    it("omits mode from /agent/execute payload when not set", async () => {
+      jest
+        .spyOn(agent["requestor"], "request")
+        .mockResolvedValue([mockExecuteResponse, 200, {}]);
+
+      await agent.execute({
+        name: "test-agent",
+        config: new AgentExecutionConfig({ prompt: "hi" }),
+      });
+
+      const call = (agent["requestor"].request as jest.Mock).mock.calls[0];
+      expect(call[3].config).not.toHaveProperty("mode");
     });
   });
 });
