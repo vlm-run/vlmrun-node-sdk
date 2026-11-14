@@ -32,6 +32,7 @@ describe("Gateway", () => {
     mockModelsList.mockClear();
     mockedAxios.get.mockReset();
     delete process.env.VLMRUN_GATEWAY_URL;
+    delete process.env.VLMRUN_GATEWAY_BASE_URL;
 
     client = {
       apiKey: "test-api-key",
@@ -50,6 +51,14 @@ describe("Gateway", () => {
       process.env.VLMRUN_GATEWAY_URL = "https://custom.gateway.dev/v1";
       const gateway = new Gateway(client);
       expect(gateway.baseUrl).toBe("https://custom.gateway.dev/v1");
+    });
+
+    it("prefers VLMRUN_GATEWAY_BASE_URL over VLMRUN_GATEWAY_URL", () => {
+      process.env.VLMRUN_GATEWAY_URL = "https://old.gateway.dev/v1";
+      process.env.VLMRUN_GATEWAY_BASE_URL = "https://new.gateway.dev/v1";
+      const gateway = new Gateway(client);
+      expect(gateway.baseUrl).toBe("https://new.gateway.dev/v1");
+      expect(gateway.systemone.baseUrl).toBe("https://new.gateway.dev/typesafe");
     });
 
     it("prefers an explicit baseUrl over the env var", () => {
@@ -142,6 +151,29 @@ describe("Gateway", () => {
       mockModelsList.mockResolvedValue({});
       const gateway = new Gateway(client);
       expect(await gateway.models()).toEqual([]);
+    });
+  });
+
+  describe("without an API key", () => {
+    const keyless: Client = { apiKey: "", baseURL: "https://api.example.com" };
+
+    it("passes an empty key to the OpenAI SDK", () => {
+      const gateway = new Gateway(keyless);
+      void gateway.completions;
+      expect(mockOpenAI).toHaveBeenCalledWith(
+        expect.objectContaining({ apiKey: "" }),
+      );
+    });
+
+    it("omits the Authorization header on health checks", async () => {
+      mockedAxios.get.mockResolvedValue({ status: 200 });
+      const gateway = new Gateway(keyless);
+
+      expect(await gateway.health()).toBe(true);
+      expect(mockedAxios.get).toHaveBeenCalledWith(
+        `${DEFAULT_GATEWAY_URL}/health`,
+        expect.objectContaining({ headers: {} }),
+      );
     });
   });
 

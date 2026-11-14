@@ -173,6 +173,17 @@ describe('Finetuning', () => {
     });
   });
 
+  describe('listModels', () => {
+    it('should list fine-tuned models with pagination', async () => {
+      jest.spyOn(finetuning['requestor'], 'request').mockResolvedValue([['model-a', 'model-b'], 200, {}]);
+
+      const result = await finetuning.listModels({ skip: 5, limit: 2 });
+
+      expect(result).toEqual(['model-a', 'model-b']);
+      expect(finetuning['requestor'].request).toHaveBeenCalledWith('GET', 'models', { skip: 5, limit: 2 });
+    });
+  });
+
   describe('generate', () => {
     it('should generate a prediction with valid parameters', async () => {
       const mockResponse: PredictionResponse = {
