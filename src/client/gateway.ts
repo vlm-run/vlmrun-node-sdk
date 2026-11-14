@@ -108,8 +108,9 @@ export class Gateway {
     }
 
     this._openaiClient = new OpenAI({
-      // The OpenAI SDK rejects an undefined key; the gateway may not need one.
+      // The OpenAI SDK rejects an undefined key; a null header drops its empty bearer.
       apiKey: this.client.apiKey || "",
+      ...(this.client.apiKey ? {} : { defaultHeaders: { Authorization: null } }),
       baseURL: this.openaiBaseUrl,
       timeout: this._timeout(),
       maxRetries: this.client.maxRetries ?? 1,

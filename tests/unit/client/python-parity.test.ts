@@ -2,6 +2,7 @@ import axios from "axios";
 import { Client } from "../../../src/client/base_requestor";
 import { VlmRun, ConfigurationError, AgentExecutionConfig, InputError } from "../../../src";
 import { Gateway, DEFAULT_GATEWAY_URL } from "../../../src/client/gateway";
+import { Agent } from "../../../src/client/agent";
 import { authHeaders } from "../../../src/client/base_requestor";
 import { buildContent } from "../../../src/client/systemone/content";
 
@@ -112,6 +113,26 @@ describe("Python SDK parity", () => {
         `${DEFAULT_GATEWAY_URL}/health`,
         expect.objectContaining({ headers: {} }),
       );
+    });
+  });
+
+  describe("OpenAI clients without a key", () => {
+    const requestHeaders = async (resource: unknown) => {
+      const openai = (resource as { _client: any })._client;
+      const { req } = await openai.buildRequest({ method: "get", path: "/models" });
+      return req.headers as Record<string, string>;
+    };
+
+    it("omits Authorization on gateway and agent requests", async () => {
+      const keyless = { apiKey: "", baseURL: "https://api.example.com" };
+      expect(await requestHeaders(new Gateway(keyless).completions)).not.toHaveProperty("authorization");
+      expect(await requestHeaders(new Agent(keyless).completions)).not.toHaveProperty("authorization");
+    });
+
+    it("keeps the bearer token when a key is set", async () => {
+      const keyed = { apiKey: "k", baseURL: "https://api.example.com" };
+      expect(await requestHeaders(new Gateway(keyed).completions)).toMatchObject({ authorization: "Bearer k" });
+      expect(await requestHeaders(new Agent(keyed).completions)).toMatchObject({ authorization: "Bearer k" });
     });
   });
 
