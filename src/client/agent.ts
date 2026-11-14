@@ -20,6 +20,9 @@ import {
   AgentToolset,
 } from "./types";
 
+/** Minimum timeout for agent chat completions, in milliseconds (10 minutes). */
+const COMPLETIONS_MIN_TIMEOUT_MS = 600000;
+
 export class Agent {
   /**
    * Agent resource for VLM Run API.
@@ -116,7 +119,12 @@ export class Agent {
     const openaiClient = new OpenAI({
       apiKey: this.client.apiKey,
       baseURL: baseUrl,
-      timeout: this.client.timeout,
+      timeout:
+        this.client.timeout === undefined ||
+        this.client.timeout === null ||
+        this.client.timeout === 0
+          ? this.client.timeout
+          : Math.max(this.client.timeout, COMPLETIONS_MIN_TIMEOUT_MS),
       maxRetries: this.client.maxRetries ?? 1,
     });
 

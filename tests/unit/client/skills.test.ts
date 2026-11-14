@@ -1,5 +1,6 @@
 import { Client } from "../../../src/client/base_requestor";
 import { Skills } from "../../../src/client/skills";
+import { Files } from "../../../src/client/files";
 import { SkillInfo, SkillDownloadResponse } from "../../../src/client/types";
 
 jest.mock("../../../src/client/base_requestor");
@@ -413,6 +414,70 @@ describe("Skills", () => {
       await expect(
         skills.download({ skillId: "skill_001" })
       ).rejects.toThrow("Expected object response");
+    });
+  });
+
+  describe("createFromDirectory", () => {
+    it("bundles the directory, uploads it and creates the skill", async () => {
+      const fs = require("fs");
+      const os = require("os");
+      const path = require("path");
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), "skill-create-"));
+      fs.writeFileSync(
+        path.join(dir, "SKILL.md"),
+        "---\nname: invoice-parser\ndescription: Extracts invoice fields\n---\n# Body\n"
+      );
+
+      const uploadMock = jest
+        .spyOn(Files.prototype, "upload")
+        .mockResolvedValue({ id: "file_123" } as any);
+
+      const skillInfo: SkillInfo = {
+        id: "skill_001",
+        name: "invoice-parser",
+        description: "Extracts invoice fields",
+        version: "1.0",
+        created_at: "2024-01-01T00:00:00Z",
+        updated_at: "2024-01-01T00:00:00Z",
+      };
+      const requestMock = jest
+        .spyOn(skills["requestor"], "request")
+        .mockResolvedValue([skillInfo, 200, {}]);
+
+      const result = await skills.createFromDirectory({ directory: dir });
+
+      expect(uploadMock).toHaveBeenCalledWith(
+        expect.objectContaining({ purpose: "assistants" })
+      );
+      expect(uploadMock.mock.calls[0][0].filePath).toMatch(
+        /invoice-parser_[0-9a-f]{8}\.zip$/
+      );
+      expect(requestMock).toHaveBeenCalledWith(
+        "POST",
+        "skills/create",
+        undefined,
+        expect.objectContaining({
+          file_id: "file_123",
+          name: "invoice-parser",
+          description: "Extracts invoice fields",
+        })
+      );
+      expect(result.type).toBe("skill_reference");
+      expect(result.skillId).toBe("skill_001");
+      expect(result.skillName).toBe("invoice-parser");
+
+      uploadMock.mockRestore();
+    });
+
+    it("throws when SKILL.md is missing", async () => {
+      const fs = require("fs");
+      const os = require("os");
+      const path = require("path");
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), "skill-empty-"));
+
+      await expect(skills.createFromDirectory({ directory: dir })).rejects.toThrow(
+        /SKILL.md not found/
+      );
     });
   });
 });
