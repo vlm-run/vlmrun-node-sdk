@@ -74,7 +74,7 @@ export class Files {
    * @returns FileResponse if the file exists, null otherwise
    */
   async getCachedFile(filePath: string): Promise<FileResponse | null> {
-    const fileHash = await this.calculateMD5(filePath);
+    const fileHash = (await this.calculateMD5(filePath)).toLowerCase();
 
     try {
       const [response] = await this.requestor.request<FileResponse>(
