@@ -1,6 +1,10 @@
 import { Client } from "../../../src/client/base_requestor";
 import { Agent } from "../../../src/client/agent";
-import { PredictionResponse, AgentInfo } from "../../../src/client/types";
+import {
+  PredictionResponse,
+  AgentInfo,
+  AgentExecutionConfig,
+} from "../../../src/client/types";
 import { DependencyError } from "../../../src/client/exceptions";
 
 jest.mock("../../../src/client/base_requestor");
@@ -586,6 +590,64 @@ describe("Agent", () => {
         expect.objectContaining({
           inputs: { image_url: "https://example.com/image.jpg" },
         })
+      );
+    });
+  });
+
+  describe("mode", () => {
+    const mockExecuteResponse = {
+      id: "execution_123",
+      name: "test-agent",
+      created_at: "2023-01-01T00:00:00Z",
+      completed_at: "2023-01-01T00:00:01Z",
+      response: { result: "success" },
+      execution_mode: "agent",
+      status: "completed",
+      usage: { credits_used: 10 },
+    };
+
+    it.each(["agent", "program", null] as const)(
+      "forwards mode=%s to /agent/execute",
+      async (mode) => {
+        jest
+          .spyOn(agent["requestor"], "request")
+          .mockResolvedValue([mockExecuteResponse, 200, {}]);
+
+        await agent.execute({
+          name: "test-agent",
+          model: "vlmrun-orion-2:pro",
+          config: { prompt: "hi", mode },
+        });
+
+        expect(agent["requestor"].request).toHaveBeenCalledWith(
+          "POST",
+          "agent/execute",
+          undefined,
+          expect.objectContaining({
+            config: expect.objectContaining({ mode }),
+          })
+        );
+      }
+    );
+
+    it("omits mode from /agent/execute payload when not set", async () => {
+      jest
+        .spyOn(agent["requestor"], "request")
+        .mockResolvedValue([mockExecuteResponse, 200, {}]);
+
+      await agent.execute({
+        name: "test-agent",
+        config: { prompt: "hi" },
+      });
+
+      const call = (agent["requestor"].request as jest.Mock).mock.calls[0];
+      expect(call[3].config).not.toHaveProperty("mode");
+    });
+
+    it("serializes mode from an AgentExecutionConfig instance", () => {
+      const config = new AgentExecutionConfig({ mode: "program" });
+      expect(config.toJSON()).toEqual(
+        expect.objectContaining({ mode: "program" })
       );
     });
   });

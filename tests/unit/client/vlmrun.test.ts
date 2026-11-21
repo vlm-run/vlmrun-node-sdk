@@ -1,4 +1,4 @@
-import { VlmRun } from "../../../src";
+import { VlmRun, ConfigurationError } from "../../../src";
 import {
   DomainInfo,
   SchemaResponse,
@@ -142,5 +142,51 @@ describe("Domains class methods", () => {
         "/domains"
       );
     });
+  });
+});
+
+describe("VlmRun configuration", () => {
+  const saved = {
+    apiKey: process.env.VLMRUN_API_KEY,
+    baseURL: process.env.VLMRUN_BASE_URL,
+  };
+
+  beforeEach(() => {
+    delete process.env.VLMRUN_API_KEY;
+    delete process.env.VLMRUN_BASE_URL;
+  });
+
+  afterAll(() => {
+    if (saved.apiKey !== undefined) process.env.VLMRUN_API_KEY = saved.apiKey;
+    if (saved.baseURL !== undefined) process.env.VLMRUN_BASE_URL = saved.baseURL;
+  });
+
+  it("throws ConfigurationError without an API key by default", () => {
+    expect(() => new VlmRun()).toThrow(ConfigurationError);
+  });
+
+  it("reads VLMRUN_API_KEY and VLMRUN_BASE_URL from the environment", () => {
+    process.env.VLMRUN_API_KEY = "env-key";
+    process.env.VLMRUN_BASE_URL = "https://env.example.com/v1";
+    const client = new VlmRun();
+    expect(client["client"].apiKey).toBe("env-key");
+    expect(client["client"].baseURL).toBe("https://env.example.com/v1");
+  });
+
+  it("prefers explicit options over the environment", () => {
+    process.env.VLMRUN_API_KEY = "env-key";
+    process.env.VLMRUN_BASE_URL = "https://env.example.com/v1";
+    const client = new VlmRun({
+      apiKey: "explicit-key",
+      baseURL: "https://explicit.example.com/v1",
+    });
+    expect(client["client"].apiKey).toBe("explicit-key");
+    expect(client["client"].baseURL).toBe("https://explicit.example.com/v1");
+  });
+
+  it("allows a missing API key when requireApiKey is false", () => {
+    const client = new VlmRun({ requireApiKey: false });
+    expect(client["client"].apiKey).toBe("");
+    expect(client.gateway).toBeDefined();
   });
 });
